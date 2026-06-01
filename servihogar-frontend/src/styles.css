@@ -28,10 +28,20 @@
   --radius-lg: 16px;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+#servicios,
+#como-funciona,
+#nosotros {
+  scroll-margin-top: 90px;
 }
 
 body {
