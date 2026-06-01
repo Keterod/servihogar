@@ -1,0 +1,107 @@
+.solicitud-servicio {
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.solicitud-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #34495e;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.btn-primary {
+  padding: 0.875rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.confirmacion {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.confirmacion-icono {
+  width: 80px;
+  height: 80px;
+  background-color: #27ae60;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin: 0 auto 1.5rem;
+}
+
+.confirmacion h2 {
+  color: #27ae60;
+  margin-bottom: 1rem;
+}
+
+.confirmacion p {
+  color: #7f8c8d;
+  margin-bottom: 0.5rem;
+}
+
+.confirmacion .btn-primary {
+  margin-top: 2rem;
+}
+
+@media (max-width: 375px) {
+  .solicitud-servicio {
+    padding: 1rem 0.75rem;
+  }
+}

@@ -1,0 +1,263 @@
+.detalle-solicitud {
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.solicitud-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.info-categoria {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.info-estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.info-estado[data-estado="pendiente"] {
+  background-color: #ffeaa7;
+  color: #d35400;
+}
+
+.info-estado[data-estado="en_proceso"] {
+  background-color: #74b9ff;
+  color: #2c3e50;
+}
+
+.info-descripcion {
+  color: #7f8c8d;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.info-datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.dato-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #95a5a6;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.dato-valor {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.cotizaciones-seccion {
+  margin-bottom: 2rem;
+}
+
+.cotizaciones-seccion h2 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.mensaje-confirmacion {
+  background-color: #d4edda;
+  border: 1px solid #28a745;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.confirmacion-icono {
+  width: 32px;
+  height: 32px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.mensaje-confirmacion p {
+  color: #155724;
+  margin: 0;
+}
+
+.cotizaciones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cotizacion-card {
+  background-color: white;
+  border: 2px solid #ecf0f1;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.cotizacion-card[data-estado="aceptada"] {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.cotizacion-card[data-estado="rechazada"] {
+  border-color: #dc3545;
+  background-color: #fff8f8;
+  opacity: 0.7;
+}
+
+.cotizacion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.tecnico-nombre {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.tecnico-especialidad {
+  font-size: 0.875rem;
+  color: #7f8c8d;
+}
+
+.cotizacion-precio {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #27ae60;
+}
+
+.cotizacion-detalles {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.detalle-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #95a5a6;
+}
+
+.detalle-valor {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.cotizacion-propuesta {
+  color: #7f8c8d;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.cotizacion-acciones {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-aceptar {
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-aceptar:hover {
+  background-color: #218838;
+}
+
+.btn-rechazar {
+  padding: 0.5rem 1rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-rechazar:hover {
+  background-color: #c82333;
+}
+
+.estado-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.estado-badge.aceptada {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.estado-badge.rechazada {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.acciones-finales {
+  text-align: center;
+}
+
+.btn-valorar {
+  padding: 0.75rem 1.5rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-valorar:hover {
+  background-color: #5a6268;
+}
+
+@media (max-width: 375px) {
+  .info-datos {
+    grid-template-columns: 1fr;
+  }
+
+  .cotizacion-detalles {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

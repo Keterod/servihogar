@@ -1,1 +1,139 @@
-<p>valorar-servicio works!</p>
+<div class="valorar-servicio">
+  <div class="container">
+    <h1>Valorar Servicio</h1>
+
+    <div class="servicio-estado">
+      <span class="estado-badge">Finalizado</span>
+      <p>Servicio de Gasfitería menor - Carlos Mendoza</p>
+    </div>
+
+    @if (!enviado()) {
+      <form class="valoracion-form" (submit)="$event.preventDefault(); enviarValoracion()">
+        <div class="criterios">
+          <div class="criterio">
+            <label>Puntualidad</label>
+            <div class="calificacion-botones">
+              @for (opcion of opcionesCalificacion; track opcion) {
+                <button
+                  type="button"
+                  class="btn-calificacion"
+                  [class.seleccionado]="puntualidad() === opcion"
+                  (click)="setPuntualidad(opcion)"
+                >
+                  {{ opcion }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="criterio">
+            <label>Calidad</label>
+            <div class="calificacion-botones">
+              @for (opcion of opcionesCalificacion; track opcion) {
+                <button
+                  type="button"
+                  class="btn-calificacion"
+                  [class.seleccionado]="calidad() === opcion"
+                  (click)="setCalidad(opcion)"
+                >
+                  {{ opcion }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="criterio">
+            <label>Trato</label>
+            <div class="calificacion-botones">
+              @for (opcion of opcionesCalificacion; track opcion) {
+                <button
+                  type="button"
+                  class="btn-calificacion"
+                  [class.seleccionado]="trato() === opcion"
+                  (click)="setTrato(opcion)"
+                >
+                  {{ opcion }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="criterio">
+            <label>Limpieza</label>
+            <div class="calificacion-botones">
+              @for (opcion of opcionesCalificacion; track opcion) {
+                <button
+                  type="button"
+                  class="btn-calificacion"
+                  [class.seleccionado]="limpieza() === opcion"
+                  (click)="setLimpieza(opcion)"
+                >
+                  {{ opcion }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="criterio">
+            <label>Cumplimiento del precio</label>
+            <div class="calificacion-botones">
+              @for (opcion of opcionesCalificacion; track opcion) {
+                <button
+                  type="button"
+                  class="btn-calificacion"
+                  [class.seleccionado]="cumplimientoPrecio() === opcion"
+                  (click)="setCumplimientoPrecio(opcion)"
+                >
+                  {{ opcion }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="promedio">
+          <span class="promedio-label">Promedio:</span>
+          <span class="promedio-valor">{{ promedio() }}</span>
+        </div>
+
+        <div class="form-group">
+          <label for="comentario">Comentario (opcional)</label>
+          <textarea
+            id="comentario"
+            rows="3"
+            placeholder="Comparte tu experiencia con este técnico..."
+            [value]="comentario()"
+            (input)="comentario.set($any($event.target).value)"
+          ></textarea>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [checked]="volveriaContratar()"
+              (change)="volveriaContratar.set($any($event.target).checked)"
+            />
+            Volvería a contratar
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="!todosCalificados()"
+        >
+          Enviar valoración
+        </button>
+      </form>
+    } @else {
+      <div class="confirmacion">
+        <div class="confirmacion-icono">✓</div>
+        <h2>¡Valoración enviada!</h2>
+        <p>Tu valoración ha sido registrada exitosamente.</p>
+        <p>Gracias por tu feedback, ayuda a mejorar nuestro servicio.</p>
+        <button class="btn-primary" (click)="irAlPanel()">Volver al panel</button>
+      </div>
+    }
+  </div>
+</div>

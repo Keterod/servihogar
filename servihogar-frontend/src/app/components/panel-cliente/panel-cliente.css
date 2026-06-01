@@ -1,0 +1,133 @@
+.panel-cliente {
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.resumen-item {
+  background-color: #f8f9fa;
+  padding: 1.25rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.resumen-numero {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.resumen-label {
+  display: block;
+  color: #7f8c8d;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.solicitudes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.solicitud-card {
+  background-color: white;
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.solicitud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.solicitud-categoria {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.solicitud-estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.solicitud-estado[data-estado="pendiente"] {
+  background-color: #ffeaa7;
+  color: #d35400;
+}
+
+.solicitud-estado[data-estado="en_proceso"] {
+  background-color: #74b9ff;
+  color: #2c3e50;
+}
+
+.solicitud-estado[data-estado="finalizado"] {
+  background-color: #55efc4;
+  color: #2c3e50;
+}
+
+.solicitud-estado[data-estado="cancelado"] {
+  background-color: #fab1a0;
+  color: #2c3e50;
+}
+
+.solicitud-descripcion {
+  color: #7f8c8d;
+  margin-bottom: 0.75rem;
+}
+
+.solicitud-info {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  color: #95a5a6;
+  margin-bottom: 1rem;
+}
+
+.btn-detalle {
+  padding: 0.625rem 1.25rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-detalle:hover {
+  background-color: #2980b9;
+}
+
+@media (max-width: 375px) {
+  .resumen {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .solicitud-info {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}

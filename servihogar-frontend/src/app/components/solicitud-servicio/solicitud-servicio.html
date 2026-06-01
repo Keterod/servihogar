@@ -1,1 +1,81 @@
-<p>solicitud-servicio works!</p>
+<div class="solicitud-servicio">
+  <div class="container">
+    <h1>Solicitar Servicio</h1>
+
+    @if (!enviado()) {
+      <form class="solicitud-form" (submit)="$event.preventDefault(); enviarSolicitud()">
+        <div class="form-group">
+          <label for="categoria">Categoría del servicio</label>
+          <select id="categoria" [value]="categoria()" (change)="categoria.set($any($event.target).value)">
+            <option value="">Seleccionar categoría</option>
+            @for (cat of categorias; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="zona">Zona</label>
+          <select id="zona" [value]="zona()" (change)="zona.set($any($event.target).value)">
+            <option value="">Seleccionar zona</option>
+            @for (z of zonas; track z) {
+              <option [value]="z">{{ z }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción del problema</label>
+          <textarea
+            id="descripcion"
+            rows="4"
+            placeholder="Describe brevemente el problema que necesitas resolver..."
+            [value]="descripcion()"
+            (input)="descripcion.set($any($event.target).value)"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="fecha">Fecha tentativa</label>
+          <input
+            type="date"
+            id="fecha"
+            [value]="fechaTentativa()"
+            (change)="fechaTentativa.set($any($event.target).value)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="horario">Horario preferido</label>
+          <select id="horario" [value]="horarioPreferido()" (change)="horarioPreferido.set($any($event.target).value)">
+            <option value="">Seleccionar horario</option>
+            @for (h of horarios; track h) {
+              <option [value]="h">{{ h }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="direccion">Dirección aproximada</label>
+          <input
+            type="text"
+            id="direccion"
+            placeholder="Ej: Jr. Los Olivos 123, Huancayo"
+            [value]="direccion()"
+            (input)="direccion.set($any($event.target).value)"
+          />
+        </div>
+
+        <button type="submit" class="btn-primary">Publicar solicitud</button>
+      </form>
+    } @else {
+      <div class="confirmacion">
+        <div class="confirmacion-icono">✓</div>
+        <h2>¡Solicitud publicada!</h2>
+        <p>Tu solicitud de servicio ha sido publicada exitosamente.</p>
+        <p>Los técnicos de la zona podrán ver tu solicitud y enviarte cotizaciones.</p>
+        <button class="btn-primary" (click)="irAlPanel()">Ir a mi panel</button>
+      </div>
+    }
+  </div>
+</div>
