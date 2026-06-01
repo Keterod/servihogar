@@ -1,1 +1,183 @@
-<p>panel-tecnico works!</p>
+<div class="panel-tecnico">
+  <div class="container">
+    <header class="tecnico-header">
+      <div class="tecnico-info">
+        <h1>Panel del técnico</h1>
+        <p class="tecnico-nombre">{{ tecnico().nombre }}</p>
+        <p class="tecnico-meta">
+          {{ tecnico().especialidad }} · {{ tecnico().zona }} ·
+          {{ tecnico().calificacion }} ★
+        </p>
+      </div>
+      <span [class]="getEstadoValidacionClass(estadoValidacion())">
+        {{ getEstadoValidacionLabel(estadoValidacion()) }}
+      </span>
+    </header>
+
+    <section class="resumen" aria-label="Resumen">
+      <div class="resumen-item">
+        <span class="resumen-numero">{{ totalSolicitudesDisponibles() }}</span>
+        <span class="resumen-label">Disponibles</span>
+      </div>
+      <div class="resumen-item">
+        <span class="resumen-numero">{{ totalCotizacionesEnviadas() }}</span>
+        <span class="resumen-label">Cotizaciones enviadas</span>
+      </div>
+      <div class="resumen-item">
+        <span class="resumen-numero">{{ totalServiciosAceptados() }}</span>
+        <span class="resumen-label">Servicios aceptados</span>
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-disponibles">
+      <h2 id="titulo-disponibles">Solicitudes disponibles</h2>
+      @if (solicitudesDisponibles().length === 0) {
+        <p class="mensaje-vacio">No hay solicitudes disponibles por ahora.</p>
+      } @else {
+        <div class="tarjetas-lista">
+          @for (solicitud of solicitudesDisponibles(); track solicitud.id) {
+            <article
+              class="tarjeta solicitud-card"
+              [class.activa]="esSolicitudActiva(solicitud.id)"
+              (click)="seleccionarSolicitud(solicitud)"
+              (keydown.enter)="seleccionarSolicitud(solicitud)"
+              tabindex="0"
+              role="button"
+            >
+              <div class="tarjeta-header">
+                <span class="tarjeta-categoria">{{ solicitud.categoria }}</span>
+                <span class="tarjeta-id">#{{ solicitud.id }}</span>
+              </div>
+              <p class="tarjeta-descripcion">{{ solicitud.descripcion }}</p>
+              <div class="tarjeta-info">
+                <span>Zona: {{ solicitud.zona }}</span>
+                <span>Fecha: {{ solicitud.fechaTentativa }}</span>
+              </div>
+              <p class="tarjeta-direccion">{{ solicitud.direccion }}</p>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    @if (solicitudSeleccionada(); as solicitud) {
+      <section class="seccion seccion-detalle" aria-labelledby="titulo-detalle">
+        <h2 id="titulo-detalle">Detalle y cotización — Solicitud #{{ solicitud.id }}</h2>
+        <div class="detalle-contenido">
+          <dl class="detalle-lista">
+            <div>
+              <dt>Categoría</dt>
+              <dd>{{ solicitud.categoria }}</dd>
+            </div>
+            <div>
+              <dt>Descripción</dt>
+              <dd>{{ solicitud.descripcion }}</dd>
+            </div>
+            <div>
+              <dt>Zona</dt>
+              <dd>{{ solicitud.zona }}</dd>
+            </div>
+            <div>
+              <dt>Fecha tentativa</dt>
+              <dd>{{ solicitud.fechaTentativa }}</dd>
+            </div>
+            <div>
+              <dt>Dirección</dt>
+              <dd>{{ solicitud.direccion }}</dd>
+            </div>
+          </dl>
+
+          <form class="form-cotizacion" (submit)="$event.preventDefault()">
+            <h3>Enviar cotización</h3>
+            <div class="form-group">
+              <label for="precio">Precio estimado (S/)</label>
+              <input
+                id="precio"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                [value]="formCotizacion().precio"
+                (input)="actualizarPrecio($event)"
+              />
+            </div>
+            <div class="form-group">
+              <label for="tiempo">Tiempo estimado</label>
+              <input
+                id="tiempo"
+                type="text"
+                placeholder="Ej. 2 horas"
+                [value]="formCotizacion().tiempo"
+                (input)="actualizarTiempo($event)"
+              />
+            </div>
+            <div class="form-group">
+              <label for="propuesta">Propuesta</label>
+              <textarea
+                id="propuesta"
+                rows="3"
+                placeholder="Describe tu propuesta de trabajo..."
+                [value]="formCotizacion().propuesta"
+                (input)="actualizarPropuesta($event)"
+              ></textarea>
+            </div>
+            <button
+              type="button"
+              class="btn-enviar"
+              [disabled]="!puedeEnviarCotizacion()"
+              (click)="enviarCotizacion()"
+            >
+              Enviar cotización
+            </button>
+          </form>
+        </div>
+      </section>
+    }
+
+    <section class="seccion" aria-labelledby="titulo-enviadas">
+      <h2 id="titulo-enviadas">Cotizaciones enviadas</h2>
+      <div class="tarjetas-lista">
+        @for (cotizacion of cotizacionesEnviadas(); track cotizacion.id) {
+          <article class="tarjeta cotizacion-card">
+            <div class="tarjeta-header">
+              <span class="tarjeta-categoria">Solicitud #{{ cotizacion.solicitudId }}</span>
+              <span class="estado-badge" [attr.data-estado]="cotizacion.estado">
+                {{ getEstadoCotizacionLabel(cotizacion.estado) }}
+              </span>
+            </div>
+            <p class="tarjeta-subtitulo">{{ cotizacion.categoria }}</p>
+            <p class="tarjeta-descripcion">{{ cotizacion.descripcion }}</p>
+            <div class="tarjeta-info">
+              <span>{{ formatPrecio(cotizacion.precio) }}</span>
+              <span>{{ cotizacion.tiempoEstimado }}</span>
+              <span>Enviada: {{ cotizacion.fechaEnvio }}</span>
+            </div>
+            <p class="tarjeta-propuesta">{{ cotizacion.propuesta }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-aceptados">
+      <h2 id="titulo-aceptados">Servicios aceptados</h2>
+      <div class="tarjetas-lista">
+        @for (servicio of serviciosAceptados(); track servicio.id) {
+          <article class="tarjeta servicio-card">
+            <div class="tarjeta-header">
+              <span class="tarjeta-categoria">{{ servicio.categoria }}</span>
+              <span class="estado-badge" [attr.data-estado]="servicio.estado">
+                {{ getEstadoServicioLabel(servicio.estado) }}
+              </span>
+            </div>
+            <p class="tarjeta-descripcion">{{ servicio.descripcion }}</p>
+            <div class="tarjeta-info">
+              <span>Zona: {{ servicio.zona }}</span>
+              <span>Cliente: {{ servicio.cliente }}</span>
+              <span>Fecha: {{ servicio.fecha }}</span>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  </div>
+</div>
