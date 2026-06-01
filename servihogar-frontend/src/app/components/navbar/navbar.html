@@ -1,0 +1,22 @@
+<nav class="navbar" aria-label="Navegación principal">
+  <div class="container navbar-inner">
+    <a routerLink="/inicio" class="navbar-brand">ServiHogar</a>
+    <ul class="navbar-links">
+      <li>
+        <a
+          routerLink="/inicio"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          Inicio
+        </a>
+      </li>
+      <li>
+        <a routerLink="/buscar-tecnicos" routerLinkActive="active">Buscar técnicos</a>
+      </li>
+      <li>
+        <a routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
+      </li>
+    </ul>
+  </div>
+</nav>
