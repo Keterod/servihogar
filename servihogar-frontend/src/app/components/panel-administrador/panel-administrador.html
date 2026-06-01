@@ -1,1 +1,161 @@
-<p>panel-administrador works!</p>
+<div class="panel-administrador">
+  <div class="container">
+    <header class="panel-header">
+      <h1>Panel administrador</h1>
+      <p class="panel-subtitulo">Gestión del sistema ServiHogar</p>
+    </header>
+
+    <section class="seccion" aria-labelledby="titulo-resumen">
+      <h2 id="titulo-resumen">Resumen general</h2>
+      <div class="resumen">
+        <div class="resumen-item">
+          <span class="resumen-numero">{{ totalTecnicos() }}</span>
+          <span class="resumen-label">Total técnicos</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-numero">{{ tecnicosPendientes() }}</span>
+          <span class="resumen-label">Pendientes</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-numero">{{ tecnicosValidados() }}</span>
+          <span class="resumen-label">Validados</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-numero">{{ tecnicosRechazados() }}</span>
+          <span class="resumen-label">Rechazados</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-numero">{{ totalCategorias() }}</span>
+          <span class="resumen-label">Categorías</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-numero">{{ totalUsuarios() }}</span>
+          <span class="resumen-label">Usuarios</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-tecnicos">
+      <h2 id="titulo-tecnicos">Técnicos</h2>
+      @if (mensajeAccion()) {
+        <p class="mensaje-accion" role="status">{{ mensajeAccion() }}</p>
+      }
+      <div class="tarjetas-lista">
+        @for (tecnico of tecnicos(); track tecnico.id) {
+          <article class="tarjeta tecnico-card">
+            <div class="tarjeta-header">
+              <span class="tarjeta-titulo">#{{ tecnico.id }} — {{ tecnico.nombre }}</span>
+              <span [class]="getEstadoValidacionClass(tecnico.estadoValidacion)">
+                {{ getEstadoValidacionLabel(tecnico.estadoValidacion) }}
+              </span>
+            </div>
+            <p class="tarjeta-meta">{{ tecnico.especialidad }} · {{ tecnico.zona }}</p>
+            <p class="tarjeta-fecha">Registro: {{ tecnico.fechaRegistro }}</p>
+            @if (tecnico.estadoValidacion === 'pendiente') {
+              <div class="acciones">
+                <button type="button" class="btn-validar" (click)="validarTecnico(tecnico.id)">
+                  Validar
+                </button>
+                <button type="button" class="btn-rechazar" (click)="rechazarTecnico(tecnico.id)">
+                  Rechazar
+                </button>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-categorias">
+      <h2 id="titulo-categorias">Categorías de servicio</h2>
+      <div class="tarjetas-lista categorias-lista">
+        @for (categoria of categorias(); track categoria.id) {
+          <article class="tarjeta categoria-card">
+            <h3 class="categoria-nombre">{{ categoria.nombre }}</h3>
+            @if (categoria.descripcion) {
+              <p class="tarjeta-descripcion">{{ categoria.descripcion }}</p>
+            }
+          </article>
+        }
+      </div>
+
+      <form class="form-categoria" (submit)="$event.preventDefault()">
+        <h3>Agregar categoría</h3>
+        <div class="form-group">
+          <label for="cat-nombre">Nombre</label>
+          <input
+            id="cat-nombre"
+            type="text"
+            placeholder="Nombre de la categoría"
+            [value]="formCategoria().nombre"
+            (input)="actualizarNombreCategoria($event)"
+          />
+        </div>
+        <div class="form-group">
+          <label for="cat-descripcion">Descripción (opcional)</label>
+          <input
+            id="cat-descripcion"
+            type="text"
+            placeholder="Descripción breve"
+            [value]="formCategoria().descripcion"
+            (input)="actualizarDescripcionCategoria($event)"
+          />
+        </div>
+        @if (mensajeCategoria()) {
+          <p class="mensaje-error" role="alert">{{ mensajeCategoria() }}</p>
+        }
+        <button
+          type="button"
+          class="btn-agregar"
+          [disabled]="!puedeAgregarCategoria()"
+          (click)="agregarCategoria()"
+        >
+          Agregar categoría
+        </button>
+      </form>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-usuarios">
+      <h2 id="titulo-usuarios">Usuarios registrados</h2>
+      <div class="tarjetas-lista">
+        @for (usuario of usuarios(); track usuario.id) {
+          <article class="tarjeta usuario-card">
+            <div class="tarjeta-header">
+              <span class="tarjeta-titulo">{{ usuario.nombre }}</span>
+              <span class="badge-rol">{{ getRolLabel(usuario.rol) }}</span>
+            </div>
+            <span class="badge-estado-usuario" [attr.data-estado]="usuario.estado">
+              {{ getEstadoUsuarioLabel(usuario.estado) }}
+            </span>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="seccion" aria-labelledby="titulo-reportes">
+      <h2 id="titulo-reportes">Reportes básicos</h2>
+      <div class="reportes-grid">
+        <article class="reporte-card">
+          <span class="reporte-numero">{{ reportes().solicitudesPublicadas }}</span>
+          <span class="reporte-label">Solicitudes publicadas</span>
+        </article>
+        <article class="reporte-card">
+          <span class="reporte-numero">{{ reportes().cotizacionesRegistradas }}</span>
+          <span class="reporte-label">Cotizaciones registradas</span>
+        </article>
+        <article class="reporte-card">
+          <span class="reporte-numero">{{ reportes().serviciosFinalizados }}</span>
+          <span class="reporte-label">Servicios finalizados</span>
+        </article>
+        <article class="reporte-card">
+          <span class="reporte-numero">{{ tecnicosActivos() }}</span>
+          <span class="reporte-label">Técnicos activos</span>
+        </article>
+        <article class="reporte-card">
+          <span class="reporte-numero">{{ totalUsuarios() }}</span>
+          <span class="reporte-label">Usuarios registrados</span>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
