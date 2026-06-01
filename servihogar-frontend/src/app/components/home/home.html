@@ -1,1 +1,44 @@
-<p>home works!</p>
+<div class="home">
+  <section class="hero">
+    <div class="container hero-inner">
+      <h1>ServiHogar</h1>
+      <p class="hero-lead">
+        Plataforma académica para conectar clientes con técnicos independientes de servicios
+        domésticos menores. Encuentra profesionales, publica solicitudes y recibe cotizaciones.
+      </p>
+      <a routerLink="/buscar-tecnicos" class="btn-primary">Buscar técnicos</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Categorías destacadas</h2>
+      <div class="categories-grid">
+        @for (categoria of categoriasDestacadas; track categoria.nombre) {
+          <article class="category-card">
+            <span class="category-icon" aria-hidden="true">{{ categoria.icono }}</span>
+            <h3>{{ categoria.nombre }}</h3>
+            <p>{{ categoria.descripcion }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <h2>¿Cómo funciona?</h2>
+      <ol class="steps-list">
+        @for (paso of pasosUso; track paso.numero) {
+          <li class="step-item">
+            <span class="step-number">{{ paso.numero }}</span>
+            <div>
+              <h3>{{ paso.titulo }}</h3>
+              <p>{{ paso.descripcion }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+</div>

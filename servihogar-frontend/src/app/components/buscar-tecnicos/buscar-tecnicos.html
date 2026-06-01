@@ -1,1 +1,64 @@
-<p>buscar-tecnicos works!</p>
+<div class="buscar-tecnicos">
+  <div class="container">
+    <header class="page-header">
+      <h1>Buscar técnicos</h1>
+      <p>Encuentra profesionales por categoría, zona y calificación.</p>
+    </header>
+
+    <section class="filters" aria-label="Filtros de búsqueda">
+      <div class="filter-group">
+        <label for="filtro-categoria">Categoría</label>
+        <select id="filtro-categoria" [value]="categoriaFiltro" (change)="onCategoriaChange($event)">
+          <option value="">Todas</option>
+          @for (cat of categorias.slice(1); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filtro-zona">Zona</label>
+        <select id="filtro-zona" [value]="zonaFiltro" (change)="onZonaChange($event)">
+          <option value="">Todas</option>
+          @for (zona of zonas.slice(1); track zona) {
+            <option [value]="zona">{{ zona }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filtro-calificacion">Calificación mínima</label>
+        <select
+          id="filtro-calificacion"
+          [value]="calificacionMinima"
+          (change)="onCalificacionChange($event)"
+        >
+          @for (cal of calificaciones; track cal.valor) {
+            <option [value]="cal.valor">{{ cal.etiqueta }}</option>
+          }
+        </select>
+      </div>
+    </section>
+
+    <section class="results" aria-label="Resultados">
+      @if (tecnicosFiltrados.length === 0) {
+        <p class="no-results">No se encontraron técnicos con los filtros seleccionados.</p>
+      } @else {
+        <div class="tecnicos-grid">
+          @for (tecnico of tecnicosFiltrados; track tecnico.id) {
+            <article class="tecnico-card">
+              <h2>{{ tecnico.nombre }}</h2>
+              <p class="tecnico-especialidad">{{ tecnico.especialidad }}</p>
+              <ul class="tecnico-meta">
+                <li><strong>Categoría:</strong> {{ tecnico.categoria }}</li>
+                <li><strong>Zona:</strong> {{ tecnico.zona }}</li>
+                <li><strong>Valoración:</strong> {{ tecnico.valoracion }} ★</li>
+              </ul>
+              <a routerLink="/perfil-tecnico" class="btn-secondary">Ver perfil</a>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

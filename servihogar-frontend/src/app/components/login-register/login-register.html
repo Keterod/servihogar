@@ -1,1 +1,90 @@
-<p>login-register works!</p>
+<div class="login-register">
+  <div class="container">
+    <header class="page-header">
+      <h1>Acceso a ServiHogar</h1>
+      <p>Inicia sesión o crea una cuenta como cliente o técnico.</p>
+    </header>
+
+    <div class="auth-card">
+      <div class="tabs" role="tablist">
+        <button
+          type="button"
+          class="tab"
+          [class.active]="modo === 'login'"
+          (click)="setModo('login')"
+        >
+          Iniciar sesión
+        </button>
+        <button
+          type="button"
+          class="tab"
+          [class.active]="modo === 'register'"
+          (click)="setModo('register')"
+        >
+          Crear cuenta
+        </button>
+      </div>
+
+      <div class="roles" role="group" aria-label="Tipo de usuario">
+        <button
+          type="button"
+          class="role-btn"
+          [class.active]="rol === 'cliente'"
+          (click)="setRol('cliente')"
+        >
+          Cliente
+        </button>
+        <button
+          type="button"
+          class="role-btn"
+          [class.active]="rol === 'tecnico'"
+          (click)="setRol('tecnico')"
+        >
+          Técnico
+        </button>
+      </div>
+
+      <form class="auth-form" (submit)="$event.preventDefault()">
+        <h2>{{ tituloFormulario }}</h2>
+
+        @if (modo === 'register') {
+          <div class="form-group">
+            <label for="nombre">Nombre completo</label>
+            <input id="nombre" type="text" placeholder="Tu nombre" />
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input id="email" type="email" placeholder="correo@ejemplo.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input id="password" type="password" placeholder="••••••••" />
+        </div>
+
+        @if (modo === 'register' && rol === 'tecnico') {
+          <div class="form-group">
+            <label for="especialidad">Especialidad</label>
+            <input id="especialidad" type="text" placeholder="Ej. Fontanería" />
+          </div>
+          <div class="form-group">
+            <label for="zona">Zona de servicio</label>
+            <input id="zona" type="text" placeholder="Ej. Norte" />
+          </div>
+        }
+
+        @if (modo === 'register' && rol === 'cliente') {
+          <div class="form-group">
+            <label for="telefono">Teléfono (opcional)</label>
+            <input id="telefono" type="tel" placeholder="300 123 4567" />
+          </div>
+        }
+
+        <button type="button" class="btn-submit">{{ textoBoton }}</button>
+        <p class="form-note">Prototipo académico: el formulario es solo visual, sin autenticación real.</p>
+      </form>
+    </div>
+  </div>
+</div>

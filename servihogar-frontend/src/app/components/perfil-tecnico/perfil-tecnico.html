@@ -1,1 +1,51 @@
-<p>perfil-tecnico works!</p>
+<div class="perfil-tecnico">
+  <div class="container">
+    <header class="profile-header">
+      <div class="profile-avatar" aria-hidden="true">{{ tecnico.nombre.charAt(0) }}</div>
+      <div>
+        <h1>{{ tecnico.nombre }}</h1>
+        <p class="profile-specialty">{{ tecnico.especialidad }}</p>
+        <p class="profile-rating">{{ tecnico.valoracion }} ★ de valoración</p>
+      </div>
+    </header>
+
+    <div class="profile-content">
+      <section class="profile-section">
+        <h2>Información</h2>
+        <dl class="profile-details">
+          <div>
+            <dt>Experiencia</dt>
+            <dd>{{ tecnico.experiencia }}</dd>
+          </div>
+          <div>
+            <dt>Zona de servicio</dt>
+            <dd>{{ tecnico.zona }}</dd>
+          </div>
+          <div>
+            <dt>Valoración</dt>
+            <dd>{{ tecnico.valoracion }} / 5</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="profile-section">
+        <h2>Sobre el técnico</h2>
+        <p>{{ tecnico.descripcion }}</p>
+      </section>
+
+      <section class="profile-section">
+        <h2>Servicios ofrecidos</h2>
+        <ul class="services-list">
+          @for (servicio of tecnico.servicios; track servicio) {
+            <li>{{ servicio }}</li>
+          }
+        </ul>
+      </section>
+
+      <section class="profile-cta">
+        <a routerLink="/login" class="btn-primary">Solicitar servicio</a>
+        <p class="cta-helper">Inicia sesión como cliente para continuar</p>
+      </section>
+    </div>
+  </div>
+</div>
