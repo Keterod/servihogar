@@ -1,23 +1,43 @@
 <div class="home">
   <section class="hero">
-    <div class="container hero-inner">
-      <h1>ServiHogar</h1>
-      <p class="hero-lead">
-        Plataforma académica para conectar clientes con técnicos independientes de servicios
-        domésticos menores. Publica solicitudes, recibe cotizaciones y valora el servicio al
-        finalizar.
-      </p>
-      <a routerLink="/buscar-tecnicos" class="btn-primary">Buscar técnicos</a>
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="hero-tag">Plataforma académica · Huancayo, Perú</span>
+        <h1>Encuentra técnicos confiables para tu hogar</h1>
+        <p class="hero-lead">
+          Publica solicitudes, recibe cotizaciones de profesionales verificados y valora el
+          servicio al finalizar. Todo en un solo lugar.
+        </p>
+        <div class="hero-actions">
+          <a routerLink="/buscar-tecnicos" class="btn-primary">Buscar técnico</a>
+          <a routerLink="/login" class="btn-secondary">Registrarme</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card">
+          <div class="hero-card-badge">Técnico destacado</div>
+          <div class="hero-avatar avatar avatar-lg">CM</div>
+          <h3>Carlos Mendoza</h3>
+          <p>Gasfitería menor · Huancayo Centro</p>
+          <div class="hero-card-stats">
+            <span>★ 4.8</span>
+            <span>Perfil validado</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="section">
+  <section class="section" id="servicios">
     <div class="container">
-      <h2>Categorías destacadas</h2>
-      <div class="categories-grid">
+      <div class="section-header">
+        <h2>Servicios disponibles</h2>
+        <p>Categorías más solicitadas en la plataforma</p>
+      </div>
+      <div class="services-grid">
         @for (categoria of categoriasDestacadas; track categoria.nombre) {
-          <article class="category-card card">
-            <span class="category-icon" aria-hidden="true">{{ categoria.icono }}</span>
+          <article class="service-card">
+            <div class="service-icon">{{ categoria.icono }}</div>
             <h3>{{ categoria.nombre }}</h3>
             <p>{{ categoria.descripcion }}</p>
           </article>
@@ -26,20 +46,35 @@
     </div>
   </section>
 
-  <section class="section section-alt">
+  <section class="section section-alt" id="como-funciona">
     <div class="container">
-      <h2>¿Cómo funciona?</h2>
-      <ol class="steps-list">
+      <div class="section-header">
+        <h2>¿Cómo funciona?</h2>
+        <p>Tres pasos simples para resolver tus necesidades del hogar</p>
+      </div>
+      <div class="steps-grid">
         @for (paso of pasosUso; track paso.numero) {
-          <li class="step-item">
+          <article class="step-card">
             <span class="step-number">{{ paso.numero }}</span>
-            <div>
-              <h3>{{ paso.titulo }}</h3>
-              <p>{{ paso.descripcion }}</p>
-            </div>
-          </li>
+            <h3>{{ paso.titulo }}</h3>
+            <p>{{ paso.descripcion }}</p>
+          </article>
         }
-      </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="nosotros">
+    <div class="container about-block">
+      <div class="about-text">
+        <h2>Sobre ServiHogar</h2>
+        <p>
+          Proyecto académico que conecta clientes con técnicos independientes de servicios
+          domésticos menores en Huancayo. Sin backend ni autenticación real: un prototipo
+          funcional para demostrar el flujo completo del servicio.
+        </p>
+      </div>
+      <div class="about-visual image-placeholder">ServiHogar</div>
     </div>
   </section>
 </div>

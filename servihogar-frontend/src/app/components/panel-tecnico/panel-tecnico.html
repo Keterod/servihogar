@@ -1,67 +1,105 @@
 <div class="panel-tecnico">
-  <div class="container">
-    <header class="tecnico-header">
-      <div class="tecnico-info">
-        <h1>Panel del técnico</h1>
-        <p class="tecnico-nombre">{{ tecnico().nombre }}</p>
-        <p class="tecnico-meta">
-          {{ tecnico().especialidad }} · {{ tecnico().zona }} ·
-          {{ tecnico().calificacion }} ★
-        </p>
+  <div class="panel-inner">
+    <header class="tecnico-profile-header section-card">
+      <div class="profile-main">
+        <div class="avatar avatar-lg">CM</div>
+        <div class="profile-details">
+          <h1>{{ tecnico().nombre }}</h1>
+          <p class="profile-meta">
+            {{ tecnico().especialidad }} · {{ tecnico().zona }}
+          </p>
+          <span [class]="getEstadoValidacionClass(estadoValidacion())">
+            {{ getEstadoValidacionLabel(estadoValidacion()) }}
+          </span>
+        </div>
       </div>
-      <span [class]="getEstadoValidacionClass(estadoValidacion())">
-        {{ getEstadoValidacionLabel(estadoValidacion()) }}
-      </span>
+      <button type="button" class="btn-secondary btn-editar">Editar perfil</button>
     </header>
 
-    <section class="resumen" aria-label="Resumen">
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ totalSolicitudesDisponibles() }}</span>
-        <span class="resumen-label">Disponibles</span>
-      </div>
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ totalCotizacionesEnviadas() }}</span>
-        <span class="resumen-label">Cotizaciones enviadas</span>
-      </div>
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ totalServiciosAceptados() }}</span>
-        <span class="resumen-label">Servicios aceptados</span>
-      </div>
-    </section>
+    <div class="summary-grid">
+      <article class="summary-card">
+        <span class="summary-value">{{ totalSolicitudesDisponibles() }}</span>
+        <span class="summary-label">Solicitudes disponibles</span>
+      </article>
+      <article class="summary-card">
+        <span class="summary-value">{{ totalCotizacionesEnviadas() }}</span>
+        <span class="summary-label">Cotizaciones enviadas</span>
+      </article>
+      <article class="summary-card">
+        <span class="summary-value">{{ totalServiciosAceptados() }}</span>
+        <span class="summary-label">Servicios aceptados</span>
+      </article>
+      <article class="summary-card summary-card-rating">
+        <span class="summary-value">
+          {{ tecnico().calificacion }}
+          <span class="rating-star" aria-hidden="true">★</span>
+        </span>
+        <span class="summary-label">Calificación promedio</span>
+      </article>
+    </div>
 
-    <section class="seccion" aria-labelledby="titulo-disponibles">
-      <h2 id="titulo-disponibles">Solicitudes disponibles</h2>
+    <section class="section-card table-section" aria-labelledby="titulo-disponibles">
+      <div class="section-header">
+        <h2 id="titulo-disponibles">Solicitudes recientes</h2>
+        <span class="chip">{{ totalSolicitudesDisponibles() }} pendientes</span>
+      </div>
+
       @if (solicitudesDisponibles().length === 0) {
         <p class="mensaje-vacio">No hay solicitudes disponibles por ahora.</p>
       } @else {
-        <div class="tarjetas-lista">
-          @for (solicitud of solicitudesDisponibles(); track solicitud.id) {
-            <article
-              class="tarjeta solicitud-card"
-              [class.activa]="esSolicitudActiva(solicitud.id)"
-              (click)="seleccionarSolicitud(solicitud)"
-              (keydown.enter)="seleccionarSolicitud(solicitud)"
-              tabindex="0"
-              role="button"
-            >
-              <div class="tarjeta-header">
-                <span class="tarjeta-categoria">{{ solicitud.categoria }}</span>
-                <span class="tarjeta-id">#{{ solicitud.id }}</span>
-              </div>
-              <p class="tarjeta-descripcion">{{ solicitud.descripcion }}</p>
-              <div class="tarjeta-info">
-                <span>Zona: {{ solicitud.zona }}</span>
-                <span>Fecha: {{ solicitud.fechaTentativa }}</span>
-              </div>
-              <p class="tarjeta-direccion">{{ solicitud.direccion }}</p>
-            </article>
-          }
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Zona</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (solicitud of solicitudesDisponibles(); track solicitud.id) {
+                <tr
+                  class="table-row"
+                  [class.row-active]="esSolicitudActiva(solicitud.id)"
+                  (click)="seleccionarSolicitud(solicitud)"
+                  (keydown.enter)="seleccionarSolicitud(solicitud)"
+                  tabindex="0"
+                  role="button"
+                >
+                  <td class="cell-cliente">Solicitud #{{ solicitud.id }}</td>
+                  <td>
+                    <span class="cell-servicio">{{ solicitud.categoria }}</span>
+                    <span class="cell-descripcion">{{ solicitud.descripcion }}</span>
+                  </td>
+                  <td>{{ solicitud.zona }}</td>
+                  <td>{{ solicitud.fechaTentativa }}</td>
+                  <td>
+                    <span class="estado-badge" data-estado="pendiente">Disponible</span>
+                  </td>
+                  <td class="cell-acciones" (click)="$event.stopPropagation()">
+                    <button type="button" class="btn-table btn-rechazar">Rechazar</button>
+                    <button
+                      type="button"
+                      class="btn-table btn-cotizar"
+                      [class.active]="esSolicitudActiva(solicitud.id)"
+                      (click)="seleccionarSolicitud(solicitud)"
+                    >
+                      Enviar cotización
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </section>
 
     @if (solicitudSeleccionada(); as solicitud) {
-      <section class="seccion seccion-detalle" aria-labelledby="titulo-detalle">
+      <section class="section-card seccion-detalle" aria-labelledby="titulo-detalle">
         <h2 id="titulo-detalle">Detalle y cotización — Solicitud #{{ solicitud.id }}</h2>
         <div class="detalle-contenido">
           <dl class="detalle-lista">
@@ -123,7 +161,7 @@
             </div>
             <button
               type="button"
-              class="btn-enviar"
+              class="btn-primary btn-enviar"
               [disabled]="!puedeEnviarCotizacion()"
               (click)="enviarCotizacion()"
             >
@@ -134,7 +172,7 @@
       </section>
     }
 
-    <section class="seccion" aria-labelledby="titulo-enviadas">
+    <section class="section-card" aria-labelledby="titulo-enviadas">
       <h2 id="titulo-enviadas">Cotizaciones enviadas</h2>
       <div class="tarjetas-lista">
         @for (cotizacion of cotizacionesEnviadas(); track cotizacion.id) {
@@ -158,7 +196,7 @@
       </div>
     </section>
 
-    <section class="seccion" aria-labelledby="titulo-aceptados">
+    <section class="section-card" aria-labelledby="titulo-aceptados">
       <h2 id="titulo-aceptados">Servicios aceptados</h2>
       <div class="tarjetas-lista">
         @for (servicio of serviciosAceptados(); track servicio.id) {

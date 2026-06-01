@@ -1,64 +1,111 @@
-<div class="buscar-tecnicos">
+<div class="buscar-tecnicos page-shell">
   <div class="container">
     <header class="page-header">
-      <h1>Buscar técnicos</h1>
-      <p>Encuentra profesionales por categoría, zona y calificación.</p>
+      <h1>Técnicos en Huancayo, Perú</h1>
+      <p>Encuentra profesionales verificados por categoría, zona y calificación.</p>
     </header>
 
-    <section class="filters" aria-label="Filtros de búsqueda">
-      <div class="filter-group">
-        <label for="filtro-categoria">Categoría</label>
-        <select id="filtro-categoria" [value]="categoriaFiltro" (change)="onCategoriaChange($event)">
-          <option value="">Todas</option>
-          @for (cat of categorias.slice(1); track cat) {
-            <option [value]="cat">{{ cat }}</option>
-          }
-        </select>
-      </div>
+    <div class="layout-grid">
+      <aside class="filters-card section-card" aria-label="Filtros de búsqueda">
+        <h2 class="filters-title">Filtros</h2>
 
-      <div class="filter-group">
-        <label for="filtro-zona">Zona</label>
-        <select id="filtro-zona" [value]="zonaFiltro" (change)="onZonaChange($event)">
-          <option value="">Todas</option>
-          @for (zona of zonas.slice(1); track zona) {
-            <option [value]="zona">{{ zona }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="filtro-calificacion">Calificación mínima</label>
-        <select
-          id="filtro-calificacion"
-          [value]="calificacionMinima"
-          (change)="onCalificacionChange($event)"
-        >
-          @for (cal of calificaciones; track cal.valor) {
-            <option [value]="cal.valor">{{ cal.etiqueta }}</option>
-          }
-        </select>
-      </div>
-    </section>
-
-    <section class="results" aria-label="Resultados">
-      @if (tecnicosFiltrados.length === 0) {
-        <p class="no-results">No se encontraron técnicos con los filtros seleccionados.</p>
-      } @else {
-        <div class="tecnicos-grid">
-          @for (tecnico of tecnicosFiltrados; track tecnico.id) {
-            <article class="tecnico-card">
-              <h2>{{ tecnico.nombre }}</h2>
-              <p class="tecnico-especialidad">{{ tecnico.especialidad }}</p>
-              <ul class="tecnico-meta">
-                <li><strong>Categoría:</strong> {{ tecnico.categoria }}</li>
-                <li><strong>Zona:</strong> {{ tecnico.zona }}</li>
-                <li><strong>Valoración:</strong> {{ tecnico.valoracion }} ★</li>
-              </ul>
-              <a routerLink="/perfil-tecnico" class="btn-secondary">Ver perfil</a>
-            </article>
-          }
+        <div class="filter-group">
+          <label for="filtro-categoria">Categoría</label>
+          <select
+            id="filtro-categoria"
+            [value]="categoriaFiltro()"
+            (change)="onCategoriaChange($event)"
+          >
+            <option value="">Todas</option>
+            @for (cat of categorias.slice(1); track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
         </div>
-      }
-    </section>
+
+        <div class="filter-group">
+          <label for="filtro-zona">Zona</label>
+          <select id="filtro-zona" [value]="zonaFiltro()" (change)="onZonaChange($event)">
+            <option value="">Todas</option>
+            @for (zona of zonas.slice(1); track zona) {
+              <option [value]="zona">{{ zona }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filtro-calificacion">Calificación mínima</label>
+          <select
+            id="filtro-calificacion"
+            [value]="calificacionMinima()"
+            (change)="onCalificacionChange($event)"
+          >
+            @for (cal of calificaciones; track cal.valor) {
+              <option [value]="cal.valor">{{ cal.etiqueta }}</option>
+            }
+          </select>
+        </div>
+      </aside>
+
+      <section class="results-panel" aria-label="Resultados">
+        <div class="search-bar">
+          <label for="busqueda-nombre" class="visually-hidden">Buscar por nombre</label>
+          <input
+            id="busqueda-nombre"
+            type="search"
+            placeholder="Buscar por nombre del técnico…"
+            [value]="nombreBusqueda()"
+            (input)="onNombreBusquedaChange($event)"
+          />
+        </div>
+
+        <p class="results-count">
+          {{ tecnicosFiltrados().length }}
+          {{ tecnicosFiltrados().length === 1 ? 'técnico encontrado' : 'técnicos encontrados' }}
+        </p>
+
+        @if (tecnicosFiltrados().length === 0) {
+          <p class="no-results">No se encontraron técnicos con los filtros seleccionados.</p>
+        } @else {
+          <div class="tecnicos-list">
+            @for (tecnico of tecnicosFiltrados(); track tecnico.id) {
+              <article class="tecnico-card">
+                <div class="tecnico-avatar" aria-hidden="true">
+                  {{ getIniciales(tecnico.nombre) }}
+                </div>
+
+                <div class="tecnico-info">
+                  <div class="tecnico-name-row">
+                    <h2>{{ tecnico.nombre }}</h2>
+                    @if (tecnico.perfilValidado) {
+                      <span class="badge-validado">Perfil validado</span>
+                    }
+                  </div>
+                  <p class="tecnico-especialidad">{{ tecnico.especialidad }}</p>
+                  <ul class="tecnico-meta">
+                    <li>
+                      <span class="meta-icon" aria-hidden="true">📍</span>
+                      {{ tecnico.zona }}
+                    </li>
+                    <li>
+                      <span class="meta-icon" aria-hidden="true">★</span>
+                      {{ tecnico.valoracion }}
+                    </li>
+                    <li>
+                      <span class="meta-icon" aria-hidden="true">🔧</span>
+                      {{ tecnico.servicios }} servicios
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="tecnico-action">
+                  <a routerLink="/perfil-tecnico" class="btn-secondary btn-sm">Ver perfil</a>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
   </div>
 </div>

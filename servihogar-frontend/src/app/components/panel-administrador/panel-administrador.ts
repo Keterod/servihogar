@@ -84,11 +84,12 @@ export class PanelAdministrador {
     { id: 2, nombre: 'Electricidad básica', descripcion: 'Instalaciones eléctricas menores' },
     {
       id: 3,
-      nombre: 'Mantenimiento de computadoras',
+      nombre: 'Mantenimiento de PC',
       descripcion: 'Soporte técnico y mantenimiento de equipos',
     },
     { id: 4, nombre: 'Pintura básica', descripcion: 'Pintura interior y exterior' },
     { id: 5, nombre: 'Armado de muebles', descripcion: 'Montaje de muebles y estanterías' },
+    { id: 6, nombre: 'Reparaciones menores', descripcion: 'Arreglos generales del hogar' },
   ]);
 
   readonly usuarios = signal<Usuario[]>([
@@ -109,7 +110,7 @@ export class PanelAdministrador {
   readonly mensajeAccion = signal('');
   readonly mensajeCategoria = signal('');
 
-  private nextCategoriaId = 6;
+  private nextCategoriaId = 7;
 
   readonly totalTecnicos = computed(() => this.tecnicos().length);
 

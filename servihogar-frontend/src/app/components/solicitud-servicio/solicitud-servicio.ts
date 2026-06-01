@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-solicitud-servicio',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './solicitud-servicio.html',
   styleUrl: './solicitud-servicio.css',
 })
@@ -11,9 +11,10 @@ export class SolicitudServicio {
   readonly categorias = [
     'Gasfitería menor',
     'Electricidad básica',
-    'Mantenimiento de computadoras',
-    'Pintura básica',
+    'Mantenimiento de PC',
     'Armado de muebles',
+    'Pintura básica',
+    'Reparaciones menores',
   ];
 
   readonly zonas = ['Huancayo Centro', 'El Tambo', 'Chilca', 'San Carlos'];

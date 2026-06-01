@@ -1,9 +1,9 @@
 import { Component, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-valorar-servicio',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './valorar-servicio.html',
   styleUrl: './valorar-servicio.css',
 })

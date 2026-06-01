@@ -21,58 +21,29 @@ interface PasoUso {
 })
 export class Home {
   readonly categoriasDestacadas: CategoriaDestacada[] = [
-    {
-      nombre: 'Gasfitería menor',
-      descripcion: 'Reparaciones de agua, grifos y desagüe.',
-      icono: '🔧',
-    },
-    {
-      nombre: 'Electricidad básica',
-      descripcion: 'Instalaciones eléctricas menores y mantenimiento.',
-      icono: '⚡',
-    },
-    {
-      nombre: 'Mantenimiento de computadoras',
-      descripcion: 'Soporte técnico y mantenimiento de equipos.',
-      icono: '💻',
-    },
-    {
-      nombre: 'Pintura básica',
-      descripcion: 'Pintura interior y exterior del hogar.',
-      icono: '🎨',
-    },
-    {
-      nombre: 'Armado de muebles',
-      descripcion: 'Montaje de muebles y estanterías.',
-      icono: '🪑',
-    },
+    { nombre: 'Gasfitería menor', descripcion: 'Reparaciones de agua y desagüe.', icono: '🔧' },
+    { nombre: 'Electricidad básica', descripcion: 'Instalaciones eléctricas menores.', icono: '⚡' },
+    { nombre: 'Mantenimiento de PC', descripcion: 'Soporte y mantenimiento de equipos.', icono: '💻' },
+    { nombre: 'Armado de muebles', descripcion: 'Montaje de muebles y estanterías.', icono: '🪑' },
+    { nombre: 'Pintura básica', descripcion: 'Pintura interior y exterior.', icono: '🎨' },
+    { nombre: 'Reparaciones menores', descripcion: 'Arreglos generales del hogar.', icono: '🛠️' },
   ];
 
   readonly pasosUso: PasoUso[] = [
     {
       numero: 1,
-      titulo: 'Busca técnicos',
-      descripcion: 'Explora profesionales por categoría y zona de servicio.',
+      titulo: 'Publica tu solicitud',
+      descripcion: 'Describe el servicio que necesitas y recibe cotizaciones de técnicos verificados.',
     },
     {
       numero: 2,
-      titulo: 'Revisa perfiles',
-      descripcion: 'Consulta especialidad, experiencia y valoraciones de otros clientes.',
+      titulo: 'Elige la mejor cotización',
+      descripcion: 'Compara precios, tiempos y valoraciones para seleccionar al técnico ideal.',
     },
     {
       numero: 3,
-      titulo: 'Publica una solicitud',
-      descripcion: 'Describe el servicio que necesitas como cliente registrado.',
-    },
-    {
-      numero: 4,
-      titulo: 'Elige una cotización',
-      descripcion: 'Los técnicos envían cotizaciones y tú seleccionas la mejor opción.',
-    },
-    {
-      numero: 5,
-      titulo: 'Valora el servicio al finalizar',
-      descripcion: 'Califica al técnico cuando el trabajo haya concluido.',
+      titulo: 'Valora al finalizar',
+      descripcion: 'Califica el servicio recibido y ayuda a otros clientes a decidir.',
     },
   ];
 }

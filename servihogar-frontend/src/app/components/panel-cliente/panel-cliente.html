@@ -1,47 +1,91 @@
-<div class="panel-cliente">
-  <div class="container">
-    <h1>Mis Solicitudes</h1>
+<div class="panel-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">ServiHogar</div>
 
-    <div class="resumen">
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ pendientes() }}</span>
-        <span class="resumen-label">Pendientes</span>
+    <div class="sidebar-user">
+      <strong>Mariana Quispe</strong>
+      <span>Cliente · Huancayo</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/panel-cliente" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Mis solicitudes
+      </a>
+      <a routerLink="/solicitud-servicio">Nueva solicitud</a>
+      <a routerLink="/valorar-servicio">Valorar servicio</a>
+    </nav>
+
+    <div class="sidebar-cta">
+      <a routerLink="/solicitud-servicio" class="btn-primary">+ Solicitar nuevo servicio</a>
+    </div>
+  </aside>
+
+  <main class="content-area">
+    <header class="content-header">
+      <div>
+        <h1>Hola, Mariana</h1>
+        <p>Revisa el estado de tus solicitudes y cotizaciones recibidas.</p>
       </div>
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ enProceso() }}</span>
-        <span class="resumen-label">En proceso</span>
+    </header>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span class="summary-value">{{ pendientes() }}</span>
+        <span class="summary-label">Pendientes</span>
       </div>
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ finalizadas() }}</span>
-        <span class="resumen-label">Finalizadas</span>
+      <div class="summary-card">
+        <span class="summary-value">{{ totalCotizaciones() }}</span>
+        <span class="summary-label">Cotizaciones recibidas</span>
       </div>
-      <div class="resumen-item">
-        <span class="resumen-numero">{{ canceladas() }}</span>
-        <span class="resumen-label">Canceladas</span>
+      <div class="summary-card">
+        <span class="summary-value">{{ enProceso() }}</span>
+        <span class="summary-label">Aceptados</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ finalizadas() }}</span>
+        <span class="summary-label">Finalizadas</span>
       </div>
     </div>
 
-    <div class="solicitudes-lista">
-      @for (solicitud of solicitudes(); track solicitud.id) {
-        <div class="solicitud-card">
-          <div class="solicitud-header">
-            <span class="solicitud-categoria">{{ solicitud.categoria }}</span>
-            <span class="solicitud-estado" [attr.data-estado]="solicitud.estado">
-              {{ getEstadoLabel(solicitud.estado) }}
-            </span>
-          </div>
+    <section class="solicitudes-seccion">
+      <h2 class="seccion-titulo">Mis solicitudes</h2>
 
-          <p class="solicitud-descripcion">{{ solicitud.descripcion }}</p>
-
-          <div class="solicitud-info">
-            <span>Zona: {{ solicitud.zona }}</span>
-            <span>Fecha: {{ solicitud.fechaTentativa }}</span>
-            <span>Cotizaciones: {{ solicitud.cotizaciones }}</span>
-          </div>
-
-          <button class="btn-detalle" (click)="verDetalle()">Ver detalle</button>
-        </div>
-      }
-    </div>
-  </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Categoría</th>
+              <th>Descripción</th>
+              <th>Zona</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Cotiz.</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (solicitud of solicitudes(); track solicitud.id) {
+              <tr>
+                <td><span class="chip">#{{ ('00' + solicitud.id).slice(-3) }}</span></td>
+                <td>{{ solicitud.categoria }}</td>
+                <td class="col-descripcion">{{ solicitud.descripcion }}</td>
+                <td>{{ solicitud.zona }}</td>
+                <td>{{ solicitud.fechaTentativa }}</td>
+                <td>
+                  <span class="solicitud-estado" [attr.data-estado]="solicitud.estado">
+                    {{ getEstadoLabel(solicitud.estado) }}
+                  </span>
+                </td>
+                <td>{{ solicitud.cotizaciones }}</td>
+                <td>
+                  <button type="button" class="btn-link" (click)="verDetalle()">Ver detalle</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 </div>

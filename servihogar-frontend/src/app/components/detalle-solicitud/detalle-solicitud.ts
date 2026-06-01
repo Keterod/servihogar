@@ -1,5 +1,5 @@
 import { Component, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 interface Cotizacion {
   id: number;
@@ -9,21 +9,28 @@ interface Cotizacion {
   precio: number;
   tiempoEstimado: string;
   propuesta: string;
+  includes: string[];
+  excludes: string[];
   estado: 'pendiente' | 'aceptada' | 'rechazada';
 }
 
+type PasoTimeline = 'pendiente' | 'cotizada' | 'aceptada' | 'en_proceso' | 'finalizada';
+
 @Component({
   selector: 'app-detalle-solicitud',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './detalle-solicitud.html',
   styleUrl: './detalle-solicitud.css',
 })
 export class DetalleSolicitud {
   readonly solicitud = signal({
+    id: 1,
     categoria: 'Gasfitería menor',
-    descripcion: 'Fuga de agua en cocina, debajo del lavadero. El agua gotea constantemente y ha comenzado a dañar el mueble.',
+    descripcion:
+      'Fuga de agua en cocina, debajo del lavadero. El agua gotea constantemente y ha comenzado a dañar el mueble.',
     estado: signal<'pendiente' | 'en_proceso'>('pendiente'),
     fechaTentativa: '2026-06-05',
+    fechaCreacion: '2026-06-01',
     zona: 'Huancayo Centro',
     direccion: 'Jr. Los Olivos 123, Huancayo',
   });
@@ -32,11 +39,14 @@ export class DetalleSolicitud {
     {
       id: 1,
       tecnicoNombre: 'Carlos Mendoza',
-      especialidad: 'Fontanería general',
+      especialidad: 'Gasfitería menor',
       calificacion: 4.8,
       precio: 85,
       tiempoEstimado: '2 horas',
-      propuesta: 'Reparación completa de la fuga, reemplazo de lavadero si es necesario, revisión de tuberías.',
+      propuesta:
+        'Reparación completa de la fuga, reemplazo de lavadero si es necesario, revisión de tuberías.',
+      includes: ['Materiales básicos de sellado', 'Revisión de tuberías', 'Limpieza del área'],
+      excludes: ['Repuesto de lavadero (adicional)', 'Trabajos en techo'],
       estado: 'pendiente',
     },
     {
@@ -47,19 +57,26 @@ export class DetalleSolicitud {
       precio: 70,
       tiempoEstimado: '1.5 horas',
       propuesta: 'Sellado de fuga con materiales resistentes, limpieza del área afectada.',
+      includes: ['Sellado de fuga', 'Limpieza del área'],
+      excludes: ['Repuestos', 'Pintura o acabados'],
       estado: 'pendiente',
     },
     {
       id: 3,
       tecnicoNombre: 'Roberto Salas',
-      especialidad: 'Gasfitería residencial',
+      especialidad: 'Gasfitería menor',
       calificacion: 4.2,
       precio: 95,
       tiempoEstimado: '3 horas',
-      propuesta: 'Diagnóstico completo del sistema de agua, reparación de la fuga y prevención de futuros problemas.',
+      propuesta:
+        'Diagnóstico completo del sistema de agua, reparación de la fuga y prevención de futuros problemas.',
+      includes: ['Diagnóstico completo', 'Reparación de fuga', 'Prevención futura', 'Materiales premium'],
+      excludes: ['Instalación de tuberías nuevas'],
       estado: 'pendiente',
     },
   ]);
+
+  readonly selectedCotizacionId = signal(1);
 
   readonly cotizacionAceptada = computed(() =>
     this.cotizaciones().find((c) => c.estado === 'aceptada')
@@ -67,7 +84,40 @@ export class DetalleSolicitud {
 
   readonly hayAceptada = computed(() => !!this.cotizacionAceptada());
 
+  readonly selectedCotizacion = computed(() =>
+    this.cotizaciones().find((c) => c.id === this.selectedCotizacionId())
+  );
+
+  readonly pasoActual = computed((): PasoTimeline => {
+    const estado = this.solicitud().estado();
+    if (estado === 'en_proceso') return 'en_proceso';
+    if (this.hayAceptada()) return 'aceptada';
+    if (this.cotizaciones().length > 0) return 'cotizada';
+    return 'pendiente';
+  });
+
+  readonly pasosTimeline: { key: PasoTimeline; label: string }[] = [
+    { key: 'pendiente', label: 'Pendiente' },
+    { key: 'cotizada', label: 'Cotizada' },
+    { key: 'aceptada', label: 'Aceptada' },
+    { key: 'en_proceso', label: 'En proceso' },
+    { key: 'finalizada', label: 'Finalizada' },
+  ];
+
   constructor(private router: Router) {}
+
+  selectCotizacion(id: number): void {
+    this.selectedCotizacionId.set(id);
+  }
+
+  esPasoCompletado(paso: PasoTimeline): boolean {
+    const orden: PasoTimeline[] = ['pendiente', 'cotizada', 'aceptada', 'en_proceso', 'finalizada'];
+    return orden.indexOf(paso) <= orden.indexOf(this.pasoActual());
+  }
+
+  esPasoActual(paso: PasoTimeline): boolean {
+    return this.pasoActual() === paso;
+  }
 
   aceptarCotizacion(id: number): void {
     this.cotizaciones.update((cotizaciones) =>
@@ -77,6 +127,7 @@ export class DetalleSolicitud {
       }))
     );
     this.solicitud().estado.set('en_proceso');
+    this.selectedCotizacionId.set(id);
   }
 
   rechazarCotizacion(id: number): void {

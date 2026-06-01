@@ -1,80 +1,166 @@
 <div class="solicitud-servicio">
   <div class="container">
-    <h1>Solicitar Servicio</h1>
-
     @if (!enviado()) {
-      <form class="solicitud-form" (submit)="$event.preventDefault(); enviarSolicitud()">
-        <div class="form-group">
-          <label for="categoria">Categoría del servicio</label>
-          <select id="categoria" [value]="categoria()" (change)="categoria.set($any($event.target).value)">
-            <option value="">Seleccionar categoría</option>
-            @for (cat of categorias; track cat) {
-              <option [value]="cat">{{ cat }}</option>
-            }
-          </select>
+      <header class="page-header">
+        <div class="page-header-text">
+          <span class="page-eyebrow">Nueva solicitud</span>
+          <h1>Solicitar servicio</h1>
+          <p>Completa los detalles del trabajo y envía tu solicitud al técnico seleccionado.</p>
         </div>
+      </header>
 
-        <div class="form-group">
-          <label for="zona">Zona</label>
-          <select id="zona" [value]="zona()" (change)="zona.set($any($event.target).value)">
-            <option value="">Seleccionar zona</option>
-            @for (z of zonas; track z) {
-              <option [value]="z">{{ z }}</option>
-            }
-          </select>
-        </div>
+      <div class="solicitud-layout">
+        <aside class="tecnico-sidebar">
+          <article class="tecnico-card">
+            <h2 class="tecnico-card-title">Técnico seleccionado</h2>
 
-        <div class="form-group">
-          <label for="descripcion">Descripción del problema</label>
-          <textarea
-            id="descripcion"
-            rows="4"
-            placeholder="Describe brevemente el problema que necesitas resolver..."
-            [value]="descripcion()"
-            (input)="descripcion.set($any($event.target).value)"
-          ></textarea>
-        </div>
+            <div class="tecnico-profile">
+              <div class="avatar avatar-lg" aria-hidden="true">CM</div>
+              <div class="tecnico-info">
+                <h3>Carlos Mendoza</h3>
+                <p class="tecnico-especialidad">Gasfitería menor</p>
+                <div class="tecnico-rating">
+                  <span class="stars" aria-hidden="true">★★★★★</span>
+                  <span class="rating-value">4.8</span>
+                </div>
+              </div>
+            </div>
 
-        <div class="form-group">
-          <label for="fecha">Fecha tentativa</label>
-          <input
-            type="date"
-            id="fecha"
-            [value]="fechaTentativa()"
-            (change)="fechaTentativa.set($any($event.target).value)"
-          />
-        </div>
+            <ul class="tecnico-meta">
+              <li>
+                <span class="meta-label">Zona</span>
+                <span class="meta-value">Huancayo Centro</span>
+              </li>
+              <li>
+                <span class="meta-label">Experiencia</span>
+                <span class="meta-value">5 años</span>
+              </li>
+              <li>
+                <span class="meta-label">Servicios</span>
+                <span class="meta-value">12 completados</span>
+              </li>
+            </ul>
 
-        <div class="form-group">
-          <label for="horario">Horario preferido</label>
-          <select id="horario" [value]="horarioPreferido()" (change)="horarioPreferido.set($any($event.target).value)">
-            <option value="">Seleccionar horario</option>
-            @for (h of horarios; track h) {
-              <option [value]="h">{{ h }}</option>
-            }
-          </select>
-        </div>
+            <div class="tecnico-badge">
+              <span class="badge-validado">Verificado</span>
+            </div>
+          </article>
+        </aside>
 
-        <div class="form-group">
-          <label for="direccion">Dirección aproximada</label>
-          <input
-            type="text"
-            id="direccion"
-            placeholder="Ej: Jr. Los Olivos 123, Huancayo"
-            [value]="direccion()"
-            (input)="direccion.set($any($event.target).value)"
-          />
-        </div>
+        <section class="solicitud-main">
+          <div class="info-alert" role="note">
+            <span class="alert-icon" aria-hidden="true">ℹ</span>
+            <p>
+              Los técnicos revisan las solicitudes y responden con una cotización estimada.
+              Puedes adjuntar una foto del problema para facilitar la evaluación.
+            </p>
+          </div>
 
-        <button type="submit" class="btn-primary">Publicar solicitud</button>
-      </form>
+          <form class="solicitud-form" (submit)="$event.preventDefault(); enviarSolicitud()">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="categoria">Categoría del servicio</label>
+                <select
+                  id="categoria"
+                  [value]="categoria()"
+                  (change)="categoria.set($any($event.target).value)"
+                >
+                  <option value="">Seleccionar categoría</option>
+                  @for (cat of categorias; track cat) {
+                    <option [value]="cat">{{ cat }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="zona">Zona</label>
+                <select id="zona" [value]="zona()" (change)="zona.set($any($event.target).value)">
+                  <option value="">Seleccionar zona</option>
+                  @for (z of zonas; track z) {
+                    <option [value]="z">{{ z }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="descripcion">Descripción del problema</label>
+              <textarea
+                id="descripcion"
+                rows="4"
+                placeholder="Describe brevemente el problema que necesitas resolver..."
+                [value]="descripcion()"
+                (input)="descripcion.set($any($event.target).value)"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fecha">Fecha tentativa</label>
+                <input
+                  type="date"
+                  id="fecha"
+                  [value]="fechaTentativa()"
+                  (change)="fechaTentativa.set($any($event.target).value)"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="horario">Horario preferido</label>
+                <select
+                  id="horario"
+                  [value]="horarioPreferido()"
+                  (change)="horarioPreferido.set($any($event.target).value)"
+                >
+                  <option value="">Seleccionar horario</option>
+                  @for (h of horarios; track h) {
+                    <option [value]="h">{{ h }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="direccion">Dirección aproximada</label>
+              <input
+                type="text"
+                id="direccion"
+                placeholder="Ej: Jr. Los Olivos 123, Huancayo"
+                [value]="direccion()"
+                (input)="direccion.set($any($event.target).value)"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="imagen">Imagen del problema (opcional)</label>
+              <div class="dropzone" id="imagen" role="button" tabindex="0" aria-label="Zona para arrastrar imagen">
+                <div class="dropzone-icon" aria-hidden="true">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <p class="dropzone-text">
+                  <strong>Arrastra una imagen aquí</strong>
+                  <span>o haz clic para seleccionar (JPG, PNG — máx. 5 MB)</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <a routerLink="/buscar-tecnicos" class="btn-secondary">Cancelar</a>
+              <button type="submit" class="btn-primary">Enviar solicitud</button>
+            </div>
+          </form>
+        </section>
+      </div>
     } @else {
       <div class="confirmacion">
-        <div class="confirmacion-icono">✓</div>
-        <h2>¡Solicitud publicada!</h2>
-        <p>Tu solicitud de servicio ha sido publicada exitosamente.</p>
-        <p>Los técnicos de la zona podrán ver tu solicitud y enviarte cotizaciones.</p>
-        <button class="btn-primary" (click)="irAlPanel()">Ir a mi panel</button>
+        <div class="confirmacion-icono" aria-hidden="true">✓</div>
+        <h2>¡Solicitud enviada!</h2>
+        <p>Tu solicitud de servicio ha sido enviada exitosamente a Carlos Mendoza.</p>
+        <p>El técnico revisará los detalles y te enviará una cotización estimada.</p>
+        <button type="button" class="btn-primary" (click)="irAlPanel()">Ir a mi panel</button>
       </div>
     }
   </div>

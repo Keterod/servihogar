@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 interface TecnicoSimulado {
@@ -8,14 +8,17 @@ interface TecnicoSimulado {
   categoria: string;
   zona: string;
   valoracion: number;
+  servicios: number;
+  perfilValidado?: boolean;
 }
 
 const CATEGORIAS_OFICIALES = [
   'Gasfitería menor',
   'Electricidad básica',
-  'Mantenimiento de computadoras',
-  'Pintura básica',
+  'Mantenimiento de PC',
   'Armado de muebles',
+  'Pintura básica',
+  'Reparaciones menores',
 ] as const;
 
 const TECNICOS_SIMULADOS: TecnicoSimulado[] = [
@@ -26,38 +29,44 @@ const TECNICOS_SIMULADOS: TecnicoSimulado[] = [
     categoria: 'Gasfitería menor',
     zona: 'Huancayo Centro',
     valoracion: 4.8,
+    servicios: 42,
+    perfilValidado: true,
   },
   {
     id: 2,
-    nombre: 'Ana Ruiz',
+    nombre: 'Ana Ramírez',
     especialidad: 'Electricidad básica',
     categoria: 'Electricidad básica',
     zona: 'El Tambo',
     valoracion: 4.5,
+    servicios: 28,
   },
   {
     id: 3,
-    nombre: 'Luis Torres',
-    especialidad: 'Pintura básica',
-    categoria: 'Pintura básica',
+    nombre: 'Roberto Salas',
+    especialidad: 'Gasfitería menor',
+    categoria: 'Gasfitería menor',
     zona: 'Chilca',
     valoracion: 4.2,
+    servicios: 15,
   },
   {
     id: 4,
     nombre: 'María Gómez',
-    especialidad: 'Armado de muebles',
-    categoria: 'Armado de muebles',
+    especialidad: 'Pintura básica',
+    categoria: 'Pintura básica',
     zona: 'Huancayo Centro',
     valoracion: 4.9,
+    servicios: 36,
   },
   {
     id: 5,
     nombre: 'Pedro Sánchez',
-    especialidad: 'Mantenimiento de computadoras',
-    categoria: 'Mantenimiento de computadoras',
+    especialidad: 'Mantenimiento de PC',
+    categoria: 'Mantenimiento de PC',
     zona: 'El Tambo',
     valoracion: 3.8,
+    servicios: 19,
   },
 ];
 
@@ -77,36 +86,54 @@ export class BuscarTecnicos {
     { valor: 4.5, etiqueta: '4.5+' },
   ];
 
-  categoriaFiltro = '';
-  zonaFiltro = '';
-  calificacionMinima = 0;
+  readonly categoriaFiltro = signal('');
+  readonly zonaFiltro = signal('');
+  readonly calificacionMinima = signal(0);
+  readonly nombreBusqueda = signal('');
 
-  private readonly tecnicos = TECNICOS_SIMULADOS;
+  private readonly tecnicos = signal(TECNICOS_SIMULADOS);
 
-  get tecnicosFiltrados(): TecnicoSimulado[] {
-    return this.tecnicos.filter((tecnico) => {
-      if (this.categoriaFiltro && tecnico.categoria !== this.categoriaFiltro) {
+  readonly tecnicosFiltrados = computed(() => {
+    const busqueda = this.nombreBusqueda().trim().toLowerCase();
+    return this.tecnicos().filter((tecnico) => {
+      if (this.categoriaFiltro() && tecnico.categoria !== this.categoriaFiltro()) {
         return false;
       }
-      if (this.zonaFiltro && tecnico.zona !== this.zonaFiltro) {
+      if (this.zonaFiltro() && tecnico.zona !== this.zonaFiltro()) {
         return false;
       }
-      if (this.calificacionMinima > 0 && tecnico.valoracion < this.calificacionMinima) {
+      if (this.calificacionMinima() > 0 && tecnico.valoracion < this.calificacionMinima()) {
+        return false;
+      }
+      if (busqueda && !tecnico.nombre.toLowerCase().includes(busqueda)) {
         return false;
       }
       return true;
     });
-  }
+  });
 
   onCategoriaChange(event: Event): void {
-    this.categoriaFiltro = (event.target as HTMLSelectElement).value;
+    this.categoriaFiltro.set((event.target as HTMLSelectElement).value);
   }
 
   onZonaChange(event: Event): void {
-    this.zonaFiltro = (event.target as HTMLSelectElement).value;
+    this.zonaFiltro.set((event.target as HTMLSelectElement).value);
   }
 
   onCalificacionChange(event: Event): void {
-    this.calificacionMinima = Number((event.target as HTMLSelectElement).value);
+    this.calificacionMinima.set(Number((event.target as HTMLSelectElement).value));
+  }
+
+  onNombreBusquedaChange(event: Event): void {
+    this.nombreBusqueda.set((event.target as HTMLInputElement).value);
+  }
+
+  getIniciales(nombre: string): string {
+    return nombre
+      .split(' ')
+      .map((parte) => parte.charAt(0))
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   }
 }

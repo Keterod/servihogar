@@ -1,76 +1,39 @@
-.panel-cliente {
-  padding: 2rem 1rem;
-}
-
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-h1 {
-  text-align: center;
-  color: var(--color-text);
-  margin-bottom: 2rem;
-}
-
-.resumen {
-  grid-template-columns: repeat(4, 1fr);
-  margin-bottom: 2rem;
-}
-
-.solicitudes-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.solicitud-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.solicitud-categoria {
-  font-weight: 600;
+.seccion-titulo {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
   color: var(--color-text);
 }
 
-.solicitud-descripcion {
-  color: var(--color-muted);
-  margin-bottom: 0.75rem;
+.table-wrapper {
+  overflow-x: auto;
 }
 
-.solicitud-info {
-  display: flex;
-  gap: 1.5rem;
-  font-size: 0.875rem;
-  color: var(--color-muted);
-  margin-bottom: 1rem;
+.col-descripcion {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.btn-detalle {
-  padding: 0.625rem 1.25rem;
-  background-color: var(--color-primary);
-  color: #fff;
+.btn-link {
+  padding: 0.35rem 0.75rem;
+  background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  color: var(--color-primary-light);
+  font-family: inherit;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  border-radius: var(--radius-sm);
 }
 
-.btn-detalle:hover {
-  background-color: var(--color-primary-hover);
+.btn-link:hover {
+  background: #eef2ff;
+  color: var(--color-primary);
 }
 
-@media (max-width: 375px) {
-  .resumen {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .solicitud-info {
-    flex-direction: column;
-    gap: 0.25rem;
+@media (max-width: 900px) {
+  .col-descripcion {
+    max-width: 140px;
   }
 }

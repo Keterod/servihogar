@@ -1,5 +1,5 @@
 import { Component, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 interface Solicitud {
   id: number;
@@ -13,7 +13,7 @@ interface Solicitud {
 
 @Component({
   selector: 'app-panel-cliente',
-  imports: [],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './panel-cliente.html',
   styleUrl: './panel-cliente.css',
 })
@@ -62,6 +62,10 @@ export class PanelCliente {
 
   readonly canceladas = computed(() =>
     this.solicitudes().filter((s) => s.estado === 'cancelado').length
+  );
+
+  readonly totalCotizaciones = computed(() =>
+    this.solicitudes().reduce((sum, s) => sum + s.cotizaciones, 0)
   );
 
   constructor(private router: Router) {}

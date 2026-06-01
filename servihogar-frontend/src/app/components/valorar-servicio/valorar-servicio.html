@@ -1,26 +1,41 @@
-<div class="valorar-servicio">
-  <div class="container">
-    <h1>Valorar Servicio</h1>
+<div class="valorar-servicio page-shell">
+  <div class="valorar-card section-card">
+    <a class="back-link" routerLink="/panel-cliente" aria-label="Volver al panel">
+      <span class="back-arrow" aria-hidden="true">←</span>
+      Volver al panel
+    </a>
 
-    <div class="servicio-estado">
+    <header class="valorar-header">
+      <h1>Valorar servicio</h1>
       <span class="estado-badge">Finalizado</span>
-      <p>Servicio de Gasfitería menor - Carlos Mendoza</p>
-    </div>
+    </header>
+
+    <article class="tecnico-card">
+      <div class="avatar avatar-md">CM</div>
+      <div class="tecnico-info">
+        <strong>Carlos Mendoza</strong>
+        <span>Gasfitería menor · Huancayo Centro</span>
+      </div>
+    </article>
+
+    <p class="servicio-resumen">Servicio de Gasfitería menor — Cambio de llave de paso</p>
 
     @if (!enviado()) {
       <form class="valoracion-form" (submit)="$event.preventDefault(); enviarValoracion()">
         <div class="criterios">
           <div class="criterio">
             <label>Puntualidad</label>
-            <div class="calificacion-botones">
+            <div class="star-rating" role="group" aria-label="Calificar puntualidad">
               @for (opcion of opcionesCalificacion; track opcion) {
                 <button
                   type="button"
-                  class="btn-calificacion"
-                  [class.seleccionado]="puntualidad() === opcion"
+                  class="star-btn"
+                  [class.active]="puntualidad() >= opcion"
+                  [attr.aria-label]="opcion + ' estrellas'"
+                  [attr.aria-pressed]="puntualidad() === opcion"
                   (click)="setPuntualidad(opcion)"
                 >
-                  {{ opcion }}
+                  ★
                 </button>
               }
             </div>
@@ -28,15 +43,17 @@
 
           <div class="criterio">
             <label>Calidad</label>
-            <div class="calificacion-botones">
+            <div class="star-rating" role="group" aria-label="Calificar calidad">
               @for (opcion of opcionesCalificacion; track opcion) {
                 <button
                   type="button"
-                  class="btn-calificacion"
-                  [class.seleccionado]="calidad() === opcion"
+                  class="star-btn"
+                  [class.active]="calidad() >= opcion"
+                  [attr.aria-label]="opcion + ' estrellas'"
+                  [attr.aria-pressed]="calidad() === opcion"
                   (click)="setCalidad(opcion)"
                 >
-                  {{ opcion }}
+                  ★
                 </button>
               }
             </div>
@@ -44,15 +61,17 @@
 
           <div class="criterio">
             <label>Trato</label>
-            <div class="calificacion-botones">
+            <div class="star-rating" role="group" aria-label="Calificar trato">
               @for (opcion of opcionesCalificacion; track opcion) {
                 <button
                   type="button"
-                  class="btn-calificacion"
-                  [class.seleccionado]="trato() === opcion"
+                  class="star-btn"
+                  [class.active]="trato() >= opcion"
+                  [attr.aria-label]="opcion + ' estrellas'"
+                  [attr.aria-pressed]="trato() === opcion"
                   (click)="setTrato(opcion)"
                 >
-                  {{ opcion }}
+                  ★
                 </button>
               }
             </div>
@@ -60,15 +79,17 @@
 
           <div class="criterio">
             <label>Limpieza</label>
-            <div class="calificacion-botones">
+            <div class="star-rating" role="group" aria-label="Calificar limpieza">
               @for (opcion of opcionesCalificacion; track opcion) {
                 <button
                   type="button"
-                  class="btn-calificacion"
-                  [class.seleccionado]="limpieza() === opcion"
+                  class="star-btn"
+                  [class.active]="limpieza() >= opcion"
+                  [attr.aria-label]="opcion + ' estrellas'"
+                  [attr.aria-pressed]="limpieza() === opcion"
                   (click)="setLimpieza(opcion)"
                 >
-                  {{ opcion }}
+                  ★
                 </button>
               }
             </div>
@@ -76,15 +97,17 @@
 
           <div class="criterio">
             <label>Cumplimiento del precio</label>
-            <div class="calificacion-botones">
+            <div class="star-rating" role="group" aria-label="Calificar cumplimiento del precio">
               @for (opcion of opcionesCalificacion; track opcion) {
                 <button
                   type="button"
-                  class="btn-calificacion"
-                  [class.seleccionado]="cumplimientoPrecio() === opcion"
+                  class="star-btn"
+                  [class.active]="cumplimientoPrecio() >= opcion"
+                  [attr.aria-label]="opcion + ' estrellas'"
+                  [attr.aria-pressed]="cumplimientoPrecio() === opcion"
                   (click)="setCumplimientoPrecio(opcion)"
                 >
-                  {{ opcion }}
+                  ★
                 </button>
               }
             </div>
@@ -92,8 +115,12 @@
         </div>
 
         <div class="promedio">
-          <span class="promedio-label">Promedio:</span>
-          <span class="promedio-valor">{{ promedio() }}</span>
+          <span class="promedio-label">Promedio general</span>
+          <div class="promedio-display">
+            <span class="promedio-stars" aria-hidden="true">★</span>
+            <span class="promedio-valor">{{ promedio() }}</span>
+            <span class="promedio-max">/ 5</span>
+          </div>
         </div>
 
         <div class="form-group">
@@ -107,32 +134,39 @@
           ></textarea>
         </div>
 
-        <div class="checkbox-group">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              [checked]="volveriaContratar()"
-              (change)="volveriaContratar.set($any($event.target).checked)"
-            />
-            Volvería a contratar
-          </label>
-        </div>
+        <fieldset class="toggle-group">
+          <legend>¿Volverías a contratar a este técnico?</legend>
+          <div class="toggle-buttons">
+            <button
+              type="button"
+              class="toggle-btn"
+              [class.selected]="volveriaContratar() === true"
+              (click)="volveriaContratar.set(true)"
+            >
+              Sí
+            </button>
+            <button
+              type="button"
+              class="toggle-btn"
+              [class.selected]="volveriaContratar() === false"
+              (click)="volveriaContratar.set(false)"
+            >
+              No
+            </button>
+          </div>
+        </fieldset>
 
-        <button
-          type="submit"
-          class="btn-primary"
-          [disabled]="!todosCalificados()"
-        >
+        <button type="submit" class="btn-primary btn-submit" [disabled]="!todosCalificados()">
           Enviar valoración
         </button>
       </form>
     } @else {
       <div class="confirmacion">
-        <div class="confirmacion-icono">✓</div>
+        <div class="confirmacion-icono" aria-hidden="true">✓</div>
         <h2>¡Valoración enviada!</h2>
         <p>Tu valoración ha sido registrada exitosamente.</p>
         <p>Gracias por tu feedback, ayuda a mejorar nuestro servicio.</p>
-        <button class="btn-primary" (click)="irAlPanel()">Volver al panel</button>
+        <button type="button" class="btn-primary" (click)="irAlPanel()">Volver al panel</button>
       </div>
     }
   </div>

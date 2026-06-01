@@ -9,6 +9,18 @@ interface TecnicoPerfil {
   valoracion: number;
   descripcion: string;
   servicios: string[];
+  serviciosCompletados: number;
+  perfilValidado: boolean;
+}
+
+interface RatingBar {
+  etiqueta: string;
+  porcentaje: number;
+}
+
+interface GaleriaItem {
+  id: number;
+  alt: string;
 }
 
 @Component({
@@ -31,6 +43,34 @@ export class PerfilTecnico {
       'Instalación de grifos',
       'Desagües obstruidos',
       'Mantenimiento preventivo',
+      'Cambio de llaves de paso',
+      'Detección de fugas',
     ],
+    serviciosCompletados: 42,
+    perfilValidado: true,
   };
+
+  readonly galeria: GaleriaItem[] = [
+    { id: 1, alt: 'Trabajo de gasfitería 1' },
+    { id: 2, alt: 'Trabajo de gasfitería 2' },
+    { id: 3, alt: 'Trabajo de gasfitería 3' },
+    { id: 4, alt: 'Trabajo de gasfitería 4' },
+  ];
+
+  readonly ratingBars: RatingBar[] = [
+    { etiqueta: 'Puntualidad', porcentaje: 92 },
+    { etiqueta: 'Calidad del trabajo', porcentaje: 96 },
+    { etiqueta: 'Trato al cliente', porcentaje: 88 },
+    { etiqueta: 'Limpieza', porcentaje: 85 },
+    { etiqueta: 'Cumplimiento de precio', porcentaje: 90 },
+  ];
+
+  getIniciales(nombre: string): string {
+    return nombre
+      .split(' ')
+      .map((parte) => parte.charAt(0))
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  }
 }
