@@ -23,12 +23,13 @@ type PasoTimeline = 'pendiente' | 'cotizada' | 'aceptada' | 'en_proceso' | 'fina
   styleUrl: './detalle-solicitud.css',
 })
 export class DetalleSolicitud {
+  readonly solicitudEstado = signal<'pendiente' | 'en_proceso'>('pendiente');
+
   readonly solicitud = signal({
     id: 1,
     categoria: 'Gasfitería menor',
     descripcion:
       'Fuga de agua en cocina, debajo del lavadero. El agua gotea constantemente y ha comenzado a dañar el mueble.',
-    estado: signal<'pendiente' | 'en_proceso'>('pendiente'),
     fechaTentativa: '2026-06-05',
     fechaCreacion: '2026-06-01',
     zona: 'Huancayo Centro',
@@ -89,7 +90,7 @@ export class DetalleSolicitud {
   );
 
   readonly pasoActual = computed((): PasoTimeline => {
-    const estado = this.solicitud().estado();
+    const estado = this.solicitudEstado();
     if (estado === 'en_proceso') return 'en_proceso';
     if (this.hayAceptada()) return 'aceptada';
     if (this.cotizaciones().length > 0) return 'cotizada';
@@ -126,7 +127,7 @@ export class DetalleSolicitud {
         estado: c.id === id ? 'aceptada' : 'rechazada',
       }))
     );
-    this.solicitud().estado.set('en_proceso');
+    this.solicitudEstado.set('en_proceso');
     this.selectedCotizacionId.set(id);
   }
 

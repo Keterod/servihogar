@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -21,18 +21,31 @@ export class SolicitudServicio {
 
   readonly horarios = ['Mañana (8am-12pm)', 'Tarde (12pm-5pm)', 'Noche (5pm-8pm)'];
 
-  categoria = signal('');
-  zona = signal('');
-  descripcion = signal('');
-  fechaTentativa = signal('');
-  horarioPreferido = signal('');
-  direccion = signal('');
+  readonly categoria = signal('');
+  readonly zona = signal('');
+  readonly descripcion = signal('');
+  readonly fechaTentativa = signal('');
+  readonly horarioPreferido = signal('');
+  readonly direccion = signal('');
 
-  enviado = signal(false);
+  readonly enviado = signal(false);
+
+  readonly puedeEnviar = computed(
+    () =>
+      this.categoria().trim() !== '' &&
+      this.zona().trim() !== '' &&
+      this.descripcion().trim() !== '' &&
+      this.fechaTentativa().trim() !== '' &&
+      this.horarioPreferido().trim() !== '' &&
+      this.direccion().trim() !== ''
+  );
 
   constructor(private router: Router) {}
 
   enviarSolicitud(): void {
+    if (!this.puedeEnviar()) {
+      return;
+    }
     this.enviado.set(true);
   }
 

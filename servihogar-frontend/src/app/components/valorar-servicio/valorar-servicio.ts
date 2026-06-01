@@ -10,16 +10,16 @@ import { Router, RouterLink } from '@angular/router';
 export class ValorarServicio {
   readonly opcionesCalificacion = [1, 2, 3, 4, 5];
 
-  puntualidad = signal(0);
-  calidad = signal(0);
-  trato = signal(0);
-  limpieza = signal(0);
-  cumplimientoPrecio = signal(0);
+  readonly puntualidad = signal(0);
+  readonly calidad = signal(0);
+  readonly trato = signal(0);
+  readonly limpieza = signal(0);
+  readonly cumplimientoPrecio = signal(0);
 
-  comentario = signal('');
-  volveriaContratar = signal(false);
+  readonly comentario = signal('');
+  readonly volveriaContratar = signal(false);
 
-  enviado = signal(false);
+  readonly enviado = signal(false);
 
   readonly promedio = computed(() => {
     const valores = [

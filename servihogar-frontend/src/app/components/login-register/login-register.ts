@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 
 type ModoPantalla = 'login' | 'register';
 type RolUsuario = 'cliente' | 'tecnico';
@@ -10,25 +10,27 @@ type RolUsuario = 'cliente' | 'tecnico';
   styleUrl: './login-register.css',
 })
 export class LoginRegister {
-  modo: ModoPantalla = 'login';
-  rol: RolUsuario = 'cliente';
+  readonly modo = signal<ModoPantalla>('login');
+  readonly rol = signal<RolUsuario>('cliente');
+
+  readonly tituloFormulario = computed(() => {
+    if (this.modo() === 'login') {
+      return this.rol() === 'cliente'
+        ? 'Iniciar sesión como cliente'
+        : 'Iniciar sesión como técnico';
+    }
+    return this.rol() === 'cliente' ? 'Crear cuenta de cliente' : 'Crear cuenta de técnico';
+  });
+
+  readonly textoBoton = computed(() =>
+    this.modo() === 'login' ? 'Iniciar sesión' : 'Crear cuenta'
+  );
 
   setModo(modo: ModoPantalla): void {
-    this.modo = modo;
+    this.modo.set(modo);
   }
 
   setRol(rol: RolUsuario): void {
-    this.rol = rol;
-  }
-
-  get tituloFormulario(): string {
-    if (this.modo === 'login') {
-      return this.rol === 'cliente' ? 'Iniciar sesión como cliente' : 'Iniciar sesión como técnico';
-    }
-    return this.rol === 'cliente' ? 'Crear cuenta de cliente' : 'Crear cuenta de técnico';
-  }
-
-  get textoBoton(): string {
-    return this.modo === 'login' ? 'Iniciar sesión' : 'Crear cuenta';
+    this.rol.set(rol);
   }
 }

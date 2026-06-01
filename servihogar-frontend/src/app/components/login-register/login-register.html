@@ -42,8 +42,8 @@
               type="button"
               class="tab"
               role="tab"
-              [class.active]="modo === 'login'"
-              [attr.aria-selected]="modo === 'login'"
+              [class.active]="modo() === 'login'"
+              [attr.aria-selected]="modo() === 'login'"
               (click)="setModo('login')"
             >
               Iniciar sesión
@@ -52,8 +52,8 @@
               type="button"
               class="tab"
               role="tab"
-              [class.active]="modo === 'register'"
-              [attr.aria-selected]="modo === 'register'"
+              [class.active]="modo() === 'register'"
+              [attr.aria-selected]="modo() === 'register'"
               (click)="setModo('register')"
             >
               Crear cuenta
@@ -64,7 +64,7 @@
             <button
               type="button"
               class="role-btn"
-              [class.active]="rol === 'cliente'"
+              [class.active]="rol() === 'cliente'"
               (click)="setRol('cliente')"
             >
               <span class="role-icon" aria-hidden="true">👤</span>
@@ -73,7 +73,7 @@
             <button
               type="button"
               class="role-btn"
-              [class.active]="rol === 'tecnico'"
+              [class.active]="rol() === 'tecnico'"
               (click)="setRol('tecnico')"
             >
               <span class="role-icon" aria-hidden="true">🔧</span>
@@ -82,9 +82,9 @@
           </div>
 
           <form class="auth-form" (submit)="$event.preventDefault()">
-            <h3>{{ tituloFormulario }}</h3>
+            <h3>{{ tituloFormulario() }}</h3>
 
-            @if (modo === 'register') {
+            @if (modo() === 'register') {
               <div class="form-group">
                 <label for="nombre">Nombre completo</label>
                 <input id="nombre" type="text" placeholder="Tu nombre" autocomplete="name" />
@@ -107,11 +107,11 @@
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                [attr.autocomplete]="modo === 'login' ? 'current-password' : 'new-password'"
+                [attr.autocomplete]="modo() === 'login' ? 'current-password' : 'new-password'"
               />
             </div>
 
-            @if (modo === 'register') {
+            @if (modo() === 'register') {
               <div class="form-group">
                 <label for="confirm-password">Confirmar contraseña</label>
                 <input
@@ -123,7 +123,7 @@
               </div>
             }
 
-            @if (modo === 'register' && rol === 'tecnico') {
+            @if (modo() === 'register' && rol() === 'tecnico') {
               <div class="form-group">
                 <label for="especialidad">Especialidad</label>
                 <input id="especialidad" type="text" placeholder="Ej. Gasfitería menor" />
@@ -134,14 +134,14 @@
               </div>
             }
 
-            @if (modo === 'register' && rol === 'cliente') {
+            @if (modo() === 'register' && rol() === 'cliente') {
               <div class="form-group">
                 <label for="telefono">Teléfono (opcional)</label>
                 <input id="telefono" type="tel" placeholder="300 123 4567" autocomplete="tel" />
               </div>
             }
 
-            @if (modo === 'login') {
+            @if (modo() === 'login') {
               <div class="form-extras">
                 <label class="remember-me">
                   <input type="checkbox" />
@@ -153,7 +153,7 @@
               </div>
             }
 
-            <button type="button" class="btn-submit">{{ textoBoton }}</button>
+            <button type="button" class="btn-submit">{{ textoBoton() }}</button>
             <p class="form-note">
               Prototipo académico: el formulario es solo visual, sin autenticación real.
             </p>

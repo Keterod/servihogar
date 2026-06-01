@@ -6,8 +6,8 @@
       <h1>Solicitud #{{ ('00' + solicitud().id).slice(-3) }}</h1>
       <p class="detalle-fecha">Creada el {{ solicitud().fechaCreacion }}</p>
     </div>
-    <span class="solicitud-estado" [attr.data-estado]="solicitud().estado()">
-      {{ solicitud().estado() === 'pendiente' ? 'Pendiente' : 'En proceso' }}
+    <span class="solicitud-estado" [attr.data-estado]="solicitudEstado()">
+      {{ solicitudEstado() === 'pendiente' ? 'Pendiente' : 'En proceso' }}
     </span>
   </header>
 

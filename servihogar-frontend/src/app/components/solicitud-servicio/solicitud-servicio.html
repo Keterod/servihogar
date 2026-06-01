@@ -149,7 +149,7 @@
 
             <div class="form-actions">
               <a routerLink="/buscar-tecnicos" class="btn-secondary">Cancelar</a>
-              <button type="submit" class="btn-primary">Enviar solicitud</button>
+              <button type="submit" class="btn-primary" [disabled]="!puedeEnviar()">Enviar solicitud</button>
             </div>
           </form>
         </section>
