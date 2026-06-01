@@ -19,71 +19,25 @@
 .tecnico-header h1 {
   margin: 0 0 0.5rem;
   font-size: 1.75rem;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .tecnico-nombre {
   margin: 0 0 0.25rem;
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .tecnico-meta {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--color-muted, #7f8c8d);
-}
-
-.badge-validacion {
-  padding: 0.375rem 0.875rem;
-  border-radius: 20px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.badge-pendiente {
-  background-color: #ffeaa7;
-  color: #d35400;
-}
-
-.badge-validado {
-  background-color: #55efc4;
-  color: #2c3e50;
-}
-
-.badge-rechazado {
-  background-color: #fab1a0;
-  color: #2c3e50;
+  color: var(--color-muted);
 }
 
 .resumen {
-  display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
   margin-bottom: 2rem;
-}
-
-.resumen-item {
-  background-color: var(--color-surface, #f8f9fa);
-  padding: 1.25rem;
-  border-radius: 8px;
-  text-align: center;
-  border: 1px solid var(--color-border, #ecf0f1);
-}
-
-.resumen-numero {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-text, #2c3e50);
-}
-
-.resumen-label {
-  display: block;
-  color: var(--color-muted, #7f8c8d);
-  font-size: 0.8125rem;
-  margin-top: 0.25rem;
 }
 
 .seccion {
@@ -93,7 +47,7 @@
 .seccion h2 {
   margin: 0 0 1rem;
   font-size: 1.25rem;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .seccion h3 {
@@ -104,10 +58,7 @@
 .mensaje-vacio {
   padding: 1.25rem;
   text-align: center;
-  color: var(--color-muted, #7f8c8d);
-  background-color: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
+  color: var(--color-muted);
 }
 
 .tarjetas-lista {
@@ -116,24 +67,17 @@
   gap: 1rem;
 }
 
-.tarjeta {
-  background-color: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
-  padding: 1.25rem;
-}
-
 .solicitud-card {
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .solicitud-card:hover {
-  border-color: var(--color-primary, #3498db);
+  border-color: var(--color-primary);
 }
 
 .solicitud-card.activa {
-  border-color: var(--color-primary, #3498db);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgb(37 99 235 / 0.15);
 }
 
@@ -146,30 +90,30 @@
 
 .tarjeta-categoria {
   font-weight: 600;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .tarjeta-id {
   font-size: 0.8125rem;
-  color: var(--color-muted, #95a5a6);
+  color: var(--color-muted);
 }
 
 .tarjeta-subtitulo {
   margin: 0 0 0.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .tarjeta-descripcion {
   margin: 0 0 0.75rem;
-  color: var(--color-muted, #7f8c8d);
+  color: var(--color-muted);
 }
 
 .tarjeta-direccion {
   margin: 0.5rem 0 0;
   font-size: 0.8125rem;
-  color: var(--color-muted, #95a5a6);
+  color: var(--color-muted);
 }
 
 .tarjeta-info {
@@ -177,52 +121,20 @@
   flex-wrap: wrap;
   gap: 1rem;
   font-size: 0.875rem;
-  color: var(--color-muted, #95a5a6);
+  color: var(--color-muted);
 }
 
 .tarjeta-propuesta {
   margin: 0.75rem 0 0;
   font-size: 0.875rem;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
   line-height: 1.5;
 }
 
-.estado-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.estado-badge[data-estado='pendiente'] {
-  background-color: #ffeaa7;
-  color: #d35400;
-}
-
-.estado-badge[data-estado='aceptada'] {
-  background-color: #55efc4;
-  color: #2c3e50;
-}
-
-.estado-badge[data-estado='rechazada'] {
-  background-color: #fab1a0;
-  color: #2c3e50;
-}
-
-.estado-badge[data-estado='en_proceso'] {
-  background-color: #74b9ff;
-  color: #2c3e50;
-}
-
-.estado-badge[data-estado='finalizado'] {
-  background-color: #55efc4;
-  color: #2c3e50;
-}
-
 .seccion-detalle {
-  background-color: var(--color-bg, #f8fafc);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 1.25rem;
 }
 
@@ -240,19 +152,16 @@
 .detalle-lista dt {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .detalle-lista dd {
   margin: 0.125rem 0 0;
   font-size: 0.9375rem;
-  color: var(--color-muted, #7f8c8d);
+  color: var(--color-muted);
 }
 
 .form-cotizacion {
-  background-color: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
   padding: 1.25rem;
 }
 
@@ -271,25 +180,25 @@
 .form-group textarea {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 0.9375rem;
 }
 
 .btn-enviar {
   padding: 0.625rem 1.25rem;
-  background-color: var(--color-primary, #3498db);
+  background-color: var(--color-primary);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-enviar:hover:not(:disabled) {
-  background-color: var(--color-primary-hover, #2980b9);
+  background-color: var(--color-primary-hover);
 }
 
 .btn-enviar:disabled {

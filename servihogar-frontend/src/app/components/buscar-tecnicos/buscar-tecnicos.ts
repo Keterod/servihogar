@@ -10,45 +10,53 @@ interface TecnicoSimulado {
   valoracion: number;
 }
 
+const CATEGORIAS_OFICIALES = [
+  'Gasfitería menor',
+  'Electricidad básica',
+  'Mantenimiento de computadoras',
+  'Pintura básica',
+  'Armado de muebles',
+] as const;
+
 const TECNICOS_SIMULADOS: TecnicoSimulado[] = [
   {
     id: 1,
     nombre: 'Carlos Mendoza',
-    especialidad: 'Fontanería general',
-    categoria: 'Fontanería',
-    zona: 'Norte',
+    especialidad: 'Gasfitería menor',
+    categoria: 'Gasfitería menor',
+    zona: 'Huancayo Centro',
     valoracion: 4.8,
   },
   {
     id: 2,
     nombre: 'Ana Ruiz',
-    especialidad: 'Instalaciones eléctricas',
-    categoria: 'Electricidad',
-    zona: 'Centro',
+    especialidad: 'Electricidad básica',
+    categoria: 'Electricidad básica',
+    zona: 'El Tambo',
     valoracion: 4.5,
   },
   {
     id: 3,
     nombre: 'Luis Torres',
-    especialidad: 'Cerrajería y seguridad',
-    categoria: 'Cerrajería',
-    zona: 'Sur',
+    especialidad: 'Pintura básica',
+    categoria: 'Pintura básica',
+    zona: 'Chilca',
     valoracion: 4.2,
   },
   {
     id: 4,
     nombre: 'María Gómez',
-    especialidad: 'Limpieza del hogar',
-    categoria: 'Limpieza',
-    zona: 'Norte',
+    especialidad: 'Armado de muebles',
+    categoria: 'Armado de muebles',
+    zona: 'Huancayo Centro',
     valoracion: 4.9,
   },
   {
     id: 5,
     nombre: 'Pedro Sánchez',
-    especialidad: 'Reparaciones eléctricas',
-    categoria: 'Electricidad',
-    zona: 'Sur',
+    especialidad: 'Mantenimiento de computadoras',
+    categoria: 'Mantenimiento de computadoras',
+    zona: 'El Tambo',
     valoracion: 3.8,
   },
 ];
@@ -60,8 +68,8 @@ const TECNICOS_SIMULADOS: TecnicoSimulado[] = [
   styleUrl: './buscar-tecnicos.css',
 })
 export class BuscarTecnicos {
-  readonly categorias = ['', 'Fontanería', 'Electricidad', 'Cerrajería', 'Limpieza'];
-  readonly zonas = ['', 'Norte', 'Centro', 'Sur'];
+  readonly categorias = ['', ...CATEGORIAS_OFICIALES];
+  readonly zonas = ['', 'Huancayo Centro', 'El Tambo', 'Chilca'];
   readonly calificaciones = [
     { valor: 0, etiqueta: 'Todas' },
     { valor: 3.5, etiqueta: '3.5+' },

@@ -55,7 +55,7 @@ type EstadoValidacion = 'pendiente' | 'validado' | 'rechazado';
 export class PanelTecnico {
   readonly tecnico = signal<Tecnico>({
     nombre: 'Carlos Mendoza',
-    especialidad: 'Gasfitería menor / Fontanería general',
+    especialidad: 'Gasfitería menor',
     zona: 'Huancayo Centro',
     calificacion: 4.8,
   });

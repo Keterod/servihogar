@@ -15,12 +15,12 @@
 .panel-header h1 {
   margin: 0 0 0.5rem;
   font-size: 1.75rem;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .panel-subtitulo {
   margin: 0;
-  color: var(--color-muted, #7f8c8d);
+  color: var(--color-muted);
   font-size: 0.9375rem;
 }
 
@@ -31,7 +31,7 @@
 .seccion h2 {
   margin: 0 0 1rem;
   font-size: 1.25rem;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .seccion h3 {
@@ -40,31 +40,7 @@
 }
 
 .resumen {
-  display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.resumen-item {
-  background-color: var(--color-surface, #f8f9fa);
-  padding: 1.25rem;
-  border-radius: 8px;
-  text-align: center;
-  border: 1px solid var(--color-border, #ecf0f1);
-}
-
-.resumen-numero {
-  display: block;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-text, #2c3e50);
-}
-
-.resumen-label {
-  display: block;
-  color: var(--color-muted, #7f8c8d);
-  font-size: 0.8125rem;
-  margin-top: 0.25rem;
 }
 
 .mensaje-accion {
@@ -72,7 +48,7 @@
   margin-bottom: 1rem;
   background-color: #d4edda;
   color: #155724;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
 }
 
@@ -92,13 +68,6 @@
   margin-bottom: 1.25rem;
 }
 
-.tarjeta {
-  background-color: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
-  padding: 1.25rem;
-}
-
 .tarjeta-header {
   display: flex;
   flex-wrap: wrap;
@@ -110,48 +79,26 @@
 
 .tarjeta-titulo {
   font-weight: 600;
-  color: var(--color-text, #2c3e50);
+  color: var(--color-text);
 }
 
 .tarjeta-meta,
 .tarjeta-fecha {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: var(--color-muted, #7f8c8d);
+  color: var(--color-muted);
 }
 
 .tarjeta-descripcion {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--color-muted, #7f8c8d);
+  color: var(--color-muted);
 }
 
 .categoria-nombre {
   margin: 0;
   font-size: 1rem;
-  color: var(--color-text, #2c3e50);
-}
-
-.badge-validacion {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badge-pendiente {
-  background-color: #ffeaa7;
-  color: #d35400;
-}
-
-.badge-validado {
-  background-color: #55efc4;
-  color: #2c3e50;
-}
-
-.badge-rechazado {
-  background-color: #fab1a0;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .badge-rol {
@@ -160,31 +107,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   background-color: #dfe6e9;
-  color: #2c3e50;
-}
-
-.badge-estado-usuario {
-  display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.badge-estado-usuario[data-estado='activo'] {
-  background-color: #55efc4;
-  color: #2c3e50;
-}
-
-.badge-estado-usuario[data-estado='pendiente'] {
-  background-color: #ffeaa7;
-  color: #d35400;
-}
-
-.badge-estado-usuario[data-estado='rechazado'] {
-  background-color: #fab1a0;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .acciones {
@@ -199,7 +122,7 @@
 .btn-agregar {
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -225,12 +148,12 @@
 }
 
 .btn-agregar {
-  background-color: var(--color-primary, #3498db);
+  background-color: var(--color-primary);
   color: #fff;
 }
 
 .btn-agregar:hover:not(:disabled) {
-  background-color: var(--color-primary-hover, #2980b9);
+  background-color: var(--color-primary-hover);
 }
 
 .btn-agregar:disabled {
@@ -240,9 +163,7 @@
 
 .form-categoria {
   padding: 1.25rem;
-  background-color: var(--color-bg, #f8fafc);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
+  background-color: var(--color-bg);
 }
 
 .form-group {
@@ -259,8 +180,8 @@
 .form-group input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 0.9375rem;
 }
@@ -272,9 +193,6 @@
 }
 
 .reporte-card {
-  background-color: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #ecf0f1);
-  border-radius: 8px;
   padding: 1.25rem;
   text-align: center;
 }
@@ -283,13 +201,13 @@
   display: block;
   font-size: 1.75rem;
   font-weight: 700;
-  color: var(--color-primary, #3498db);
+  color: var(--color-primary);
 }
 
 .reporte-label {
   display: block;
   font-size: 0.8125rem;
-  color: var(--color-muted, #7f8c8d);
+  color: var(--color-muted);
   margin-top: 0.25rem;
 }
 

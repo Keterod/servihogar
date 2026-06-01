@@ -22,24 +22,29 @@ interface PasoUso {
 export class Home {
   readonly categoriasDestacadas: CategoriaDestacada[] = [
     {
-      nombre: 'Fontanería',
-      descripcion: 'Reparaciones de tuberías, grifos y filtraciones.',
+      nombre: 'Gasfitería menor',
+      descripcion: 'Reparaciones de agua, grifos y desagüe.',
       icono: '🔧',
     },
     {
-      nombre: 'Electricidad',
+      nombre: 'Electricidad básica',
       descripcion: 'Instalaciones eléctricas menores y mantenimiento.',
       icono: '⚡',
     },
     {
-      nombre: 'Cerrajería',
-      descripcion: 'Apertura de puertas y cambio de cerraduras.',
-      icono: '🔑',
+      nombre: 'Mantenimiento de computadoras',
+      descripcion: 'Soporte técnico y mantenimiento de equipos.',
+      icono: '💻',
     },
     {
-      nombre: 'Limpieza',
-      descripcion: 'Servicios de limpieza del hogar y mantenimiento.',
-      icono: '🧹',
+      nombre: 'Pintura básica',
+      descripcion: 'Pintura interior y exterior del hogar.',
+      icono: '🎨',
+    },
+    {
+      nombre: 'Armado de muebles',
+      descripcion: 'Montaje de muebles y estanterías.',
+      icono: '🪑',
     },
   ];
 
@@ -63,6 +68,11 @@ export class Home {
       numero: 4,
       titulo: 'Elige una cotización',
       descripcion: 'Los técnicos envían cotizaciones y tú seleccionas la mejor opción.',
+    },
+    {
+      numero: 5,
+      titulo: 'Valora el servicio al finalizar',
+      descripcion: 'Califica al técnico cuando el trabajo haya concluido.',
     },
   ];
 }

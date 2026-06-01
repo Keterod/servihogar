@@ -4,7 +4,8 @@
       <h1>ServiHogar</h1>
       <p class="hero-lead">
         Plataforma académica para conectar clientes con técnicos independientes de servicios
-        domésticos menores. Encuentra profesionales, publica solicitudes y recibe cotizaciones.
+        domésticos menores. Publica solicitudes, recibe cotizaciones y valora el servicio al
+        finalizar.
       </p>
       <a routerLink="/buscar-tecnicos" class="btn-primary">Buscar técnicos</a>
     </div>
@@ -15,7 +16,7 @@
       <h2>Categorías destacadas</h2>
       <div class="categories-grid">
         @for (categoria of categoriasDestacadas; track categoria.nombre) {
-          <article class="category-card">
+          <article class="category-card card">
             <span class="category-icon" aria-hidden="true">{{ categoria.icono }}</span>
             <h3>{{ categoria.nombre }}</h3>
             <p>{{ categoria.descripcion }}</p>
