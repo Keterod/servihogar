@@ -10,7 +10,7 @@ Plataforma web académica para conectar clientes con técnicos independientes de
 | ----------------- | ------------------------------------------------------- |
 | **Frontend**      | Implementado (Angular 21)                               |
 | **Backend**       | Planificado; **no integrado** todavía                   |
-| **Base de datos** | PostgreSQL diseñada; **no conectada** al frontend       |
+| **Base de datos** | Modelo en **Supabase** (PostgreSQL en la nube); **no conectada** al frontend |
 | **Autenticación** | **No implementada** (login/registro solo visual)        |
 | **Datos**         | Simulados / mocks en memoria                            |
 | **Paneles**       | Accesibles por rutas directas o enlaces demo del footer |
@@ -27,7 +27,7 @@ Plataforma web académica para conectar clientes con técnicos independientes de
 | Lenguaje              | **TypeScript**           | Tipado estático                                |
 | Estilos               | **CSS**                  | Sin librerías UI externas                      |
 | Estado local          | **Angular Signals**      | Formularios, filtros, listas y datos derivados |
-| Base de datos         | **PostgreSQL**           | Modelo diseñado / planificado                  |
+| Base de datos         | **Supabase** (PostgreSQL administrado en la nube) | Esquema y seed en `database/` |
 | Backend               | **FastAPI** (Python)     | Planificado; carpeta preparada                 |
 | Control de versiones  | **Git** y **GitHub**     | Repositorio remoto                             |
 | Especificaciones      | **OpenSpec**             | Specs y cambios del proyecto                   |
@@ -39,14 +39,15 @@ Plataforma web académica para conectar clientes con técnicos independientes de
 
 Instala lo siguiente antes de clonar el proyecto:
 
-| Herramienta                               | Propósito                                 |
-| ----------------------------------------- | ----------------------------------------- |
-| **Git**                                   | Clonar y versionar el repositorio         |
-| **Node.js LTS**                           | Entorno de ejecución para Angular         |
-| **npm**                                   | Gestor de paquetes (incluido con Node.js) |
-| **Angular CLI**                           | Servidor de desarrollo y comandos `ng`    |
-| **Visual Studio Code**                    | Editor recomendado                        |
-| **PostgreSQL** + **pgAdmin** _(opcional)_ | Para la futura capa de base de datos      |
+| Herramienta            | Propósito                                 |
+| ---------------------- | ----------------------------------------- |
+| **Git**                | Clonar y versionar el repositorio         |
+| **Node.js LTS**        | Entorno de ejecución para Angular         |
+| **npm**                | Gestor de paquetes (incluido con Node.js) |
+| **Angular CLI**        | Servidor de desarrollo y comandos `ng`    |
+| **Visual Studio Code** | Editor recomendado                        |
+
+> **Base de datos:** ServiHogar usa **[Supabase](https://supabase.com/)** como plataforma de base de datos (PostgreSQL administrado en la nube). **No se requiere** instalar PostgreSQL ni pgAdmin en la PC local para clonar, instalar o ejecutar el frontend. La configuración del esquema y los datos iniciales se realiza en el panel de Supabase; consulta [`database/README.md`](database/README.md).
 
 ### Verificar instalación
 
@@ -157,7 +158,7 @@ ServiHogar/
 | ---------------------- | -------------------------------------------------- |
 | `servihogar-frontend/` | Aplicación Angular del prototipo                   |
 | `servihogar-backend/`  | Backend planificado con FastAPI                    |
-| `database/`            | Scripts y documentación de base de datos           |
+| `database/`            | Esquema, datos iniciales y documentación de Supabase |
 | `docs/`                | Informe, diagramas y evidencias del proyecto       |
 | `openspec/`            | Especificaciones y cambios del proyecto (OpenSpec) |
 
@@ -241,19 +242,34 @@ git push origin nombre-rama
 ## Limitaciones actuales
 
 - No hay backend conectado.
-- No hay autenticación real.
-- No hay persistencia en base de datos.
+- No hay conexión del frontend con **Supabase** ni con la API planificada.
+- No hay autenticación real (Supabase Auth definido en BD, pero no integrado en la app).
+- No hay persistencia en base de datos desde el frontend.
 - Los datos se reinician al recargar la página.
 - Algunas acciones son solo visuales del prototipo académico.
 - Los paneles no están protegidos por login todavía.
 
 ---
 
-## Base de datos
+## Base de datos (Supabase)
 
-- Se eligió **PostgreSQL** como motor relacional.
-- El modelo físico, scripts y documentación están (o estarán) en la carpeta `database/`.
-- La conexión real entre backend, base de datos y frontend se implementará en una fase posterior del proyecto.
+La base de datos de ServiHogar se gestiona **únicamente mediante [Supabase](https://supabase.com/)**, que proporciona **PostgreSQL administrado en la nube**, autenticación y almacenamiento de archivos. **No es necesario** instalar PostgreSQL local para revisar o ejecutar el proyecto.
+
+### Scripts y documentación
+
+| Archivo | Contenido |
+|---------|-----------|
+| [`database/schema.sql`](database/schema.sql) | Estructura de tablas, relaciones, restricciones, índices y triggers |
+| [`database/seed.sql`](database/seed.sql) | Datos iniciales de prueba vinculados a usuarios de Supabase Auth |
+| [`database/README.md`](database/README.md) | Guía de configuración, Storage, RLS y verificación en Supabase |
+
+### Relación con el frontend y backend
+
+- El **frontend Angular** funciona hoy con **datos simulados en memoria**; **no está conectado** a Supabase ni al backend.
+- El **backend FastAPI** está planificado pero **aún no integrado** con la base de datos.
+- La conexión real (cliente Supabase, API, variables de entorno y políticas RLS) se implementará en una fase posterior del proyecto.
+
+Para configurar la base en la nube, sigue los pasos descritos en [`database/README.md`](database/README.md).
 
 ---
 
