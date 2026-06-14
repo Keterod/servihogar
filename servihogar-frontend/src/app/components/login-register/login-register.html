@@ -87,7 +87,7 @@
             @if (modo() === 'register') {
               <div class="form-group">
                 <label for="nombre">Nombre completo</label>
-                <input id="nombre" type="text" placeholder="Tu nombre" autocomplete="name" />
+                <input id="nombre" type="text" placeholder="Tu nombre" autocomplete="name" [value]="form().nombre" (input)="actualizarCampo('nombre', $any($event.target).value)" />
               </div>
             }
 
@@ -98,6 +98,8 @@
                 type="email"
                 placeholder="correo@ejemplo.com"
                 autocomplete="email"
+                [value]="form().email"
+                (input)="actualizarCampo('email', $any($event.target).value)"
               />
             </div>
 
@@ -108,36 +110,40 @@
                 type="password"
                 placeholder="••••••••"
                 [attr.autocomplete]="modo() === 'login' ? 'current-password' : 'new-password'"
+                [value]="form().password"
+                (input)="actualizarCampo('password', $any($event.target).value)"
               />
             </div>
 
             @if (modo() === 'register') {
               <div class="form-group">
                 <label for="confirm-password">Confirmar contraseña</label>
-                <input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Repite tu contraseña"
-                  autocomplete="new-password"
-                />
+                  <input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="Repite tu contraseña"
+                    autocomplete="new-password"
+                    [value]="form().confirmPassword"
+                    (input)="actualizarCampo('confirmPassword', $any($event.target).value)"
+                  />
               </div>
             }
 
             @if (modo() === 'register' && rol() === 'tecnico') {
               <div class="form-group">
                 <label for="especialidad">Especialidad</label>
-                <input id="especialidad" type="text" placeholder="Ej. Gasfitería menor" />
+                <input id="especialidad" type="text" placeholder="Ej. Gasfitería menor" [value]="form().especialidad" (input)="actualizarCampo('especialidad', $any($event.target).value)" />
               </div>
               <div class="form-group">
                 <label for="zona">Zona de servicio</label>
-                <input id="zona" type="text" placeholder="Ej. Norte" />
+                <input id="zona" type="text" placeholder="Ej. Norte" [value]="form().zona" (input)="actualizarCampo('zona', $any($event.target).value)" />
               </div>
             }
 
             @if (modo() === 'register' && rol() === 'cliente') {
               <div class="form-group">
                 <label for="telefono">Teléfono (opcional)</label>
-                <input id="telefono" type="tel" placeholder="300 123 4567" autocomplete="tel" />
+                <input id="telefono" type="tel" placeholder="300 123 4567" autocomplete="tel" [value]="form().telefono" (input)="actualizarCampo('telefono', $any($event.target).value)" />
               </div>
             }
 
@@ -153,7 +159,7 @@
               </div>
             }
 
-            <button type="button" class="btn-submit">{{ textoBoton() }}</button>
+            <button type="button" class="btn-submit" [disabled]="!puedeEnviar()">{{ textoBoton() }}</button>
             <p class="form-note">
               Prototipo académico: el formulario es solo visual, sin autenticación real.
             </p>
