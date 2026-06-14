@@ -46,7 +46,7 @@ Both override the root file for their domain. Read the relevant one before worki
 ## OpenSpec workflow
 
 Commands available via OpenCode or Cursor: `/opsx-propose`, `/opsx-apply`, `/opsx-explore`, `/opsx-archive`.
-Changes live in `openspec/changes/<name>/`. Spec-driven development: proposal → design → tasks → implement.
+Changes live in `openspec/changes/<name>/`. Spec-driven development: proposal → design → tasks → implement → archive.
 
 ## Git
 
@@ -57,3 +57,5 @@ Branches: `main` (stable), `feature/<name>` for new work.
 - `test` target uses Vitest (configured in `angular.json`, not Karma)
   Backend entrypoint should be `src/main.py`. Any root-level `main.py` is only a placeholder and should not contain application logic.
 - No `.env.example` exists yet despite being listed as expected in backend AGENTS.md
+
+Para cambios de base de datos, revisar primero `database/README.md`, `database/schema.sql` y `database/seed.sql`.
