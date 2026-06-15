@@ -41,10 +41,18 @@
     <section class="section-card table-section" aria-labelledby="titulo-disponibles">
       <div class="section-header">
         <h2 id="titulo-disponibles">Solicitudes recientes</h2>
-        <span class="chip">{{ totalSolicitudesDisponibles() }} pendientes</span>
+        @if (!cargando() && !error()) {
+          <span class="chip">{{ pendientesDeCotizar() }} pendientes · {{ yaCotizadas() }} cotizadas</span>
+        }
       </div>
 
-      @if (solicitudesDisponibles().length === 0) {
+      @if (cargando()) {
+        <p class="mensaje-estado">Cargando solicitudes disponibles…</p>
+      } @else if (error()) {
+        <p class="mensaje-estado mensaje-error">
+          No se pudieron cargar las solicitudes. Verifica que el backend esté disponible.
+        </p>
+      } @else if (solicitudesDisponibles().length === 0) {
         <p class="mensaje-vacio">No hay solicitudes disponibles por ahora.</p>
       } @else {
         <div class="table-wrapper">
@@ -60,31 +68,46 @@
               </tr>
             </thead>
             <tbody>
-              @for (solicitud of solicitudesDisponibles(); track solicitud.id) {
+              @for (solicitud of solicitudesDisponibles(); track solicitud.id_solicitud) {
                 <tr
                   class="table-row"
-                  [class.row-active]="esSolicitudActiva(solicitud.id)"
+                  [class.row-active]="esSolicitudActiva(solicitud.id_solicitud)"
                   (click)="seleccionarSolicitud(solicitud)"
                   (keydown.enter)="seleccionarSolicitud(solicitud)"
                   tabindex="0"
                   role="button"
                 >
-                  <td class="cell-cliente">Solicitud #{{ solicitud.id }}</td>
-                  <td>
-                    <span class="cell-servicio">{{ solicitud.categoria }}</span>
-                    <span class="cell-descripcion">{{ solicitud.descripcion }}</span>
+                  <td class="cell-cliente">
+                    {{ solicitud.cliente_nombre || ('Solicitud #' + solicitud.id_solicitud) }}
                   </td>
-                  <td>{{ solicitud.zona }}</td>
-                  <td>{{ solicitud.fechaTentativa }}</td>
                   <td>
-                    <span class="estado-badge" data-estado="pendiente">Disponible</span>
+                    <span class="cell-servicio">{{ solicitud.titulo }}</span>
+                    <span class="cell-descripcion">{{ solicitud.descripcion }}</span>
+                    <span class="cell-categoria">{{ solicitud.categoria_nombre }}</span>
+                  </td>
+                  <td>{{ solicitud.zona_nombre }}</td>
+                  <td>{{ solicitud.fecha_publicacion | date:'shortDate' }}</td>
+                  <td>
+                    <span
+                      class="estado-badge"
+                      [attr.data-estado]="solicitud.ya_cotizada_por_tecnico ? 'cotizada' : 'pendiente'"
+                    >
+                      {{ getEstadoDisponibleLabel(solicitud) }}
+                    </span>
                   </td>
                   <td class="cell-acciones" (click)="$event.stopPropagation()">
-                    <button type="button" class="btn-table btn-rechazar">Rechazar</button>
+                    <a
+                      [routerLink]="['/detalle-solicitud', solicitud.id_solicitud]"
+                      [queryParams]="{ from: 'tecnico' }"
+                      class="btn-table btn-link"
+                    >
+                      Ver detalle
+                    </a>
                     <button
                       type="button"
                       class="btn-table btn-cotizar"
-                      [class.active]="esSolicitudActiva(solicitud.id)"
+                      [class.active]="esSolicitudActiva(solicitud.id_solicitud)"
+                      [disabled]="solicitud.ya_cotizada_por_tecnico"
                       (click)="seleccionarSolicitud(solicitud)"
                     >
                       Enviar cotización
@@ -100,12 +123,16 @@
 
     @if (solicitudSeleccionada(); as solicitud) {
       <section class="section-card seccion-detalle" aria-labelledby="titulo-detalle">
-        <h2 id="titulo-detalle">Detalle y cotización — Solicitud #{{ solicitud.id }}</h2>
+        <h2 id="titulo-detalle">Detalle y cotización — Solicitud #{{ solicitud.id_solicitud }}</h2>
         <div class="detalle-contenido">
           <dl class="detalle-lista">
             <div>
+              <dt>Título</dt>
+              <dd>{{ solicitud.titulo }}</dd>
+            </div>
+            <div>
               <dt>Categoría</dt>
-              <dd>{{ solicitud.categoria }}</dd>
+              <dd>{{ solicitud.categoria_nombre }}</dd>
             </div>
             <div>
               <dt>Descripción</dt>
@@ -113,16 +140,22 @@
             </div>
             <div>
               <dt>Zona</dt>
-              <dd>{{ solicitud.zona }}</dd>
+              <dd>{{ solicitud.zona_nombre }}</dd>
             </div>
             <div>
-              <dt>Fecha tentativa</dt>
-              <dd>{{ solicitud.fechaTentativa }}</dd>
+              <dt>Fecha de publicación</dt>
+              <dd>{{ solicitud.fecha_publicacion | date:'shortDate' }}</dd>
             </div>
             <div>
               <dt>Dirección</dt>
-              <dd>{{ solicitud.direccion }}</dd>
+              <dd>{{ solicitud.direccion || '—' }}</dd>
             </div>
+            @if (solicitud.cliente_nombre) {
+              <div>
+                <dt>Cliente</dt>
+                <dd>{{ solicitud.cliente_nombre }}</dd>
+              </div>
+            }
           </dl>
 
           <form class="form-cotizacion" (submit)="$event.preventDefault()">

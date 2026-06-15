@@ -131,3 +131,78 @@ class SolicitudesRepository:
                 }
             )
         return cotizaciones
+
+    @staticmethod
+    def _cliente_nombre_from_row(row: dict) -> str | None:
+        clientes = row.pop("clientes", None)
+        if isinstance(clientes, list):
+            clientes = clientes[0] if clientes else {}
+        if not isinstance(clientes, dict):
+            return None
+        usuario = clientes.get("usuarios") or {}
+        if isinstance(usuario, list):
+            usuario = usuario[0] if usuario else {}
+        if not isinstance(usuario, dict):
+            return None
+        nombre = f"{usuario.get('nombres', '')} {usuario.get('apellidos', '')}".strip()
+        return nombre or None
+
+    def get_disponibles_for_tecnico(
+        self, id_tecnico: int, categorias: list[int], zonas: list[int]
+    ) -> list[dict]:
+        if not categorias or not zonas:
+            return []
+
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("solicitudes_servicio")
+            .select(
+                "id_solicitud, titulo, descripcion, direccion_referencia, estado, "
+                "fecha_publicacion, "
+                "categorias_servicio!inner(nombre), zonas!inner(nombre), "
+                "clientes!inner(usuarios!inner(nombres, apellidos))"
+            )
+            .eq("estado", "pendiente")
+            .in_("id_categoria", categorias)
+            .in_("id_zona", zonas)
+            .order("fecha_publicacion", desc=True)
+        )
+        if not result.data:
+            return []
+
+        solicitud_ids = [s["id_solicitud"] for s in result.data]
+        cotizaciones_result = SupabaseClient.execute(
+            client.table("cotizaciones")
+            .select("id_solicitud, id_tecnico")
+            .in_("id_solicitud", solicitud_ids)
+        )
+        cotizaciones_rows = cotizaciones_result.data or []
+        cotizaciones_count = Counter(c["id_solicitud"] for c in cotizaciones_rows)
+        cotizada_por_tecnico = {
+            c["id_solicitud"]
+            for c in cotizaciones_rows
+            if c["id_tecnico"] == id_tecnico
+        }
+
+        solicitudes = []
+        for row in result.data:
+            sid = row["id_solicitud"]
+            categoria = row.pop("categorias_servicio", None)
+            zona = row.pop("zonas", None)
+            solicitudes.append(
+                {
+                    "id_solicitud": sid,
+                    "titulo": row["titulo"],
+                    "descripcion": row["descripcion"],
+                    "direccion_referencia": row.get("direccion_referencia"),
+                    "estado": row["estado"],
+                    "fecha_publicacion": row["fecha_publicacion"],
+                    "categoria_nombre": self._join_nombre(categoria),
+                    "zona_nombre": self._join_nombre(zona),
+                    "cliente_nombre": self._cliente_nombre_from_row(row),
+                    "cotizaciones_count": cotizaciones_count.get(sid, 0),
+                    "ya_cotizada_por_tecnico": sid in cotizada_por_tecnico,
+                }
+            )
+
+        return solicitudes

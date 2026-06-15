@@ -20,35 +20,44 @@ The technician dashboard SHALL display a summary of the simulated technician Car
 
 ### Requirement: Available service requests as cards
 
-The technician dashboard SHALL display available service requests as selectable cards, showing only Gasfitería menor requests matching the technician's specialty.
+The technician dashboard SHALL display available service requests fetched from `GET /tecnicos/demo/solicitudes-disponibles`, showing only pending requests matching the demo technician's categories and zones from the backend.
 
-#### Scenario: Available requests as cards
+#### Scenario: Available requests loaded from backend
 
-- **WHEN** the user views available service requests
-- **THEN** each request is displayed as a card consistent with the client dashboard card pattern
-- **THEN** the selected card displays an active visual state (border or highlight)
+- **WHEN** the user navigates to `/panel-tecnico`
+- **THEN** the page fetches available requests from `GET /tecnicos/demo/solicitudes-disponibles`
+- **THEN** each request displays id, category name, description, zone name, publication date, approximate address, and estado
 
-#### Scenario: Request fields displayed
+#### Scenario: Loading state for available requests
 
-- **WHEN** the user views an available service request card
-- **THEN** the card displays id, category, brief description, zone, tentative date, and approximate address
+- **WHEN** the user navigates to `/panel-tecnico` and data is being fetched
+- **THEN** the page SHALL show a loading indicator or message for the available requests section
 
-#### Scenario: Only gasfitería requests available
+#### Scenario: Error state for available requests
 
-- **WHEN** the user views available service requests for Carlos Mendoza
-- **THEN** only Gasfitería menor requests are shown
-- **THEN** electricidad or other non-matching categories are NOT shown as available
+- **WHEN** the backend is unreachable or returns an error while loading available requests
+- **THEN** the page SHALL display an error message indicating the backend is unavailable
 
-#### Scenario: Already quoted request excluded
+#### Scenario: Empty state for available requests
 
-- **WHEN** the user views available service requests
-- **THEN** solicitud id 1 (Fuga de agua en cocina) is NOT listed as available
-- **THEN** Carlos Mendoza's existing quotation for solicitud id 1 appears in sent quotations instead
+- **WHEN** the backend returns an empty array of available requests
+- **THEN** the page SHALL display a message indicating no solicitudes are available
 
-#### Scenario: Available request IDs
+#### Scenario: Finalized requests not shown
 
-- **WHEN** the user views available service requests on load
-- **THEN** at least two available requests use ids from the client flow universe (e.g. ids 2 and 3)
+- **WHEN** the user views available service requests from the backend
+- **THEN** solicitudes with estado finalizada SHALL NOT appear in the available list
+
+#### Scenario: Navigate to request detail
+
+- **WHEN** the user clicks "Ver detalle" on an available request
+- **THEN** the application navigates to `/detalle-solicitud/{id_solicitud}` without a full page reload
+
+#### Scenario: Visual cotización action without backend submit
+
+- **WHEN** the user clicks "Enviar cotización" on an available request
+- **THEN** the UI SHALL present the quotation form or equivalent visual flow
+- **THEN** no HTTP POST request for cotización SHALL be made
 
 ### Requirement: Request selection and detail
 
@@ -149,12 +158,13 @@ The technician dashboard SHALL use Angular Signals for local state and computed(
 #### Scenario: Core signals defined
 
 - **WHEN** the technician dashboard loads
-- **THEN** tecnico, solicitudesDisponibles, cotizacionesEnviadas, serviciosAceptados, solicitudSeleccionada, formCotizacion, and estadoValidacion are managed with Signals
+- **THEN** tecnico, solicitudesDisponibles, cotizacionesEnviadas, serviciosAceptados, solicitudSeleccionada, formCotizacion, estadoValidacion, cargando, and error are managed with Signals
 
 #### Scenario: Computed summary and validation
 
 - **WHEN** the user views the dashboard
-- **THEN** counts for available requests, sent quotations, and accepted services are computed from Signals
+- **THEN** counts for available requests, pending-to-quote requests, and already-quoted available requests are computed from the backend-fetched solicitudesDisponibles Signal
+- **THEN** counts for sent quotations and accepted services remain computed from their respective Signals
 - **THEN** puedeEnviarCotizacion is computed from form validity, selected request, and validation status
 
 ### Requirement: Responsive technician dashboard

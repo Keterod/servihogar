@@ -92,6 +92,44 @@
   color: var(--color-muted);
 }
 
+.cell-categoria {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.mensaje-estado,
+.mensaje-vacio {
+  margin: 0;
+  padding: 1rem 0;
+  color: var(--color-muted);
+}
+
+.mensaje-error {
+  color: var(--color-badge-danger-text);
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--color-primary-light);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.btn-link:hover {
+  background: #eef2ff;
+  color: var(--color-primary);
+}
+
 .cell-acciones {
   display: flex;
   flex-wrap: wrap;

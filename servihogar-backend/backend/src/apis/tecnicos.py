@@ -1,15 +1,26 @@
 from fastapi import APIRouter, HTTPException
 
+from src.schemas.solicitud import SolicitudDisponibleResponse
 from src.schemas.tecnico import TecnicoDetalleResponse, TecnicoResponse
+from src.services.solicitudes_service import SolicitudesService
 from src.services.tecnicos_service import TecnicosService
 
 router = APIRouter()
 _service = TecnicosService()
+_solicitudes_service = SolicitudesService()
 
 
 @router.get("/tecnicos", response_model=list[TecnicoResponse])
 async def listar_tecnicos():
     return _service.obtener_todos()
+
+
+@router.get(
+    "/tecnicos/demo/solicitudes-disponibles",
+    response_model=list[SolicitudDisponibleResponse],
+)
+async def listar_solicitudes_disponibles_demo():
+    return _solicitudes_service.obtener_solicitudes_disponibles_demo()
 
 
 @router.get("/tecnicos/{id_tecnico}", response_model=TecnicoDetalleResponse)

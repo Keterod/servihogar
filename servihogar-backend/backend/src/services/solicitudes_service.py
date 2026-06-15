@@ -1,7 +1,9 @@
 from src.repository.solicitudes_repository import SolicitudesRepository
+from src.repository.tecnicos_repository import TecnicosRepository
 from src.schemas.solicitud import (
     CotizacionDetalleResponse,
     SolicitudDetalleResponse,
+    SolicitudDisponibleResponse,
     SolicitudListResponse,
     SolicitudRequest,
     SolicitudResponse,
@@ -11,6 +13,7 @@ from src.schemas.solicitud import (
 class SolicitudesService:
     def __init__(self):
         self._repo = SolicitudesRepository()
+        self._tecnicos_repo = TecnicosRepository()
 
     def crear_solicitud(self, data: SolicitudRequest) -> SolicitudResponse | None:
         id_cliente = self._repo.get_demo_cliente_id()
@@ -94,3 +97,36 @@ class SolicitudesService:
             zona_nombre=row["zona_nombre"],
             cotizaciones=cotizaciones,
         )
+
+    def obtener_solicitudes_disponibles_demo(self) -> list[SolicitudDisponibleResponse]:
+        """Return pending solicitudes matching the demo technician's categories and zones.
+
+        Only solicitudes with estado=pendiente are included. A solicitud must match
+        both a category and a zone assigned to the demo technician in tecnico_categorias
+        and tecnico_zonas. Already-quoted solicitudes remain in the list with
+        ya_cotizada_por_tecnico=True.
+        """
+        id_tecnico = self._tecnicos_repo.get_demo_tecnico_id()
+        if id_tecnico is None:
+            return []
+
+        categorias = self._tecnicos_repo.get_categorias_for_tecnico(id_tecnico)
+        zonas = self._tecnicos_repo.get_zonas_for_tecnico(id_tecnico)
+        rows = self._repo.get_disponibles_for_tecnico(id_tecnico, categorias, zonas)
+
+        return [
+            SolicitudDisponibleResponse(
+                id_solicitud=r["id_solicitud"],
+                titulo=r["titulo"],
+                descripcion=r["descripcion"],
+                direccion=r.get("direccion_referencia"),
+                estado=r["estado"],
+                fecha_publicacion=r["fecha_publicacion"],
+                categoria_nombre=r["categoria_nombre"],
+                zona_nombre=r["zona_nombre"],
+                cliente_nombre=r.get("cliente_nombre"),
+                cotizaciones_count=r["cotizaciones_count"],
+                ya_cotizada_por_tecnico=r["ya_cotizada_por_tecnico"],
+            )
+            for r in rows
+        ]

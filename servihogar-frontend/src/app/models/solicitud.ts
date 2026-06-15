@@ -26,6 +26,20 @@ export interface SolicitudListResponse {
   cotizaciones_count: number;
 }
 
+export interface SolicitudDisponible {
+  id_solicitud: number;
+  titulo: string;
+  descripcion: string;
+  direccion: string | null;
+  estado: string;
+  fecha_publicacion: string;
+  categoria_nombre: string;
+  zona_nombre: string;
+  cliente_nombre: string | null;
+  cotizaciones_count: number;
+  ya_cotizada_por_tecnico: boolean;
+}
+
 export interface CotizacionDetalle {
   id_cotizacion: number;
   id_tecnico: number;

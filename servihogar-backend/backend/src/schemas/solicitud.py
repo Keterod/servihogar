@@ -31,6 +31,20 @@ class SolicitudListResponse(BaseModel):
     cotizaciones_count: int = 0
 
 
+class SolicitudDisponibleResponse(BaseModel):
+    id_solicitud: int
+    titulo: str
+    descripcion: str
+    direccion: str | None = None
+    estado: str
+    fecha_publicacion: datetime
+    categoria_nombre: str
+    zona_nombre: str
+    cliente_nombre: str | None = None
+    cotizaciones_count: int = 0
+    ya_cotizada_por_tecnico: bool = False
+
+
 class CotizacionDetalleResponse(BaseModel):
     id_cotizacion: int
     id_tecnico: int

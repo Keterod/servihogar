@@ -26,6 +26,15 @@ export class DetalleSolicitud implements OnInit {
   readonly cotizaciones = signal<CotizacionDetalle[]>([]);
   readonly selectedCotizacionId = signal<number | null>(null);
   readonly localEstadoOverride = signal<string | null>(null);
+  readonly origen = signal<'cliente' | 'tecnico'>('cliente');
+
+  readonly volverRuta = computed(() =>
+    this.origen() === 'tecnico' ? '/panel-tecnico' : '/panel-cliente',
+  );
+
+  readonly volverTexto = computed(() =>
+    this.origen() === 'tecnico' ? 'Volver al panel técnico' : 'Volver a mis solicitudes',
+  );
 
   readonly cotizacionAceptada = computed(() =>
     this.cotizaciones().find((c) => c.estado === 'aceptada'),
@@ -61,6 +70,11 @@ export class DetalleSolicitud implements OnInit {
   ];
 
   ngOnInit(): void {
+    const from = this.route.snapshot.queryParamMap.get('from');
+    if (from === 'tecnico') {
+      this.origen.set('tecnico');
+    }
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) {
       this.notFound.set(true);

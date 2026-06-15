@@ -6,6 +6,7 @@ import { catchError } from 'rxjs/operators';
 import { API_BASE_URL } from '../env';
 import {
   SolicitudDetalle,
+  SolicitudDisponible,
   SolicitudListResponse,
   SolicitudRequest,
   SolicitudResponse,
@@ -26,6 +27,14 @@ export class SolicitudService {
   solicitudesCliente(): Observable<SolicitudListResponse[] | null> {
     return this.http
       .get<SolicitudListResponse[]>(`${API_BASE_URL}/clientes/demo/solicitudes`, {
+        params: { _: Date.now().toString() },
+      })
+      .pipe(catchError(() => of(null)));
+  }
+
+  solicitudesDisponiblesTecnico(): Observable<SolicitudDisponible[] | null> {
+    return this.http
+      .get<SolicitudDisponible[]>(`${API_BASE_URL}/tecnicos/demo/solicitudes-disponibles`, {
         params: { _: Date.now().toString() },
       })
       .pipe(catchError(() => of(null)));

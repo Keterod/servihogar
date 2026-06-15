@@ -93,7 +93,11 @@
                   </td>
                   <td>{{ solicitud.cotizaciones_count }}</td>
                   <td>
-                    <a [routerLink]="['/detalle-solicitud', solicitud.id_solicitud]" class="btn-link">Ver detalle</a>
+                    <a
+                      [routerLink]="['/detalle-solicitud', solicitud.id_solicitud]"
+                      [queryParams]="{ from: 'cliente' }"
+                      class="btn-link"
+                    >Ver detalle</a>
                   </td>
                 </tr>
               }

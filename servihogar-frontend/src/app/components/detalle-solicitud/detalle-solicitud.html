@@ -1,5 +1,5 @@
 <div class="detalle-solicitud">
-  <a routerLink="/panel-cliente" class="back-link">← Volver a mis solicitudes</a>
+  <a [routerLink]="volverRuta()" class="back-link">← {{ volverTexto() }}</a>
 
   @if (loading()) {
     <div class="estado-card">Cargando detalle de la solicitud…</div>
