@@ -259,11 +259,20 @@
             </div>
             <p class="tarjeta-subtitulo">{{ cotizacion.categoria }}</p>
             <p class="tarjeta-descripcion">{{ cotizacion.descripcion }}</p>
-            <div class="tarjeta-info">
-              <span>{{ formatPrecio(cotizacion.precio) }}</span>
-              <span>{{ cotizacion.tiempoEstimado }}</span>
-              <span>Enviada: {{ cotizacion.fechaEnvio }}</span>
-            </div>
+            <dl class="tarjeta-meta">
+              <div class="meta-item">
+                <dt>Precio</dt>
+                <dd>{{ formatPrecio(cotizacion.precio) }}</dd>
+              </div>
+              <div class="meta-item">
+                <dt>Tiempo estimado</dt>
+                <dd>{{ cotizacion.tiempoEstimado }}</dd>
+              </div>
+              <div class="meta-item">
+                <dt>Enviada</dt>
+                <dd>{{ cotizacion.fechaEnvio }}</dd>
+              </div>
+            </dl>
             <p class="tarjeta-propuesta">{{ cotizacion.propuesta }}</p>
           </article>
         }
@@ -271,25 +280,72 @@
     </section>
 
     <section class="section-card" aria-labelledby="titulo-aceptados">
-      <h2 id="titulo-aceptados">Servicios aceptados</h2>
-      <div class="tarjetas-lista">
-        @for (servicio of serviciosAceptados(); track servicio.id) {
-          <article class="tarjeta servicio-card">
-            <div class="tarjeta-header">
-              <span class="tarjeta-categoria">{{ servicio.categoria }}</span>
-              <span class="estado-badge" [attr.data-estado]="servicio.estado">
-                {{ getEstadoServicioLabel(servicio.estado) }}
-              </span>
-            </div>
-            <p class="tarjeta-descripcion">{{ servicio.descripcion }}</p>
-            <div class="tarjeta-info">
-              <span>Zona: {{ servicio.zona }}</span>
-              <span>Cliente: {{ servicio.cliente }}</span>
-              <span>Fecha: {{ servicio.fecha }}</span>
-            </div>
-          </article>
+      <div class="section-header">
+        <h2 id="titulo-aceptados">Mis trabajos en proceso</h2>
+        @if (!cargandoAceptados() && !errorAceptados()) {
+          <span class="chip">{{ serviciosAceptados().length }} aceptados</span>
         }
       </div>
+
+      @if (cargandoAceptados()) {
+        <p class="mensaje-estado">Cargando servicios aceptados…</p>
+      } @else if (errorAceptados()) {
+        <p class="mensaje-estado mensaje-error">
+          No se pudieron cargar los servicios aceptados. Verifica que el backend esté disponible.
+        </p>
+      } @else if (serviciosAceptados().length === 0) {
+        <p class="mensaje-vacio">Aún no tienes trabajos aceptados en proceso.</p>
+      } @else {
+        <div class="tarjetas-lista">
+          @for (servicio of serviciosAceptados(); track servicio.id_solicitud) {
+            <article class="tarjeta servicio-card">
+              <div class="tarjeta-header">
+                <span class="tarjeta-categoria">{{ servicio.categoria_nombre }}</span>
+                <span class="estado-badge" [attr.data-estado]="servicio.estado">
+                  {{ getEstadoServicioLabel(servicio.estado) }}
+                </span>
+              </div>
+              <p class="tarjeta-subtitulo">{{ servicio.titulo }}</p>
+              <p class="tarjeta-descripcion">{{ servicio.descripcion }}</p>
+              <dl class="tarjeta-meta">
+                <div class="meta-item">
+                  <dt>Precio aceptado</dt>
+                  <dd>{{ formatPrecio(servicio.precio) }}</dd>
+                </div>
+                @if (servicio.tiempo_estimado) {
+                  <div class="meta-item">
+                    <dt>Tiempo estimado</dt>
+                    <dd>{{ servicio.tiempo_estimado }}</dd>
+                  </div>
+                }
+                <div class="meta-item">
+                  <dt>Zona</dt>
+                  <dd>{{ servicio.zona_nombre }}</dd>
+                </div>
+                @if (servicio.cliente_nombre) {
+                  <div class="meta-item">
+                    <dt>Cliente</dt>
+                    <dd>{{ servicio.cliente_nombre }}</dd>
+                  </div>
+                }
+                <div class="meta-item">
+                  <dt>Fecha</dt>
+                  <dd>{{ servicio.fecha_publicacion | date:'shortDate' }}</dd>
+                </div>
+              </dl>
+              <div class="tarjeta-footer">
+                <a
+                  [routerLink]="['/detalle-solicitud', servicio.id_solicitud]"
+                  [queryParams]="{ from: 'tecnico' }"
+                  class="btn-accion btn-detalle"
+                >
+                  Ver detalle
+                </a>
+              </div>
+            </article>
+          }
+        </div>
+      }
     </section>
   </div>
 </div>

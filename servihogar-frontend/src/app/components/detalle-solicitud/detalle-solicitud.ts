@@ -25,8 +25,11 @@ export class DetalleSolicitud implements OnInit {
   readonly solicitud = signal<SolicitudDetalle | null>(null);
   readonly cotizaciones = signal<CotizacionDetalle[]>([]);
   readonly selectedCotizacionId = signal<number | null>(null);
-  readonly localEstadoOverride = signal<string | null>(null);
   readonly origen = signal<'cliente' | 'tecnico'>('cliente');
+  readonly accionCotizacionId = signal<number | null>(null);
+  readonly errorAccion = signal<string | null>(null);
+
+  readonly esVistaCliente = computed(() => this.origen() === 'cliente');
 
   readonly volverRuta = computed(() =>
     this.origen() === 'tecnico' ? '/panel-tecnico' : '/panel-cliente',
@@ -46,11 +49,7 @@ export class DetalleSolicitud implements OnInit {
     this.cotizaciones().find((c) => c.id_cotizacion === this.selectedCotizacionId()),
   );
 
-  readonly estadoDisplay = computed(() => {
-    const override = this.localEstadoOverride();
-    if (override) return override;
-    return this.solicitud()?.estado ?? 'pendiente';
-  });
+  readonly estadoDisplay = computed(() => this.solicitud()?.estado ?? 'pendiente');
 
   readonly pasoActual = computed((): PasoTimeline => {
     const estado = this.estadoDisplay();
@@ -88,7 +87,7 @@ export class DetalleSolicitud implements OnInit {
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
-    this.localEstadoOverride.set(null);
+    this.errorAccion.set(null);
 
     this.solicitudService.obtenerDetalle(id).subscribe({
       next: (data) => {
@@ -112,6 +111,7 @@ export class DetalleSolicitud implements OnInit {
 
   selectCotizacion(id: number): void {
     this.selectedCotizacionId.set(id);
+    this.errorAccion.set(null);
   }
 
   esPasoCompletado(paso: PasoTimeline): boolean {
@@ -123,25 +123,91 @@ export class DetalleSolicitud implements OnInit {
     return this.pasoActual() === paso;
   }
 
+  accionEnCurso(id: number): boolean {
+    return this.accionCotizacionId() === id;
+  }
+
   aceptarCotizacion(id: number): void {
-    this.cotizaciones.update((items) =>
-      items.map((c) => ({
-        ...c,
-        estado: (c.id_cotizacion === id ? 'aceptada' : 'rechazada') as CotizacionEstado,
-      })),
-    );
-    this.localEstadoOverride.set('en_proceso');
-    this.selectedCotizacionId.set(id);
+    if (!this.esVistaCliente() || this.accionCotizacionId() !== null || this.hayAceptada()) {
+      return;
+    }
+
+    this.accionCotizacionId.set(id);
+    this.errorAccion.set(null);
+
+    this.solicitudService.aceptarCotizacion(id).subscribe((resultado) => {
+      this.accionCotizacionId.set(null);
+
+      if (resultado === 'not_found') {
+        this.errorAccion.set('La cotización no existe o ya no está disponible.');
+        return;
+      }
+      if (resultado === 'bad_request') {
+        this.errorAccion.set('Esta cotización ya no se puede aceptar.');
+        return;
+      }
+      if (resultado === 'conflict') {
+        this.errorAccion.set('Esta solicitud ya tiene una cotización aceptada.');
+        return;
+      }
+      if (resultado === null) {
+        this.errorAccion.set(
+          'No se pudo aceptar la cotización. Verifica que el backend esté disponible.',
+        );
+        return;
+      }
+
+      this.cotizaciones.update((items) =>
+        items.map((c) => ({
+          ...c,
+          estado: (c.id_cotizacion === id
+            ? 'aceptada'
+            : c.estado === 'pendiente'
+              ? 'rechazada'
+              : c.estado) as CotizacionEstado,
+        })),
+      );
+      this.solicitud.update((s) =>
+        s ? { ...s, estado: resultado.solicitud_estado } : s,
+      );
+      this.selectedCotizacionId.set(id);
+      this.errorAccion.set(null);
+    });
   }
 
   rechazarCotizacion(id: number): void {
-    if (this.hayAceptada()) return;
+    if (!this.esVistaCliente() || this.accionCotizacionId() !== null || this.hayAceptada()) {
+      return;
+    }
 
-    this.cotizaciones.update((items) =>
-      items.map((c) =>
-        c.id_cotizacion === id ? { ...c, estado: 'rechazada' as CotizacionEstado } : c,
-      ),
-    );
+    this.accionCotizacionId.set(id);
+    this.errorAccion.set(null);
+
+    this.solicitudService.rechazarCotizacion(id).subscribe((resultado) => {
+      this.accionCotizacionId.set(null);
+
+      if (resultado === 'not_found') {
+        this.errorAccion.set('La cotización no existe o ya no está disponible.');
+        return;
+      }
+      if (resultado === 'bad_request') {
+        this.errorAccion.set('Esta cotización ya no se puede rechazar.');
+        return;
+      }
+      if (resultado === null) {
+        this.errorAccion.set(
+          'No se pudo rechazar la cotización. Verifica que el backend esté disponible.',
+        );
+        return;
+      }
+
+      this.cotizaciones.update((items) =>
+        items.map((c) =>
+          c.id_cotizacion === id ? { ...c, estado: 'rechazada' as CotizacionEstado } : c,
+        ),
+      );
+      this.errorAccion.set(null);
+    });
   }
 
   getEstadoLabel(estado: string): string {

@@ -2,6 +2,7 @@ from src.repository.solicitudes_repository import SolicitudesRepository
 from src.repository.tecnicos_repository import TecnicosRepository
 from src.schemas.solicitud import (
     CotizacionDetalleResponse,
+    ServicioAceptadoResponse,
     SolicitudDetalleResponse,
     SolicitudDisponibleResponse,
     SolicitudListResponse,
@@ -130,3 +131,39 @@ class SolicitudesService:
             )
             for r in rows
         ]
+
+    def obtener_servicios_aceptados_demo(self) -> list[ServicioAceptadoResponse]:
+        """Return in-progress solicitudes where the demo technician has an accepted cotización."""
+        id_tecnico = self._tecnicos_repo.get_demo_tecnico_id()
+        if id_tecnico is None:
+            return []
+
+        try:
+            rows = self._repo.get_servicios_aceptados_for_tecnico(id_tecnico)
+        except Exception:
+            return []
+
+        servicios: list[ServicioAceptadoResponse] = []
+        for r in rows:
+            try:
+                servicios.append(
+                    ServicioAceptadoResponse(
+                        id_solicitud=r["id_solicitud"],
+                        titulo=r.get("titulo") or "",
+                        descripcion=r.get("descripcion") or "",
+                        direccion=r.get("direccion_referencia"),
+                        estado=r.get("estado") or "",
+                        fecha_publicacion=r["fecha_publicacion"],
+                        categoria_nombre=r.get("categoria_nombre") or "",
+                        zona_nombre=r.get("zona_nombre") or "",
+                        cliente_nombre=r.get("cliente_nombre"),
+                        id_cotizacion=r["id_cotizacion"],
+                        precio=r["precio"],
+                        tiempo_estimado=r.get("tiempo_estimado"),
+                        estado_cotizacion=r.get("estado_cotizacion") or "",
+                    )
+                )
+            except Exception:
+                continue
+
+        return servicios

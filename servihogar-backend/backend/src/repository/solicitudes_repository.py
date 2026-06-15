@@ -41,6 +41,18 @@ class SolicitudesRepository:
         rows = result.data or []
         return rows[0] if rows else None
 
+    def update_estado(self, id_solicitud: int, estado: str) -> dict | None:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("solicitudes_servicio")
+            .update({"estado": estado})
+            .eq("id_solicitud", id_solicitud)
+            .select("id_solicitud, estado")
+        )
+        if not result.data:
+            return None
+        return result.data[0]
+
     def get_solicitud_for_cotizacion(
         self, id_solicitud: int, categorias: list[int], zonas: list[int]
     ) -> dict | None:
@@ -98,7 +110,22 @@ class SolicitudesRepository:
             data = data[0] if data else {}
         if not isinstance(data, dict):
             return ""
-        return data.get("nombre", "")
+        return data.get("nombre") or ""
+
+    @staticmethod
+    def _unwrap_embedded(value):
+        if isinstance(value, list):
+            return value[0] if value else None
+        return value
+
+    @staticmethod
+    def _safe_float(value) -> float | None:
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
 
     def get_by_id_for_cliente(self, id_solicitud: int, id_cliente: int) -> dict | None:
         client = SupabaseClient.get()
@@ -237,3 +264,62 @@ class SolicitudesRepository:
             )
 
         return solicitudes
+
+    def _map_servicio_aceptado_row(self, row: dict) -> dict | None:
+        solicitud = self._unwrap_embedded(row.get("solicitudes_servicio"))
+        if not isinstance(solicitud, dict):
+            return None
+        if solicitud.get("estado") != "en_proceso":
+            return None
+
+        id_solicitud = solicitud.get("id_solicitud")
+        id_cotizacion = row.get("id_cotizacion")
+        precio = self._safe_float(row.get("monto"))
+        fecha_publicacion = solicitud.get("fecha_publicacion")
+        if id_solicitud is None or id_cotizacion is None or precio is None or not fecha_publicacion:
+            return None
+
+        solicitud_cliente = dict(solicitud)
+        return {
+            "id_solicitud": id_solicitud,
+            "titulo": solicitud.get("titulo") or "",
+            "descripcion": solicitud.get("descripcion") or "",
+            "direccion_referencia": solicitud.get("direccion_referencia"),
+            "estado": solicitud.get("estado") or "",
+            "fecha_publicacion": fecha_publicacion,
+            "categoria_nombre": self._join_nombre(solicitud.get("categorias_servicio")),
+            "zona_nombre": self._join_nombre(solicitud.get("zonas")),
+            "cliente_nombre": self._cliente_nombre_from_row(solicitud_cliente),
+            "id_cotizacion": id_cotizacion,
+            "precio": precio,
+            "tiempo_estimado": row.get("tiempo_estimado"),
+            "estado_cotizacion": row.get("estado") or "",
+        }
+
+    def get_servicios_aceptados_for_tecnico(self, id_tecnico: int) -> list[dict]:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("cotizaciones")
+            .select(
+                "id_cotizacion, monto, tiempo_estimado, estado, "
+                "solicitudes_servicio!inner("
+                "id_solicitud, titulo, descripcion, direccion_referencia, estado, "
+                "fecha_publicacion, "
+                "categorias_servicio!inner(nombre), zonas!inner(nombre), "
+                "clientes!inner(usuarios!inner(nombres, apellidos))"
+                ")"
+            )
+            .eq("id_tecnico", id_tecnico)
+            .eq("estado", "aceptada")
+            .order("fecha_envio", desc=True)
+        )
+        if not result.data:
+            return []
+
+        servicios = []
+        for row in result.data:
+            mapped = self._map_servicio_aceptado_row(row)
+            if mapped is not None:
+                servicios.append(mapped)
+
+        return servicios

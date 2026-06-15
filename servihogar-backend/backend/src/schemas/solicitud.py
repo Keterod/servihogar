@@ -67,3 +67,19 @@ class SolicitudDetalleResponse(BaseModel):
     categoria_nombre: str
     zona_nombre: str
     cotizaciones: list[CotizacionDetalleResponse] = []
+
+
+class ServicioAceptadoResponse(BaseModel):
+    id_solicitud: int
+    titulo: str
+    descripcion: str
+    direccion: str | None = None
+    estado: str
+    fecha_publicacion: datetime
+    categoria_nombre: str
+    zona_nombre: str
+    cliente_nombre: str | None = None
+    id_cotizacion: int
+    precio: float
+    tiempo_estimado: str | None = None
+    estado_cotizacion: str

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from src.schemas.solicitud import SolicitudDisponibleResponse
+from src.schemas.solicitud import ServicioAceptadoResponse, SolicitudDisponibleResponse
 from src.schemas.tecnico import TecnicoDetalleResponse, TecnicoResponse
 from src.services.solicitudes_service import SolicitudesService
 from src.services.tecnicos_service import TecnicosService
@@ -21,6 +21,14 @@ async def listar_tecnicos():
 )
 async def listar_solicitudes_disponibles_demo():
     return _solicitudes_service.obtener_solicitudes_disponibles_demo()
+
+
+@router.get(
+    "/tecnicos/demo/servicios-aceptados",
+    response_model=list[ServicioAceptadoResponse],
+)
+async def listar_servicios_aceptados_demo():
+    return _solicitudes_service.obtener_servicios_aceptados_demo()
 
 
 @router.get("/tecnicos/{id_tecnico}", response_model=TecnicoDetalleResponse)

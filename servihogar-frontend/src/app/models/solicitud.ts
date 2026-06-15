@@ -40,6 +40,22 @@ export interface SolicitudDisponible {
   ya_cotizada_por_tecnico: boolean;
 }
 
+export interface ServicioAceptado {
+  id_solicitud: number;
+  titulo: string;
+  descripcion: string;
+  direccion: string | null;
+  estado: string;
+  fecha_publicacion: string;
+  categoria_nombre: string;
+  zona_nombre: string;
+  cliente_nombre: string | null;
+  id_cotizacion: number;
+  precio: number;
+  tiempo_estimado: string | null;
+  estado_cotizacion: string;
+}
+
 export interface CotizacionRequest {
   id_solicitud: number;
   precio: number;
@@ -56,6 +72,17 @@ export interface CotizacionResponse {
   descripcion_propuesta: string;
   estado: string;
   fecha_creacion: string;
+}
+
+export interface CotizacionActionResponse {
+  id_cotizacion: number;
+  id_solicitud: number;
+  precio: number;
+  tiempo_estimado: string | null;
+  descripcion_propuesta: string;
+  estado: string;
+  fecha_creacion: string;
+  solicitud_estado: string;
 }
 
 export interface CotizacionDetalle {

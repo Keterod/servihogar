@@ -3,9 +3,7 @@
 ## Purpose
 
 Provides the request detail screen showing a service request and quotations from technicians, fetched from the backend.
-
 ## Requirements
-
 ### Requirement: Request detail display
 
 The request detail screen SHALL fetch and display complete information for the service request identified by the route parameter `:id` from `GET /solicitudes/{id_solicitud}`.
@@ -54,7 +52,7 @@ The request detail screen SHALL display cotizaciones returned by the backend for
 
 ### Requirement: Quotation selection with signals
 
-The request detail screen SHALL use Angular Signals to represent the selected or accepted quotation based on backend data.
+The request detail screen SHALL use Angular Signals to represent the selected or accepted quotation based on backend data and SHALL persist accept/reject actions via the backend.
 
 #### Scenario: Quotation selection signal
 
@@ -63,23 +61,53 @@ The request detail screen SHALL use Angular Signals to represent the selected or
 
 #### Scenario: Accept quotation button
 
-- **WHEN** the user clicks "Aceptar" on a quotation
-- **THEN** the quotation Signal updates to reflect the accepted quotation locally
-- **THEN** the accepted quotation displays a visual "Aceptada" state
-- **THEN** the other quotations display a "Rechazada" state or become visually disabled
+- **WHEN** the user clicks "Aceptar" on a pending quotation
+- **THEN** the application SHALL PATCH `/cotizaciones/{id_cotizacion}/aceptar`
+- **THEN** on HTTP 200 the cotizaciones Signal SHALL reflect the accepted and rejected states from the backend
+- **THEN** the solicitud estado Signal SHALL update to `en_proceso` when returned by the backend
 - **THEN** a confirmation message is displayed
-- **THEN** no HTTP request is made to the backend in this phase
+- **THEN** accept/reject actions on other quotations are disabled as appropriate
+
+#### Scenario: Accept loading state
+
+- **WHEN** the user clicks "Aceptar" and the PATCH request is in flight
+- **THEN** the accept/reject buttons for that quotation SHALL be disabled
+- **THEN** a loading indication SHALL be visible
+
+#### Scenario: Accept error state
+
+- **WHEN** the backend returns an error other than success for accept
+- **THEN** the page SHALL display a clear error message
+- **THEN** local cotización and solicitud states SHALL NOT be incorrectly marked as accepted
 
 #### Scenario: Reject quotation button
 
-- **WHEN** the user clicks "Rechazar" on a quotation
-- **THEN** the quotation is visually marked as "Rechazada" locally
-- **THEN** no HTTP request is made to the backend
+- **WHEN** the user clicks "Rechazar" on a pending quotation
+- **THEN** the application SHALL PATCH `/cotizaciones/{id_cotizacion}/rechazar`
+- **THEN** on HTTP 200 the quotation SHALL display estado `rechazada` from the backend response
+
+#### Scenario: Reject loading state
+
+- **WHEN** the user clicks "Rechazar" and the PATCH request is in flight
+- **THEN** the reject button for that quotation SHALL be disabled
+- **THEN** a loading indication SHALL be visible
+
+#### Scenario: Reject error state
+
+- **WHEN** the backend returns an error for reject
+- **THEN** the page SHALL display a clear error message
+- **THEN** the quotation SHALL retain its previous estado until a successful response
 
 #### Scenario: Buttons disabled after acceptance
 
-- **WHEN** a quotation has been accepted locally
+- **WHEN** a quotation has been accepted (from backend data or successful accept action)
 - **THEN** the accept/reject buttons of other quotations are disabled
+- **THEN** the accepted quotation cannot be rejected
+
+#### Scenario: Persisted state after reload
+
+- **WHEN** the user accepts or rejects a quotation and reloads `/detalle-solicitud/:id`
+- **THEN** cotización estados and solicitud estado SHALL match the backend response from `GET /solicitudes/{id}`
 
 ### Requirement: Request detail navigation
 
@@ -95,3 +123,4 @@ The request detail screen SHALL be accessible from the client dashboard with the
 
 - **WHEN** the user clicks a test button or the service is marked as completed
 - **THEN** the application navigates to `/valorar-servicio` without a full page reload
+

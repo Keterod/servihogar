@@ -2,11 +2,11 @@ import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
-import { Subject, switchMap } from 'rxjs';
+import { Subject, forkJoin, switchMap } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 
 import { SolicitudService } from '../../services/solicitud.service';
-import { SolicitudDisponible } from '../../models/solicitud';
+import { ServicioAceptado, SolicitudDisponible } from '../../models/solicitud';
 
 interface Tecnico {
   nombre: string;
@@ -31,16 +31,6 @@ interface CotizacionEnviada {
   propuesta: string;
   estado: 'pendiente' | 'aceptada' | 'rechazada';
   fechaEnvio: string;
-}
-
-interface ServicioAceptado {
-  id: number;
-  categoria: string;
-  descripcion: string;
-  zona: string;
-  cliente: string;
-  estado: 'en_proceso' | 'finalizado';
-  fecha: string;
 }
 
 type EstadoValidacion = 'pendiente' | 'validado' | 'rechazado';
@@ -70,6 +60,10 @@ export class PanelTecnico implements OnInit {
   readonly cargando = signal(true);
   readonly error = signal(false);
 
+  readonly serviciosAceptados = signal<ServicioAceptado[]>([]);
+  readonly cargandoAceptados = signal(true);
+  readonly errorAceptados = signal(false);
+
   readonly cotizacionesEnviadas = signal<CotizacionEnviada[]>([
     {
       id: 1,
@@ -82,18 +76,6 @@ export class PanelTecnico implements OnInit {
         'Reparación completa de la fuga, reemplazo de lavadero si es necesario, revisión de tuberías.',
       estado: 'pendiente',
       fechaEnvio: '2026-06-01',
-    },
-  ]);
-
-  readonly serviciosAceptados = signal<ServicioAceptado[]>([
-    {
-      id: 1,
-      categoria: 'Gasfitería menor',
-      descripcion: 'Instalación de grifería en lavadero',
-      zona: 'Huancayo Centro',
-      cliente: 'María López',
-      estado: 'finalizado',
-      fecha: '2026-05-20',
     },
   ]);
 
@@ -154,17 +136,32 @@ export class PanelTecnico implements OnInit {
         tap(() => {
           this.cargando.set(true);
           this.error.set(false);
+          this.cargandoAceptados.set(true);
+          this.errorAceptados.set(false);
         }),
-        switchMap(() => this.solicitudService.solicitudesDisponiblesTecnico()),
+        switchMap(() =>
+          forkJoin({
+            disponibles: this.solicitudService.solicitudesDisponiblesTecnico(),
+            aceptados: this.solicitudService.serviciosAceptadosTecnico(),
+          }),
+        ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((resultado) => {
+      .subscribe(({ disponibles, aceptados }) => {
         this.cargando.set(false);
-        if (resultado === null) {
+        this.cargandoAceptados.set(false);
+
+        if (disponibles === null) {
           this.error.set(true);
-          return;
+        } else {
+          this.solicitudesDisponibles.set(disponibles);
         }
-        this.solicitudesDisponibles.set(resultado);
+
+        if (aceptados === null) {
+          this.errorAceptados.set(true);
+        } else {
+          this.serviciosAceptados.set(aceptados);
+        }
       });
 
     this.recargar.next();
@@ -384,12 +381,13 @@ export class PanelTecnico implements OnInit {
     return labels[estado];
   }
 
-  getEstadoServicioLabel(estado: ServicioAceptado['estado']): string {
-    const labels: Record<ServicioAceptado['estado'], string> = {
+  getEstadoServicioLabel(estado: string): string {
+    const labels: Record<string, string> = {
       en_proceso: 'En proceso',
+      finalizada: 'Finalizada',
       finalizado: 'Finalizado',
     };
-    return labels[estado];
+    return labels[estado] ?? estado;
   }
 
   formatPrecio(precio: number): string {

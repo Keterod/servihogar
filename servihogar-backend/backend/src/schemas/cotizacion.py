@@ -19,3 +19,14 @@ class CotizacionResponse(BaseModel):
     descripcion_propuesta: str
     estado: str
     fecha_creacion: datetime
+
+
+class CotizacionActionResponse(BaseModel):
+    id_cotizacion: int
+    id_solicitud: int
+    precio: float
+    tiempo_estimado: str | None = None
+    descripcion_propuesta: str
+    estado: str
+    fecha_creacion: datetime
+    solicitud_estado: str

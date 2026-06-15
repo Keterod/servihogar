@@ -42,6 +42,10 @@
       </div>
     }
 
+    @if (errorAccion()) {
+      <p class="mensaje-accion-error">{{ errorAccion() }}</p>
+    }
+
     <div class="detalle-grid">
       <div class="detalle-main">
         <section class="section-card servicio-datos">
@@ -134,25 +138,41 @@
           </div>
 
           <div class="sidebar-acciones">
-            @if (cotizacion.estado === 'pendiente' && !hayAceptada()) {
-              <button
-                type="button"
-                class="btn-primary btn-aceptar"
-                (click)="aceptarCotizacion(cotizacion.id_cotizacion)"
-              >
-                Aceptar cotización
-              </button>
-              <button
-                type="button"
-                class="btn-secondary btn-rechazar"
-                (click)="rechazarCotizacion(cotizacion.id_cotizacion)"
-              >
-                Rechazar
-              </button>
-            } @else if (cotizacion.estado === 'aceptada') {
-              <span class="estado-badge aceptada-badge">Cotización aceptada</span>
-            } @else if (cotizacion.estado === 'rechazada') {
-              <span class="estado-badge rechazada-badge">Cotización rechazada</span>
+            @if (esVistaCliente()) {
+              @if (cotizacion.estado === 'pendiente' && !hayAceptada()) {
+                <button
+                  type="button"
+                  class="btn-primary btn-aceptar"
+                  [disabled]="accionEnCurso(cotizacion.id_cotizacion)"
+                  (click)="aceptarCotizacion(cotizacion.id_cotizacion)"
+                >
+                  @if (accionEnCurso(cotizacion.id_cotizacion)) {
+                    Aceptando…
+                  } @else {
+                    Aceptar cotización
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="btn-secondary btn-rechazar"
+                  [disabled]="accionEnCurso(cotizacion.id_cotizacion)"
+                  (click)="rechazarCotizacion(cotizacion.id_cotizacion)"
+                >
+                  @if (accionEnCurso(cotizacion.id_cotizacion)) {
+                    Rechazando…
+                  } @else {
+                    Rechazar
+                  }
+                </button>
+              } @else if (cotizacion.estado === 'aceptada') {
+                <span class="estado-badge aceptada-badge">Cotización aceptada</span>
+              } @else if (cotizacion.estado === 'rechazada') {
+                <span class="estado-badge rechazada-badge">Cotización rechazada</span>
+              }
+            } @else if (cotizacion.estado !== 'pendiente') {
+              <span class="estado-badge" [attr.data-estado]="cotizacion.estado">
+                {{ getCotizacionEstadoLabel(cotizacion.estado) }}
+              </span>
             }
           </div>
         </aside>
