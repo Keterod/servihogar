@@ -1,6 +1,12 @@
 from src.repository.supabase_client import SupabaseClient
 from src.repository.tecnicos_repository import TecnicosRepository
-from src.schemas.tecnico import TecnicoCategoriaRef, TecnicoResponse, TecnicoZonaRef
+from src.schemas.tecnico import (
+    PortafolioItem,
+    TecnicoCategoriaRef,
+    TecnicoDetalleResponse,
+    TecnicoResponse,
+    TecnicoZonaRef,
+)
 
 
 class TecnicosService:
@@ -27,6 +33,40 @@ class TecnicosService:
                 )
             )
         return result
+
+    def obtener_por_id(self, id_tecnico: int) -> TecnicoDetalleResponse | None:
+        item = self._repo.get_by_id(id_tecnico)
+        if item is None:
+            return None
+        usuario = item.pop("usuarios", {})
+        categorias = self._map_categorias(item.pop("tecnico_categorias", []) or [])
+        zonas = self._map_zonas(item.pop("tecnico_zonas", []) or [])
+        portafolio = self._map_portafolio(self._repo.get_portafolio(id_tecnico))
+        return TecnicoDetalleResponse(
+            id_tecnico=item["id_tecnico"],
+            nombres=usuario.get("nombres", ""),
+            apellidos=usuario.get("apellidos", ""),
+            descripcion=item.get("descripcion"),
+            experiencia_anios=item["experiencia_anios"],
+            calificacion=self._calcular_calificacion(item["id_tecnico"]),
+            categorias=categorias,
+            zonas=zonas,
+            portafolio=portafolio,
+        )
+
+    @staticmethod
+    def _map_portafolio(rows: list) -> list[PortafolioItem]:
+        portafolio = []
+        for row in rows or []:
+            portafolio.append(
+                PortafolioItem(
+                    id_portafolio=row["id_portafolio"],
+                    titulo=row["titulo"],
+                    descripcion=row.get("descripcion"),
+                    imagen_url=row["imagen_url"],
+                )
+            )
+        return portafolio
 
     @staticmethod
     def _map_categorias(rows: list) -> list[TecnicoCategoriaRef]:

@@ -11,6 +11,13 @@ class TecnicoZonaRef(BaseModel):
     nombre: str
 
 
+class PortafolioItem(BaseModel):
+    id_portafolio: int
+    titulo: str
+    descripcion: str | None = None
+    imagen_url: str
+
+
 class TecnicoResponse(BaseModel):
     id_tecnico: int
     nombres: str
@@ -20,3 +27,7 @@ class TecnicoResponse(BaseModel):
     calificacion: float | None = None
     categorias: list[TecnicoCategoriaRef] = []
     zonas: list[TecnicoZonaRef] = []
+
+
+class TecnicoDetalleResponse(TecnicoResponse):
+    portafolio: list[PortafolioItem] = []
