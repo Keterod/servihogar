@@ -90,6 +90,19 @@
   background: #f0f4ff;
 }
 
+.navbar-user {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.navbar-actions button.btn-nav-outline {
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .btn-nav-register {
   padding: 0.4375rem 0.875rem;
   background: var(--color-primary-light);

@@ -111,7 +111,7 @@ The footer SHALL provide separate demo navigation links to role dashboards on al
 
 - **WHEN** the user views the navbar
 - **THEN** links to panel-cliente, panel-tecnico, and panel-administrador are NOT present in the navbar
-- **THEN** the public navbar links remain Inicio, Buscar técnicos, and Iniciar sesión only
+- **THEN** public navigation remains limited to Inicio, Buscar técnicos, and session-aware auth actions
 
 #### Scenario: Demo navigation without reload
 

@@ -1,5 +1,12 @@
 import { Routes } from '@angular/router';
 
+import {
+  adminGuard,
+  authGuard,
+  clienteGuard,
+  tecnicoValidadoGuard,
+} from './guards/auth.guards';
+
 export const routes: Routes = [
   { path: '', redirectTo: '/inicio', pathMatch: 'full' },
   { path: 'inicio', loadComponent: () => import('./components/home/home').then((m) => m.Home) },
@@ -25,6 +32,7 @@ export const routes: Routes = [
   },
   {
     path: 'panel-cliente',
+    canActivate: [authGuard, clienteGuard],
     loadComponent: () =>
       import('./components/panel-cliente/panel-cliente').then((m) => m.PanelCliente),
   },
@@ -40,11 +48,13 @@ export const routes: Routes = [
   },
   {
     path: 'panel-tecnico',
+    canActivate: [authGuard, tecnicoValidadoGuard],
     loadComponent: () =>
       import('./components/panel-tecnico/panel-tecnico').then((m) => m.PanelTecnico),
   },
   {
     path: 'panel-administrador',
+    canActivate: [authGuard, adminGuard],
     loadComponent: () =>
       import('./components/panel-administrador/panel-administrador').then((m) => m.PanelAdministrador),
   },

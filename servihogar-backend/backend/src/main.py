@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from supabase._sync.client import SupabaseException
 
 from src.apis.admin import router as admin_router
+from src.apis.auth import router as auth_router
 from src.apis.categorias import router as categorias_router
 from src.apis.cotizaciones import router as cotizaciones_router
 from src.apis.health import router as health_router
@@ -36,6 +37,7 @@ async def supabase_exception_handler(_request: Request, exc: SupabaseException):
 
 
 app.include_router(health_router)
+app.include_router(auth_router)
 app.include_router(categorias_router)
 app.include_router(zonas_router)
 app.include_router(tecnicos_router)

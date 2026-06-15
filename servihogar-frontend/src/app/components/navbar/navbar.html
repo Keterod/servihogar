@@ -28,8 +28,15 @@
       </li>
     </ul>
     <div class="navbar-actions">
-      <a routerLink="/login" class="btn-nav-outline">Iniciar sesión</a>
-      <a routerLink="/login" class="btn-nav-register">Registrarse</a>
+      @if (isLoggedIn()) {
+        <span class="navbar-user">{{ displayName() }}</span>
+        <button type="button" class="btn-nav-outline" (click)="cerrarSesion()">
+          Cerrar sesión
+        </button>
+      } @else {
+        <a routerLink="/login" class="btn-nav-outline">Iniciar sesión</a>
+        <a routerLink="/login" class="btn-nav-register">Registrarse</a>
+      }
     </div>
   </div>
 </nav>
