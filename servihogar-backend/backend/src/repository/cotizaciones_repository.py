@@ -70,3 +70,15 @@ class CotizacionesRepository:
             .limit(1)
         )
         return bool(result.data)
+
+    def get_accepted_for_solicitud(self, id_solicitud: int) -> dict | None:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("cotizaciones")
+            .select("id_cotizacion, id_solicitud, id_tecnico, estado")
+            .eq("id_solicitud", id_solicitud)
+            .eq("estado", "aceptada")
+            .limit(1)
+        )
+        rows = result.data or []
+        return rows[0] if rows else None

@@ -45,6 +45,14 @@ export class DetalleSolicitud implements OnInit {
 
   readonly hayAceptada = computed(() => !!this.cotizacionAceptada());
 
+  readonly puedeValorar = computed(() => {
+    if (!this.esVistaCliente()) {
+      return false;
+    }
+    const estado = this.estadoDisplay();
+    return estado === 'en_proceso' || estado === 'finalizada';
+  });
+
   readonly selectedCotizacion = computed(() =>
     this.cotizaciones().find((c) => c.id_cotizacion === this.selectedCotizacionId()),
   );
@@ -231,6 +239,12 @@ export class DetalleSolicitud implements OnInit {
   }
 
   irAValorar(): void {
-    this.router.navigate(['/valorar-servicio']);
+    const id = this.solicitud()?.id_solicitud;
+    if (!id) {
+      return;
+    }
+    this.router.navigate(['/valorar-servicio'], {
+      queryParams: { idSolicitud: id },
+    });
   }
 }

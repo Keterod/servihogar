@@ -179,8 +179,12 @@
       }
     </div>
 
-    <div class="acciones-finales">
-      <button type="button" class="btn-valorar" (click)="irAValorar()">Valorar servicio (prueba)</button>
-    </div>
+    @if (puedeValorar()) {
+      <div class="acciones-finales">
+        <button type="button" class="btn-valorar" (click)="irAValorar()">
+          Valorar servicio
+        </button>
+      </div>
+    }
   }
 </div>

@@ -5,169 +5,217 @@
       Volver al panel
     </a>
 
-    <header class="valorar-header">
-      <h1>Valorar servicio</h1>
-      <span class="estado-badge">Finalizado</span>
-    </header>
-
-    <article class="tecnico-card">
-      <div class="avatar avatar-md">CM</div>
-      <div class="tecnico-info">
-        <strong>Carlos Mendoza</strong>
-        <span>Gasfitería menor · Huancayo Centro</span>
-      </div>
-    </article>
-
-    <p class="servicio-resumen">Servicio de Gasfitería menor — Cambio de llave de paso</p>
-
-    @if (!enviado()) {
-      <form class="valoracion-form" (submit)="$event.preventDefault(); enviarValoracion()">
-        <div class="criterios">
-          <div class="criterio">
-            <label>Puntualidad</label>
-            <div class="star-rating" role="group" aria-label="Calificar puntualidad">
-              @for (opcion of opcionesCalificacion; track opcion) {
-                <button
-                  type="button"
-                  class="star-btn"
-                  [class.active]="puntualidad() >= opcion"
-                  [attr.aria-label]="opcion + ' estrellas'"
-                  [attr.aria-pressed]="puntualidad() === opcion"
-                  (click)="setPuntualidad(opcion)"
-                >
-                  ★
-                </button>
-              }
-            </div>
-          </div>
-
-          <div class="criterio">
-            <label>Calidad</label>
-            <div class="star-rating" role="group" aria-label="Calificar calidad">
-              @for (opcion of opcionesCalificacion; track opcion) {
-                <button
-                  type="button"
-                  class="star-btn"
-                  [class.active]="calidad() >= opcion"
-                  [attr.aria-label]="opcion + ' estrellas'"
-                  [attr.aria-pressed]="calidad() === opcion"
-                  (click)="setCalidad(opcion)"
-                >
-                  ★
-                </button>
-              }
-            </div>
-          </div>
-
-          <div class="criterio">
-            <label>Trato</label>
-            <div class="star-rating" role="group" aria-label="Calificar trato">
-              @for (opcion of opcionesCalificacion; track opcion) {
-                <button
-                  type="button"
-                  class="star-btn"
-                  [class.active]="trato() >= opcion"
-                  [attr.aria-label]="opcion + ' estrellas'"
-                  [attr.aria-pressed]="trato() === opcion"
-                  (click)="setTrato(opcion)"
-                >
-                  ★
-                </button>
-              }
-            </div>
-          </div>
-
-          <div class="criterio">
-            <label>Limpieza</label>
-            <div class="star-rating" role="group" aria-label="Calificar limpieza">
-              @for (opcion of opcionesCalificacion; track opcion) {
-                <button
-                  type="button"
-                  class="star-btn"
-                  [class.active]="limpieza() >= opcion"
-                  [attr.aria-label]="opcion + ' estrellas'"
-                  [attr.aria-pressed]="limpieza() === opcion"
-                  (click)="setLimpieza(opcion)"
-                >
-                  ★
-                </button>
-              }
-            </div>
-          </div>
-
-          <div class="criterio">
-            <label>Cumplimiento del precio</label>
-            <div class="star-rating" role="group" aria-label="Calificar cumplimiento del precio">
-              @for (opcion of opcionesCalificacion; track opcion) {
-                <button
-                  type="button"
-                  class="star-btn"
-                  [class.active]="cumplimientoPrecio() >= opcion"
-                  [attr.aria-label]="opcion + ' estrellas'"
-                  [attr.aria-pressed]="cumplimientoPrecio() === opcion"
-                  (click)="setCumplimientoPrecio(opcion)"
-                >
-                  ★
-                </button>
-              }
-            </div>
-          </div>
+    @if (sinId()) {
+      <p class="mensaje-estado mensaje-error">
+        Falta el identificador de la solicitud. Abre esta pantalla desde el detalle de una solicitud
+        en proceso o finalizada.
+      </p>
+    } @else if (cargando()) {
+      <p class="mensaje-estado">Cargando información del servicio…</p>
+    } @else if (errorCarga()) {
+      <p class="mensaje-estado mensaje-error">
+        No se pudo cargar la solicitud. Verifica que el backend esté disponible.
+      </p>
+    } @else if (solicitud(); as detalle) {
+      <header class="valorar-header">
+        <div>
+          <h1>Valorar servicio</h1>
+          <p class="solicitud-ref">Solicitud #{{ detalle.id_solicitud }}</p>
         </div>
+        <span class="estado-badge">{{ estadoLabel() }}</span>
+      </header>
 
-        <div class="promedio">
-          <span class="promedio-label">Promedio general</span>
-          <div class="promedio-display">
-            <span class="promedio-stars" aria-hidden="true">★</span>
-            <span class="promedio-valor">{{ promedio() }}</span>
-            <span class="promedio-max">/ 5</span>
+      @if (cotizacionAceptada(); as cotizacion) {
+        <article class="tecnico-card">
+          <div class="avatar avatar-md">{{ inicialesTecnico() }}</div>
+          <div class="tecnico-info">
+            <strong>{{ cotizacion.tecnico_nombre }}</strong>
+            <span>
+              {{ detalle.categoria_nombre }} · {{ detalle.zona_nombre }}
+            </span>
           </div>
-        </div>
+        </article>
+      }
 
-        <div class="form-group">
-          <label for="comentario">Comentario (opcional)</label>
-          <textarea
-            id="comentario"
-            rows="3"
-            placeholder="Comparte tu experiencia con este técnico..."
-            [value]="comentario()"
-            (input)="comentario.set($any($event.target).value)"
-          ></textarea>
-        </div>
+      <p class="servicio-resumen">
+        {{ detalle.categoria_nombre }} — {{ detalle.titulo }}
+      </p>
 
-        <fieldset class="toggle-group">
-          <legend>¿Volverías a contratar a este técnico?</legend>
-          <div class="toggle-buttons">
-            <button
-              type="button"
-              class="toggle-btn"
-              [class.selected]="volveriaContratar() === true"
-              (click)="volveriaContratar.set(true)"
-            >
-              Sí
-            </button>
-            <button
-              type="button"
-              class="toggle-btn"
-              [class.selected]="volveriaContratar() === false"
-              (click)="volveriaContratar.set(false)"
-            >
-              No
-            </button>
+      @if (duplicado()) {
+        <p class="mensaje-estado mensaje-error">
+          Esta solicitud ya fue valorada. Puedes volver al panel para ver su estado actualizado.
+        </p>
+      }
+
+      @if (!enviado()) {
+        <form class="valoracion-form" (submit)="$event.preventDefault(); enviarValoracion()">
+          @if (errorEnvio()) {
+            <p class="mensaje-form-error">{{ errorEnvio() }}</p>
+          }
+
+          <div class="criterios">
+            <div class="criterio">
+              <label>Puntualidad</label>
+              <div class="star-rating" role="group" aria-label="Calificar puntualidad">
+                @for (opcion of opcionesCalificacion; track opcion) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.active]="puntualidad() >= opcion"
+                    [attr.aria-label]="opcion + ' estrellas'"
+                    [attr.aria-pressed]="puntualidad() === opcion"
+                    [disabled]="enviando()"
+                    (click)="setPuntualidad(opcion)"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="criterio">
+              <label>Calidad</label>
+              <div class="star-rating" role="group" aria-label="Calificar calidad">
+                @for (opcion of opcionesCalificacion; track opcion) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.active]="calidad() >= opcion"
+                    [attr.aria-label]="opcion + ' estrellas'"
+                    [attr.aria-pressed]="calidad() === opcion"
+                    [disabled]="enviando()"
+                    (click)="setCalidad(opcion)"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="criterio">
+              <label>Trato</label>
+              <div class="star-rating" role="group" aria-label="Calificar trato">
+                @for (opcion of opcionesCalificacion; track opcion) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.active]="trato() >= opcion"
+                    [attr.aria-label]="opcion + ' estrellas'"
+                    [attr.aria-pressed]="trato() === opcion"
+                    [disabled]="enviando()"
+                    (click)="setTrato(opcion)"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="criterio">
+              <label>Limpieza</label>
+              <div class="star-rating" role="group" aria-label="Calificar limpieza">
+                @for (opcion of opcionesCalificacion; track opcion) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.active]="limpieza() >= opcion"
+                    [attr.aria-label]="opcion + ' estrellas'"
+                    [attr.aria-pressed]="limpieza() === opcion"
+                    [disabled]="enviando()"
+                    (click)="setLimpieza(opcion)"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="criterio">
+              <label>Cumplimiento del precio</label>
+              <div class="star-rating" role="group" aria-label="Calificar cumplimiento del precio">
+                @for (opcion of opcionesCalificacion; track opcion) {
+                  <button
+                    type="button"
+                    class="star-btn"
+                    [class.active]="cumplimientoPrecio() >= opcion"
+                    [attr.aria-label]="opcion + ' estrellas'"
+                    [attr.aria-pressed]="cumplimientoPrecio() === opcion"
+                    [disabled]="enviando()"
+                    (click)="setCumplimientoPrecio(opcion)"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+            </div>
           </div>
-        </fieldset>
 
-        <button type="submit" class="btn-primary btn-submit" [disabled]="!todosCalificados()">
-          Enviar valoración
-        </button>
-      </form>
-    } @else {
-      <div class="confirmacion">
-        <div class="confirmacion-icono" aria-hidden="true">✓</div>
-        <h2>¡Valoración enviada!</h2>
-        <p>Tu valoración ha sido registrada exitosamente.</p>
-        <p>Gracias por tu feedback, ayuda a mejorar nuestro servicio.</p>
-        <button type="button" class="btn-primary" (click)="irAlPanel()">Volver al panel</button>
-      </div>
+          <div class="promedio">
+            <span class="promedio-label">Promedio general</span>
+            <div class="promedio-display">
+              <span class="promedio-stars" aria-hidden="true">★</span>
+              <span class="promedio-valor">{{ promedio() }}</span>
+              <span class="promedio-max">/ 5</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="comentario">Comentario (opcional)</label>
+            <textarea
+              id="comentario"
+              rows="3"
+              placeholder="Comparte tu experiencia con este técnico..."
+              [value]="comentario()"
+              [disabled]="enviando()"
+              (input)="comentario.set($any($event.target).value)"
+            ></textarea>
+          </div>
+
+          <fieldset class="toggle-group">
+            <legend>¿Volverías a contratar a este técnico?</legend>
+            <div class="toggle-buttons">
+              <button
+                type="button"
+                class="toggle-btn"
+                [class.selected]="volveriaContratar() === true"
+                [disabled]="enviando()"
+                (click)="volveriaContratar.set(true)"
+              >
+                Sí
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                [class.selected]="volveriaContratar() === false"
+                [disabled]="enviando()"
+                (click)="volveriaContratar.set(false)"
+              >
+                No
+              </button>
+            </div>
+          </fieldset>
+
+          <button
+            type="submit"
+            class="btn-primary btn-submit"
+            [disabled]="!todosCalificados() || enviando() || duplicado()"
+          >
+            @if (enviando()) {
+              Enviando valoración…
+            } @else {
+              Enviar valoración
+            }
+          </button>
+        </form>
+      } @else {
+        <div class="confirmacion">
+          <div class="confirmacion-icono" aria-hidden="true">✓</div>
+          <h2>¡Valoración enviada!</h2>
+          <p>Tu valoración ha sido registrada exitosamente.</p>
+          <p>Gracias por tu feedback, ayuda a mejorar nuestro servicio.</p>
+          <button type="button" class="btn-primary" (click)="irAlPanel()">Volver al panel</button>
+        </div>
+      }
     }
   </div>
 </div>

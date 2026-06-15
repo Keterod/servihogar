@@ -111,7 +111,7 @@ The request detail screen SHALL use Angular Signals to represent the selected or
 
 ### Requirement: Request detail navigation
 
-The request detail screen SHALL be accessible from the client dashboard with the solicitud id in the route.
+The request detail screen SHALL be accessible from the client dashboard with the solicitud id in the route and SHALL link to the rating screen when eligible.
 
 #### Scenario: Route accessible with id
 
@@ -121,6 +121,11 @@ The request detail screen SHALL be accessible from the client dashboard with the
 
 #### Scenario: Navigation to rating
 
-- **WHEN** the user clicks a test button or the service is marked as completed
-- **THEN** the application navigates to `/valorar-servicio` without a full page reload
+- **WHEN** the solicitud estado is `en_proceso` or `finalizada` and the user chooses to rate the service
+- **THEN** the application navigates to `/valorar-servicio?idSolicitud={id}` without a full page reload
+
+#### Scenario: Rating link hidden when not eligible
+
+- **WHEN** the solicitud estado is `pendiente` or `cancelada`
+- **THEN** the rating action SHALL NOT be shown or SHALL be disabled with clear guidance
 

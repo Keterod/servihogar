@@ -2,9 +2,7 @@
 
 ## Purpose
 Provides the service rating screen for clients to evaluate completed services.
-
 ## Requirements
-
 ### Requirement: Service rating form
 
 The service rating screen SHALL display a rating form with five criteria for evaluating the completed service.
@@ -21,7 +19,7 @@ The service rating screen SHALL display a rating form with five criteria for eva
 
 ### Requirement: Rating uses signals
 
-The service rating screen SHALL use Angular Signals to manage rating values.
+The service rating screen SHALL use Angular Signals to manage rating values and submission state.
 
 #### Scenario: Signals for rating values
 
@@ -32,6 +30,11 @@ The service rating screen SHALL use Angular Signals to manage rating values.
 
 - **WHEN** the user completes all criteria ratings
 - **THEN** the overall rating is computed from individual Signals using computed()
+
+#### Scenario: Submission state signal
+
+- **WHEN** the user submits or receives a response from the backend
+- **THEN** loading, success, and error states are tracked in Angular Signals
 
 ### Requirement: Additional rating fields
 
@@ -85,3 +88,4 @@ The rating screen SHALL allow navigation back to the client dashboard.
 
 - **WHEN** the user clicks the navigation button after submission
 - **THEN** the application navigates to `/panel-cliente` without a full page reload
+

@@ -14,7 +14,17 @@ import {
   SolicitudListResponse,
   SolicitudRequest,
   SolicitudResponse,
+  ValoracionRequest,
+  ValoracionResponse,
 } from '../models/solicitud';
+
+export type CrearValoracionResult =
+  | ValoracionResponse
+  | 'not_found'
+  | 'bad_request'
+  | 'duplicate'
+  | 'validation'
+  | null;
 
 export type CrearCotizacionResult =
   | CotizacionResponse
@@ -121,6 +131,26 @@ export class SolicitudService {
           return of(null);
         }
         return throwError(() => err);
+      }),
+    );
+  }
+
+  crearValoracion(data: ValoracionRequest): Observable<CrearValoracionResult> {
+    return this.http.post<ValoracionResponse>(`${API_BASE_URL}/valoraciones`, data).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) {
+          return of('not_found' as const);
+        }
+        if (err.status === 400) {
+          return of('bad_request' as const);
+        }
+        if (err.status === 409) {
+          return of('duplicate' as const);
+        }
+        if (err.status === 422) {
+          return of('validation' as const);
+        }
+        return of(null);
       }),
     );
   }

@@ -8,6 +8,7 @@ from src.apis.cotizaciones import router as cotizaciones_router
 from src.apis.health import router as health_router
 from src.apis.solicitudes import router as solicitudes_router
 from src.apis.tecnicos import router as tecnicos_router
+from src.apis.valoraciones import router as valoraciones_router
 from src.apis.zonas import router as zonas_router
 
 app = FastAPI(title="ServiHogar API", version="0.1.0")
@@ -39,3 +40,4 @@ app.include_router(zonas_router)
 app.include_router(tecnicos_router)
 app.include_router(solicitudes_router)
 app.include_router(cotizaciones_router)
+app.include_router(valoraciones_router)

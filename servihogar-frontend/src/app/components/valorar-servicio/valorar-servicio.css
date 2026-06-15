@@ -285,6 +285,28 @@
   margin-top: 1.5rem;
 }
 
+.solicitud-ref {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.mensaje-estado {
+  margin: 0;
+  padding: 1rem 0;
+  color: var(--color-muted);
+}
+
+.mensaje-error {
+  color: var(--color-badge-danger-text);
+}
+
+.mensaje-form-error {
+  margin: 0 0 1rem;
+  color: var(--color-badge-danger-text);
+  font-size: 0.875rem;
+}
+
 @media (max-width: 375px) {
   .valorar-card {
     padding: 1.25rem;

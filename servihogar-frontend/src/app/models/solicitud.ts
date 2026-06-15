@@ -108,3 +108,27 @@ export interface SolicitudDetalle {
   zona_nombre: string;
   cotizaciones: CotizacionDetalle[];
 }
+
+export interface ValoracionRequest {
+  id_solicitud: number;
+  calificacion: number;
+  comentario?: string;
+  puntualidad?: number;
+  calidad?: number;
+  trato?: number;
+  precio?: number;
+}
+
+export interface ValoracionResponse {
+  id_valoracion: number;
+  id_cotizacion: number;
+  id_solicitud: number;
+  puntuacion: number;
+  comentario: string | null;
+  puntualidad: number | null;
+  calidad: number | null;
+  precio: number | null;
+  trato: number | null;
+  fecha_valoracion: string;
+  solicitud_estado: string;
+}
