@@ -29,3 +29,5 @@ export interface Tecnico {
 export interface TecnicoDetalle extends Tecnico {
   portafolio: PortafolioItem[];
 }
+
+export type TecnicoPerfil = TecnicoDetalle;

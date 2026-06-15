@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { TecnicoService } from '../../services/tecnico.service';
-import { TecnicoDetalle } from '../../models/tecnico';
+import { TecnicoPerfil } from '../../models/tecnico';
 
 interface RatingBar {
   etiqueta: string;
@@ -19,10 +19,10 @@ export class PerfilTecnico implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly tecnicoService = inject(TecnicoService);
 
-  readonly loading = signal(true);
-  readonly error = signal(false);
-  readonly notFound = signal(false);
-  readonly tecnico = signal<TecnicoDetalle | null>(null);
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
+  readonly notFound = signal<boolean>(false);
+  readonly tecnico = signal<TecnicoPerfil | null>(null);
 
   readonly ratingBars: RatingBar[] = [
     { etiqueta: 'Puntualidad', porcentaje: 92 },
@@ -39,6 +39,7 @@ export class PerfilTecnico implements OnInit {
       this.loading.set(false);
       return;
     }
+
     this.tecnicoService.obtenerTecnicoPorId(id).subscribe({
       next: (data) => {
         if (data === null) {
@@ -49,7 +50,7 @@ export class PerfilTecnico implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set(true);
+        this.error.set('No se pudo conectar con el servidor. Intenta nuevamente más tarde.');
         this.loading.set(false);
       },
     });

@@ -4,7 +4,7 @@
       <div class="status-message">Cargando perfil del técnico…</div>
     } @else if (error()) {
       <div class="status-message error">
-        No se pudo conectar con el servidor. Intenta nuevamente más tarde.
+        {{ error() }}
       </div>
     } @else if (notFound()) {
       <div class="status-message">Técnico no encontrado.</div>
