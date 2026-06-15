@@ -1,8 +1,5 @@
-# admin-dashboard Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change crear-flujo-administrador-frontend. Update Purpose after archive.
-## Requirements
 ### Requirement: Admin dashboard summary
 The admin dashboard SHALL display a general system summary grid with real metrics loaded from the FastAPI administrator demo API and local derived state managed with Signals and `computed()`.
 
@@ -82,14 +79,7 @@ The admin dashboard SHALL be implemented in the `panel-administrador` screen usi
 - **WHEN** the component determines whether to show loading, error, empty, or data content
 - **THEN** it uses `computed()` for derived UI state where applicable
 
-### Requirement: Responsive admin dashboard
-
-The admin dashboard SHALL adapt to small viewports without horizontal page overflow.
-
-#### Scenario: Mobile layout
-
-- **WHEN** the viewport width is 375px or less
-- **THEN** dashboard sections remain readable without horizontal page scroll
+## ADDED Requirements
 
 ### Requirement: Admin dashboard API service
 The frontend SHALL use an Angular service to communicate with the FastAPI administrator demo endpoints.
@@ -132,3 +122,14 @@ The connected administrator dashboard SHALL preserve existing navigation behavio
 - **WHEN** the admin dashboard connection is implemented
 - **THEN** `/buscar-tecnicos`, `/panel-cliente`, `/panel-tecnico`, and `/detalle-solicitud/:id` remain routable and keep their existing backend integrations
 
+## REMOVED Requirements
+
+### Requirement: Service category management
+**Reason**: This change connects the administrator panel to real backend metrics and pending technician validation. Category creation remains out of scope because there is no requested administrator category API in this change.
+
+**Migration**: Remove or de-emphasize hardcoded category management UI from `/panel-administrador`; future category administration should be specified with dedicated backend endpoints.
+
+### Requirement: Registered users display
+**Reason**: This change requires real aggregate user metrics, not a hardcoded list of five simulated users. No user listing endpoint is included in the requested scope.
+
+**Migration**: Replace simulated registered-user list content with real summary counters from `GET /admin/demo/resumen`. A future change can add a paginated user management API if needed.

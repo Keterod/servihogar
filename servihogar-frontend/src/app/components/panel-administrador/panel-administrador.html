@@ -9,14 +9,14 @@
 
     <nav class="sidebar-nav" aria-label="Menú administrador">
       <a href="#titulo-resumen" class="active">Resumen</a>
-      <a href="#titulo-tecnicos">Técnicos</a>
-      <a href="#titulo-categorias">Categorías</a>
-      <a href="#titulo-usuarios">Usuarios</a>
+      <a href="#titulo-tecnicos">Técnicos pendientes</a>
       <a href="#titulo-reportes">Reportes</a>
     </nav>
 
     <div class="sidebar-cta">
-      <button type="button" class="btn-primary">Exportar datos</button>
+      <button type="button" class="btn-primary" (click)="cargarDatos()" [disabled]="cargando()">
+        Actualizar datos
+      </button>
     </div>
   </aside>
 
@@ -24,189 +24,135 @@
     <header class="content-header">
       <div>
         <h1>Panel administrador</h1>
-        <p>Gestión del sistema ServiHogar</p>
+        <p>Datos reales del sistema desde FastAPI y Supabase</p>
       </div>
       <div class="quick-actions">
         <a href="#titulo-tecnicos" class="btn-secondary btn-quick">Validar técnicos</a>
-        <a href="#titulo-categorias" class="btn-secondary btn-quick">Nueva categoría</a>
         <a href="#titulo-reportes" class="btn-secondary btn-quick">Ver reportes</a>
       </div>
     </header>
 
-    <section id="titulo-resumen" class="summary-section" aria-labelledby="heading-resumen">
-      <h2 id="heading-resumen" class="visually-hidden">Resumen general</h2>
-      <div class="summary-grid">
-        <article class="summary-card">
-          <span class="summary-value">{{ totalTecnicos() }}</span>
-          <span class="summary-label">Total técnicos</span>
-        </article>
-        <article class="summary-card">
-          <span class="summary-value">{{ tecnicosPendientes() }}</span>
-          <span class="summary-label">Pendientes</span>
-        </article>
-        <article class="summary-card">
-          <span class="summary-value">{{ tecnicosValidados() }}</span>
-          <span class="summary-label">Validados</span>
-        </article>
-        <article class="summary-card">
-          <span class="summary-value">{{ tecnicosRechazados() }}</span>
-          <span class="summary-label">Rechazados</span>
-        </article>
-      </div>
-    </section>
+    @if (mensajeAccion()) {
+      <p class="mensaje-accion" role="status">{{ mensajeAccion() }}</p>
+    }
 
-    <section class="section-card" aria-labelledby="titulo-tecnicos">
-      <h2 id="titulo-tecnicos">Técnicos</h2>
-      @if (mensajeAccion()) {
-        <p class="mensaje-accion" role="status">{{ mensajeAccion() }}</p>
-      }
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Especialidad</th>
-              <th>Zona</th>
-              <th>Registro</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (tecnico of tecnicos(); track tecnico.id) {
-              <tr>
-                <td>#{{ tecnico.id }}</td>
-                <td class="cell-nombre">{{ tecnico.nombre }}</td>
-                <td>{{ tecnico.especialidad }}</td>
-                <td>{{ tecnico.zona }}</td>
-                <td>{{ tecnico.fechaRegistro }}</td>
-                <td>
-                  <span [class]="getEstadoValidacionClass(tecnico.estadoValidacion)">
-                    {{ getEstadoValidacionLabel(tecnico.estadoValidacion) }}
-                  </span>
-                </td>
-                <td class="cell-acciones">
-                  <button type="button" class="btn-table btn-detalle">Ver detalle</button>
-                  @if (tecnico.estadoValidacion === 'pendiente') {
-                    <button type="button" class="btn-table btn-validar" (click)="validarTecnico(tecnico.id)">
-                      Aprobar
-                    </button>
-                    <button type="button" class="btn-table btn-rechazar" (click)="rechazarTecnico(tecnico.id)">
-                      Rechazar
-                    </button>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+    @if (error()) {
+      <div class="estado-panel estado-error" role="alert">
+        <p>{{ error() }}</p>
+        <button type="button" class="btn-secondary" (click)="cargarDatos()">Reintentar</button>
       </div>
-    </section>
+    }
 
-    <section class="section-card" aria-labelledby="titulo-categorias">
-      <h2 id="titulo-categorias">Categorías de servicio</h2>
-      <div class="categorias-grid">
-        @for (categoria of categorias(); track categoria.id) {
-          <article class="categoria-item">
-            <h3 class="categoria-nombre">{{ categoria.nombre }}</h3>
-            @if (categoria.descripcion) {
-              <p class="categoria-descripcion">{{ categoria.descripcion }}</p>
-            }
-          </article>
-        }
-      </div>
-
-      <form class="form-categoria" (submit)="$event.preventDefault()">
-        <h3>Agregar categoría</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="cat-nombre">Nombre</label>
-            <input
-              id="cat-nombre"
-              type="text"
-              placeholder="Nombre de la categoría"
-              [value]="formCategoria().nombre"
-              (input)="actualizarNombreCategoria($event)"
-            />
-          </div>
-          <div class="form-group">
-            <label for="cat-descripcion">Descripción (opcional)</label>
-            <input
-              id="cat-descripcion"
-              type="text"
-              placeholder="Descripción breve"
-              [value]="formCategoria().descripcion"
-              (input)="actualizarDescripcionCategoria($event)"
-            />
-          </div>
+    @if (cargando()) {
+      <section class="section-card estado-panel" aria-live="polite">
+        <h2>Cargando panel administrador</h2>
+        <p>Consultando métricas y técnicos pendientes...</p>
+      </section>
+    } @else if (tieneDatos()) {
+      <section id="titulo-resumen" class="summary-section" aria-labelledby="heading-resumen">
+        <h2 id="heading-resumen" class="visually-hidden">Resumen general</h2>
+        <div class="summary-grid summary-grid-admin">
+          @for (metrica of metricasResumen(); track metrica.etiqueta) {
+            <article class="summary-card">
+              <span class="summary-value">{{ metrica.valor }}</span>
+              <span class="summary-label">{{ metrica.etiqueta }}</span>
+            </article>
+          }
         </div>
-        @if (mensajeCategoria()) {
-          <p class="mensaje-error" role="alert">{{ mensajeCategoria() }}</p>
+      </section>
+
+      <section class="section-card" aria-labelledby="titulo-tecnicos">
+        <div class="section-header-inline">
+          <div>
+            <h2 id="titulo-tecnicos">Técnicos pendientes</h2>
+            <p>Revisa los perfiles que esperan validación administrativa.</p>
+          </div>
+          <button type="button" class="btn-secondary" (click)="cargarDatos()">Actualizar</button>
+        </div>
+
+        @if (sinPendientes()) {
+          <div class="empty-state">
+            <h3>No hay técnicos pendientes</h3>
+            <p>Todos los técnicos registrados ya fueron procesados.</p>
+          </div>
+        } @else {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Técnico</th>
+                  <th>Contacto</th>
+                  <th>Descripción</th>
+                  <th>Experiencia</th>
+                  <th>Categorías</th>
+                  <th>Zonas</th>
+                  <th>Registro</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tecnico of tecnicosPendientes(); track tecnico.id_tecnico) {
+                  <tr>
+                    <td>#{{ tecnico.id_tecnico }}</td>
+                    <td class="cell-nombre">{{ nombreCompleto(tecnico) }}</td>
+                    <td>
+                      @if (tecnico.email) {
+                        <div>{{ tecnico.email }}</div>
+                      }
+                      @if (tecnico.telefono) {
+                        <div>{{ tecnico.telefono }}</div>
+                      }
+                      @if (!tecnico.email && !tecnico.telefono) {
+                        <span class="texto-muted">Sin contacto</span>
+                      }
+                    </td>
+                    <td>{{ tecnico.descripcion || 'Sin descripción' }}</td>
+                    <td>{{ tecnico.experiencia_anios }} años</td>
+                    <td>{{ textoLista(tecnico.categorias) }}</td>
+                    <td>{{ textoLista(tecnico.zonas) }}</td>
+                    <td>{{ fechaCorta(tecnico.fecha_registro) }}</td>
+                    <td class="cell-acciones">
+                      <button
+                        type="button"
+                        class="btn-table btn-validar"
+                        [disabled]="accionEnCurso() !== null"
+                        (click)="validarTecnico(tecnico.id_tecnico)"
+                      >
+                        @if (accionEnCurso() === tecnico.id_tecnico) {
+                          Procesando...
+                        } @else {
+                          Aprobar
+                        }
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-table btn-rechazar"
+                        [disabled]="accionEnCurso() !== null"
+                        (click)="rechazarTecnico(tecnico.id_tecnico)"
+                      >
+                        Rechazar
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         }
-        <button
-          type="button"
-          class="btn-primary btn-agregar"
-          [disabled]="!puedeAgregarCategoria()"
-          (click)="agregarCategoria()"
-        >
-          Agregar categoría
-        </button>
-      </form>
-    </section>
+      </section>
 
-    <section class="section-card" aria-labelledby="titulo-usuarios">
-      <h2 id="titulo-usuarios">Usuarios registrados</h2>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Rol</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (usuario of usuarios(); track usuario.id) {
-              <tr>
-                <td class="cell-nombre">{{ usuario.nombre }}</td>
-                <td><span class="badge-rol">{{ getRolLabel(usuario.rol) }}</span></td>
-                <td>
-                  <span class="badge-estado-usuario" [attr.data-estado]="usuario.estado">
-                    {{ getEstadoUsuarioLabel(usuario.estado) }}
-                  </span>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="section-card" aria-labelledby="titulo-reportes">
-      <h2 id="titulo-reportes">Reportes básicos</h2>
-      <div class="reportes-grid">
-        <article class="reporte-card">
-          <span class="reporte-numero">{{ reportes().solicitudesPublicadas }}</span>
-          <span class="reporte-label">Solicitudes publicadas</span>
-        </article>
-        <article class="reporte-card">
-          <span class="reporte-numero">{{ reportes().cotizacionesRegistradas }}</span>
-          <span class="reporte-label">Cotizaciones registradas</span>
-        </article>
-        <article class="reporte-card">
-          <span class="reporte-numero">{{ reportes().serviciosFinalizados }}</span>
-          <span class="reporte-label">Servicios finalizados</span>
-        </article>
-        <article class="reporte-card">
-          <span class="reporte-numero">{{ tecnicosActivos() }}</span>
-          <span class="reporte-label">Técnicos activos</span>
-        </article>
-        <article class="reporte-card">
-          <span class="reporte-numero">{{ totalUsuarios() }}</span>
-          <span class="reporte-label">Usuarios registrados</span>
-        </article>
-      </div>
-    </section>
+      <section class="section-card" aria-labelledby="titulo-reportes">
+        <h2 id="titulo-reportes">Reportes básicos</h2>
+        <div class="reportes-grid">
+          @for (metrica of metricasReportes(); track metrica.etiqueta) {
+            <article class="reporte-card">
+              <span class="reporte-numero">{{ metrica.valor }}</span>
+              <span class="reporte-label">{{ metrica.etiqueta }}</span>
+            </article>
+          }
+        </div>
+      </section>
+    }
   </main>
 </div>

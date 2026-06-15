@@ -1,40 +1,15 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 
-type EstadoValidacion = 'pendiente' | 'validado' | 'rechazado';
-type RolUsuario = 'cliente' | 'tecnico' | 'administrador';
-type EstadoUsuario = 'activo' | 'pendiente' | 'rechazado';
+import { AdminResumen, TecnicoPendienteAdmin } from '../../models/administrador';
+import {
+  AdministradorService,
+  TecnicoValidacionAdminResult,
+} from '../../services/administrador.service';
 
-interface TecnicoAdmin {
-  id: number;
-  nombre: string;
-  especialidad: string;
-  zona: string;
-  estadoValidacion: EstadoValidacion;
-  fechaRegistro: string;
-}
-
-interface Categoria {
-  id: number;
-  nombre: string;
-  descripcion?: string;
-}
-
-interface Usuario {
-  id: number;
-  nombre: string;
-  rol: RolUsuario;
-  estado: EstadoUsuario;
-}
-
-interface FormCategoria {
-  nombre: string;
-  descripcion: string;
-}
-
-interface Reportes {
-  solicitudesPublicadas: number;
-  cotizacionesRegistradas: number;
-  serviciosFinalizados: number;
+interface MetricaAdmin {
+  etiqueta: string;
+  valor: number;
 }
 
 @Component({
@@ -43,196 +18,152 @@ interface Reportes {
   templateUrl: './panel-administrador.html',
   styleUrl: './panel-administrador.css',
 })
-export class PanelAdministrador {
-  readonly tecnicos = signal<TecnicoAdmin[]>([
-    {
-      id: 1,
-      nombre: 'Carlos Mendoza',
-      especialidad: 'Gasfitería menor',
-      zona: 'Huancayo Centro',
-      estadoValidacion: 'validado',
-      fechaRegistro: '2026-05-15',
-    },
-    {
-      id: 2,
-      nombre: 'Luis Arango',
-      especialidad: 'Electricidad básica',
-      zona: 'El Tambo',
-      estadoValidacion: 'pendiente',
-      fechaRegistro: '2026-05-28',
-    },
-    {
-      id: 3,
-      nombre: 'Rosa Huamán',
-      especialidad: 'Gasfitería menor',
-      zona: 'Chilca',
-      estadoValidacion: 'pendiente',
-      fechaRegistro: '2026-05-30',
-    },
-    {
-      id: 4,
-      nombre: 'Pedro Vargas',
-      especialidad: 'Pintura básica',
-      zona: 'Huancayo Centro',
-      estadoValidacion: 'rechazado',
-      fechaRegistro: '2026-05-20',
-    },
-  ]);
+export class PanelAdministrador implements OnInit {
+  private readonly administradorService = inject(AdministradorService);
 
-  readonly categorias = signal<Categoria[]>([
-    { id: 1, nombre: 'Gasfitería menor', descripcion: 'Reparaciones de agua y desagüe' },
-    { id: 2, nombre: 'Electricidad básica', descripcion: 'Instalaciones eléctricas menores' },
-    {
-      id: 3,
-      nombre: 'Mantenimiento de PC',
-      descripcion: 'Soporte técnico y mantenimiento de equipos',
-    },
-    { id: 4, nombre: 'Pintura básica', descripcion: 'Pintura interior y exterior' },
-    { id: 5, nombre: 'Armado de muebles', descripcion: 'Montaje de muebles y estanterías' },
-    { id: 6, nombre: 'Reparaciones menores', descripcion: 'Arreglos generales del hogar' },
-  ]);
-
-  readonly usuarios = signal<Usuario[]>([
-    { id: 1, nombre: 'Mariana Quispe', rol: 'cliente', estado: 'activo' },
-    { id: 2, nombre: 'Carlos Mendoza', rol: 'tecnico', estado: 'activo' },
-    { id: 3, nombre: 'Luis Arango', rol: 'tecnico', estado: 'pendiente' },
-    { id: 4, nombre: 'Rosa Huamán', rol: 'tecnico', estado: 'pendiente' },
-    { id: 5, nombre: 'Administrador Demo', rol: 'administrador', estado: 'activo' },
-  ]);
-
-  readonly reportes = signal<Reportes>({
-    solicitudesPublicadas: 12,
-    cotizacionesRegistradas: 28,
-    serviciosFinalizados: 7,
-  });
-
-  readonly formCategoria = signal<FormCategoria>({ nombre: '', descripcion: '' });
+  readonly resumen = signal<AdminResumen | null>(null);
+  readonly tecnicosPendientes = signal<TecnicoPendienteAdmin[]>([]);
+  readonly cargando = signal(false);
+  readonly error = signal('');
+  readonly accionEnCurso = signal<number | null>(null);
   readonly mensajeAccion = signal('');
-  readonly mensajeCategoria = signal('');
 
-  private nextCategoriaId = 7;
-
-  readonly totalTecnicos = computed(() => this.tecnicos().length);
-
-  readonly tecnicosPendientes = computed(
-    () => this.tecnicos().filter((t) => t.estadoValidacion === 'pendiente').length
+  readonly tieneDatos = computed(() => this.resumen() !== null && !this.error());
+  readonly sinPendientes = computed(
+    () => this.tieneDatos() && this.tecnicosPendientes().length === 0,
   );
 
-  readonly tecnicosValidados = computed(
-    () => this.tecnicos().filter((t) => t.estadoValidacion === 'validado').length
-  );
-
-  readonly tecnicosRechazados = computed(
-    () => this.tecnicos().filter((t) => t.estadoValidacion === 'rechazado').length
-  );
-
-  readonly totalCategorias = computed(() => this.categorias().length);
-
-  readonly totalUsuarios = computed(() => this.usuarios().length);
-
-  readonly tecnicosActivos = computed(() => this.tecnicosValidados());
-
-  readonly puedeAgregarCategoria = computed(() => {
-    const nombre = this.formCategoria().nombre.trim();
-    if (!nombre) {
-      return false;
+  readonly metricasResumen = computed<MetricaAdmin[]>(() => {
+    const resumen = this.resumen();
+    if (!resumen) {
+      return [];
     }
-    const existe = this.categorias().some(
-      (c) => c.nombre.toLowerCase() === nombre.toLowerCase()
-    );
-    return !existe;
+
+    return [
+      { etiqueta: 'Usuarios', valor: resumen.total_usuarios },
+      { etiqueta: 'Clientes', valor: resumen.total_clientes },
+      { etiqueta: 'Técnicos', valor: resumen.total_tecnicos },
+      { etiqueta: 'Solicitudes', valor: resumen.total_solicitudes },
+      { etiqueta: 'Pendientes', valor: resumen.solicitudes_pendientes },
+      { etiqueta: 'En proceso', valor: resumen.solicitudes_en_proceso },
+      { etiqueta: 'Finalizadas', valor: resumen.solicitudes_finalizadas },
+      { etiqueta: 'Técnicos pendientes', valor: resumen.tecnicos_pendientes },
+      { etiqueta: 'Técnicos validados', valor: resumen.tecnicos_validados },
+      { etiqueta: 'Técnicos rechazados', valor: resumen.tecnicos_rechazados },
+      { etiqueta: 'Cotizaciones', valor: resumen.total_cotizaciones },
+      { etiqueta: 'Valoraciones', valor: resumen.total_valoraciones },
+    ];
   });
 
-  validarTecnico(id: number): void {
-    const tecnico = this.tecnicos().find((t) => t.id === id);
-    if (!tecnico || tecnico.estadoValidacion !== 'pendiente') {
+  readonly metricasReportes = computed<MetricaAdmin[]>(() => {
+    const resumen = this.resumen();
+    if (!resumen) {
+      return [];
+    }
+
+    return [
+      { etiqueta: 'Solicitudes publicadas', valor: resumen.total_solicitudes },
+      { etiqueta: 'Cotizaciones registradas', valor: resumen.total_cotizaciones },
+      { etiqueta: 'Servicios finalizados', valor: resumen.solicitudes_finalizadas },
+      { etiqueta: 'Técnicos activos', valor: resumen.tecnicos_validados },
+      { etiqueta: 'Usuarios registrados', valor: resumen.total_usuarios },
+    ];
+  });
+
+  ngOnInit(): void {
+    this.cargarDatos();
+  }
+
+  cargarDatos(): void {
+    this.cargando.set(true);
+    this.error.set('');
+
+    forkJoin({
+      resumen: this.administradorService.obtenerResumen(),
+      tecnicos: this.administradorService.obtenerTecnicosPendientes(),
+    }).subscribe(({ resumen, tecnicos }) => {
+      this.cargando.set(false);
+
+      if (!resumen || !tecnicos) {
+        this.error.set('No se pudo cargar el panel administrador. Inténtalo nuevamente.');
+        return;
+      }
+
+      this.resumen.set(resumen);
+      this.tecnicosPendientes.set(tecnicos);
+    });
+  }
+
+  validarTecnico(idTecnico: number): void {
+    this.procesarTecnico(idTecnico, 'aprobar');
+  }
+
+  rechazarTecnico(idTecnico: number): void {
+    this.procesarTecnico(idTecnico, 'rechazar');
+  }
+
+  nombreCompleto(tecnico: TecnicoPendienteAdmin): string {
+    return `${tecnico.nombres} ${tecnico.apellidos}`.trim();
+  }
+
+  textoLista(valores: string[]): string {
+    return valores.length > 0 ? valores.join(', ') : 'Sin datos registrados';
+  }
+
+  fechaCorta(fecha: string): string {
+    return new Intl.DateTimeFormat('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date(fecha));
+  }
+
+  private procesarTecnico(idTecnico: number, accion: 'aprobar' | 'rechazar'): void {
+    if (this.accionEnCurso() !== null) {
       return;
     }
 
-    this.tecnicos.update((lista) =>
-      lista.map((t) => (t.id === id ? { ...t, estadoValidacion: 'validado' } : t))
-    );
-    this.mensajeAccion.set('Técnico validado correctamente');
+    this.accionEnCurso.set(idTecnico);
+    this.error.set('');
+    this.mensajeAccion.set('');
+
+    const request =
+      accion === 'aprobar'
+        ? this.administradorService.aprobarTecnico(idTecnico)
+        : this.administradorService.rechazarTecnico(idTecnico);
+
+    request.subscribe((resultado) => {
+      this.accionEnCurso.set(null);
+      this.procesarResultadoAccion(resultado, accion);
+    });
   }
 
-  rechazarTecnico(id: number): void {
-    const tecnico = this.tecnicos().find((t) => t.id === id);
-    if (!tecnico || tecnico.estadoValidacion !== 'pendiente') {
+  private procesarResultadoAccion(
+    resultado: TecnicoValidacionAdminResult,
+    accion: 'aprobar' | 'rechazar',
+  ): void {
+    if (!resultado) {
+      this.error.set('No se pudo actualizar el técnico. Inténtalo nuevamente.');
       return;
     }
 
-    this.tecnicos.update((lista) =>
-      lista.map((t) => (t.id === id ? { ...t, estadoValidacion: 'rechazado' } : t))
-    );
-    this.mensajeAccion.set('Técnico rechazado correctamente');
-  }
-
-  agregarCategoria(): void {
-    const form = this.formCategoria();
-    const nombre = form.nombre.trim();
-    if (!nombre) {
+    if (resultado === 'not_found') {
+      this.error.set('El técnico ya no existe o no está disponible.');
+      this.cargarDatos();
       return;
     }
 
-    const existe = this.categorias().some(
-      (c) => c.nombre.toLowerCase() === nombre.toLowerCase()
-    );
-    if (existe) {
-      this.mensajeCategoria.set('Ya existe una categoría con ese nombre.');
+    if (resultado === 'conflict') {
+      this.error.set('El técnico ya fue procesado. Actualizando la lista.');
+      this.cargarDatos();
       return;
     }
 
-    this.categorias.update((lista) => [
-      ...lista,
-      {
-        id: this.nextCategoriaId++,
-        nombre,
-        descripcion: form.descripcion.trim() || undefined,
-      },
-    ]);
-    this.formCategoria.set({ nombre: '', descripcion: '' });
-    this.mensajeCategoria.set('');
-  }
-
-  actualizarNombreCategoria(event: Event): void {
-    const valor = (event.target as HTMLInputElement).value;
-    this.formCategoria.update((form) => ({ ...form, nombre: valor }));
-    this.mensajeCategoria.set('');
-  }
-
-  actualizarDescripcionCategoria(event: Event): void {
-    const valor = (event.target as HTMLInputElement).value;
-    this.formCategoria.update((form) => ({ ...form, descripcion: valor }));
-  }
-
-  getEstadoValidacionLabel(estado: EstadoValidacion): string {
-    const labels: Record<EstadoValidacion, string> = {
-      pendiente: 'Pendiente',
-      validado: 'Validado',
-      rechazado: 'Rechazado',
-    };
-    return labels[estado];
-  }
-
-  getEstadoValidacionClass(estado: EstadoValidacion): string {
-    return `badge-validacion badge-${estado}`;
-  }
-
-  getRolLabel(rol: RolUsuario): string {
-    const labels: Record<RolUsuario, string> = {
-      cliente: 'Cliente',
-      tecnico: 'Técnico',
-      administrador: 'Administrador',
-    };
-    return labels[rol];
-  }
-
-  getEstadoUsuarioLabel(estado: EstadoUsuario): string {
-    const labels: Record<EstadoUsuario, string> = {
-      activo: 'Activo',
-      pendiente: 'Pendiente',
-      rechazado: 'Rechazado',
-    };
-    return labels[estado];
+    const mensaje =
+      accion === 'aprobar'
+        ? 'Técnico aprobado correctamente.'
+        : 'Técnico rechazado correctamente.';
+    this.mensajeAccion.set(mensaje);
+    this.cargarDatos();
   }
 }
