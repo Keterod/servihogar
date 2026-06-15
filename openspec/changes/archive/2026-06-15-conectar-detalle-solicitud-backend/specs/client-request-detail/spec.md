@@ -1,10 +1,4 @@
-# client-request-detail Specification
-
-## Purpose
-
-Provides the request detail screen showing a service request and quotations from technicians, fetched from the backend.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Request detail display
 
@@ -95,3 +89,35 @@ The request detail screen SHALL be accessible from the client dashboard with the
 
 - **WHEN** the user clicks a test button or the service is marked as completed
 - **THEN** the application navigates to `/valorar-servicio` without a full page reload
+
+## REMOVED Requirements
+
+### Requirement: Request detail display
+
+**Reason**: Replaced by backend-fetched solicitud detail via `GET /solicitudes/{id_solicitud}`
+
+**Migration**: The page no longer uses hardcoded mock solicitud #1 data
+
+#### Scenario: Request information visible
+
+**Reason**: Superseded by backend-backed scenario with route param `:id`
+
+**Migration**: Fetch from `GET /solicitudes/{id_solicitud}` on load
+
+### Requirement: Quotations display
+
+**Reason**: Replaced by real cotizaciones from the backend; empty array shows empty state instead of mock data
+
+**Migration**: Remove hardcoded cotizaciones array from the component
+
+#### Scenario: Quotations list visible
+
+**Reason**: Replaced by conditional display based on backend response length
+
+**Migration**: Show list when `cotizaciones.length > 0`, otherwise empty state message
+
+#### Scenario: Each quotation shows key information
+
+**Reason**: Data source changed from mock to API fields
+
+**Migration**: Bind template to `CotizacionDetalleResponse` interface fields

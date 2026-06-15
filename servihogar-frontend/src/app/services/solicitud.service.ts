@@ -1,10 +1,15 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../env';
-import { SolicitudListResponse, SolicitudRequest, SolicitudResponse } from '../models/solicitud';
+import {
+  SolicitudDetalle,
+  SolicitudListResponse,
+  SolicitudRequest,
+  SolicitudResponse,
+} from '../models/solicitud';
 
 @Injectable({
   providedIn: 'root',
@@ -24,5 +29,16 @@ export class SolicitudService {
         params: { _: Date.now().toString() },
       })
       .pipe(catchError(() => of(null)));
+  }
+
+  obtenerDetalle(id: number): Observable<SolicitudDetalle | null> {
+    return this.http.get<SolicitudDetalle>(`${API_BASE_URL}/solicitudes/${id}`).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 404) {
+          return of(null);
+        }
+        return throwError(() => err);
+      }),
+    );
   }
 }

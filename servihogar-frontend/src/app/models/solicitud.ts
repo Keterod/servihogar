@@ -25,3 +25,27 @@ export interface SolicitudListResponse {
   zona_nombre: string;
   cotizaciones_count: number;
 }
+
+export interface CotizacionDetalle {
+  id_cotizacion: number;
+  id_tecnico: number;
+  tecnico_nombre: string;
+  tecnico_descripcion: string | null;
+  precio: number;
+  tiempo_estimado: string | null;
+  descripcion_propuesta: string;
+  estado: string;
+  fecha_creacion: string;
+}
+
+export interface SolicitudDetalle {
+  id_solicitud: number;
+  titulo: string;
+  descripcion: string;
+  direccion: string | null;
+  estado: string;
+  fecha_publicacion: string;
+  categoria_nombre: string;
+  zona_nombre: string;
+  cotizaciones: CotizacionDetalle[];
+}

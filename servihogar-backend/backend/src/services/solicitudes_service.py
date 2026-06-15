@@ -1,5 +1,11 @@
 from src.repository.solicitudes_repository import SolicitudesRepository
-from src.schemas.solicitud import SolicitudListResponse, SolicitudRequest, SolicitudResponse
+from src.schemas.solicitud import (
+    CotizacionDetalleResponse,
+    SolicitudDetalleResponse,
+    SolicitudListResponse,
+    SolicitudRequest,
+    SolicitudResponse,
+)
 
 
 class SolicitudesService:
@@ -51,3 +57,40 @@ class SolicitudesService:
             )
             for r in rows
         ]
+
+    def obtener_detalle(self, id_solicitud: int) -> SolicitudDetalleResponse | None:
+        id_cliente = self._repo.get_demo_cliente_id()
+        if id_cliente is None:
+            return None
+
+        row = self._repo.get_by_id_for_cliente(id_solicitud, id_cliente)
+        if row is None:
+            return None
+
+        cotizaciones_rows = self._repo.get_cotizaciones_by_solicitud(id_solicitud)
+        cotizaciones = [
+            CotizacionDetalleResponse(
+                id_cotizacion=c["id_cotizacion"],
+                id_tecnico=c["id_tecnico"],
+                tecnico_nombre=c["tecnico_nombre"],
+                tecnico_descripcion=c.get("tecnico_descripcion"),
+                precio=c["precio"],
+                tiempo_estimado=c.get("tiempo_estimado"),
+                descripcion_propuesta=c["descripcion_propuesta"],
+                estado=c["estado"],
+                fecha_creacion=c["fecha_creacion"],
+            )
+            for c in cotizaciones_rows
+        ]
+
+        return SolicitudDetalleResponse(
+            id_solicitud=row["id_solicitud"],
+            titulo=row["titulo"],
+            descripcion=row["descripcion"],
+            direccion=row.get("direccion_referencia"),
+            estado=row["estado"],
+            fecha_publicacion=row["fecha_publicacion"],
+            categoria_nombre=row["categoria_nombre"],
+            zona_nombre=row["zona_nombre"],
+            cotizaciones=cotizaciones,
+        )
