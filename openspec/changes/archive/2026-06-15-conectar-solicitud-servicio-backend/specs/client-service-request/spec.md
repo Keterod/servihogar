@@ -1,9 +1,4 @@
-# client-service-request Specification
-
-## Purpose
-Provides the service request form for clients to publish new service requests.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Service request form fields
 
@@ -36,16 +31,6 @@ The service request form SHALL display six input fields: category (select popula
 - **THEN** the page displays a technician card with the name "Carlos Mendoza"
 - **THEN** the card includes a reference to the selected technician
 
-### Requirement: Form uses signals for state
-
-The service request form SHALL use Angular Signals to manage the state of each form field.
-
-#### Scenario: Signals for form fields
-
-- **WHEN** the user fills in the form fields
-- **THEN** each field value is stored in an Angular Signal
-- **THEN** the Signal values update on input changes
-
 ### Requirement: Form submission
 
 The form SHALL submit the service request to `POST /solicitudes` and display success or error feedback.
@@ -72,19 +57,19 @@ The form SHALL submit the service request to `POST /solicitudes` and display suc
 
 ### Requirement: Form navigation
 
-The service request screen SHALL be accessible via the existing route.
-
-#### Scenario: Route accessible
-
-- **WHEN** the user navigates to `/solicitud-servicio`
-- **THEN** the service request form is displayed within the application layout
-
-#### Scenario: Navigation after submission
-
-- **WHEN** the user clicks the navigation button after submission
-- **THEN** the application navigates to `/panel-cliente` without a full page reload
-
 #### Scenario: Route accessible from perfil-tecnico
 
 - **WHEN** the user clicks "Solicitar cotización" on `/perfil-tecnico/1`
 - **THEN** the application navigates to `/solicitud-servicio?tecnicoId=1&tecnicoNombre=Carlos+Mendoza` without a full page reload
+
+## REMOVED Requirements
+
+### Requirement: Form submission
+
+**Reason**: Submission is now real via `POST /solicitudes` instead of simulated
+**Migration**: Remove the "no HTTP request" constraint. The form now calls the backend service.
+
+#### Scenario: Submission simulated
+
+**Reason**: Replaced by real backend submission
+**Migration**: The form now sends HTTP requests to `POST /solicitudes`

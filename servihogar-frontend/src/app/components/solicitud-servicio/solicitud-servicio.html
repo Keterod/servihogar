@@ -1,6 +1,6 @@
 <div class="solicitud-servicio">
   <div class="container">
-    @if (!enviado()) {
+    @if (!success()) {
       <header class="page-header">
         <div class="page-header-text">
           <span class="page-eyebrow">Nueva solicitud</span>
@@ -9,40 +9,24 @@
         </div>
       </header>
 
+      @if (error()) {
+        <div class="error-banner">
+          No se pudo enviar la solicitud. Verifica tu conexión e intenta nuevamente.
+        </div>
+      }
+
       <div class="solicitud-layout">
         <aside class="tecnico-sidebar">
           <article class="tecnico-card">
             <h2 class="tecnico-card-title">Técnico seleccionado</h2>
 
             <div class="tecnico-profile">
-              <div class="avatar avatar-lg" aria-hidden="true">CM</div>
-              <div class="tecnico-info">
-                <h3>Carlos Mendoza</h3>
-                <p class="tecnico-especialidad">Gasfitería menor</p>
-                <div class="tecnico-rating">
-                  <span class="stars" aria-hidden="true">★★★★★</span>
-                  <span class="rating-value">4.8</span>
-                </div>
+              <div class="avatar avatar-lg" aria-hidden="true">
+                {{ getInitials(tecnicoNombre()) }}
               </div>
-            </div>
-
-            <ul class="tecnico-meta">
-              <li>
-                <span class="meta-label">Zona</span>
-                <span class="meta-value">Huancayo Centro</span>
-              </li>
-              <li>
-                <span class="meta-label">Experiencia</span>
-                <span class="meta-value">5 años</span>
-              </li>
-              <li>
-                <span class="meta-label">Servicios</span>
-                <span class="meta-value">12 completados</span>
-              </li>
-            </ul>
-
-            <div class="tecnico-badge">
-              <span class="badge-validado">Verificado</span>
+              <div class="tecnico-info">
+                <h3>{{ tecnicoNombre() ?? '—' }}</h3>
+              </div>
             </div>
           </article>
         </aside>
@@ -56,28 +40,32 @@
             </p>
           </div>
 
-          <form class="solicitud-form" (submit)="$event.preventDefault(); enviarSolicitud()">
+          <form class="solicitud-form" (submit)="$event.preventDefault(); onSubmit()">
             <div class="form-row">
               <div class="form-group">
                 <label for="categoria">Categoría del servicio</label>
                 <select
                   id="categoria"
                   [value]="categoria()"
-                  (change)="categoria.set($any($event.target).value)"
+                  (change)="categoria.set(toNumber($any($event.target).value))"
                 >
-                  <option value="">Seleccionar categoría</option>
-                  @for (cat of categorias; track cat) {
-                    <option [value]="cat">{{ cat }}</option>
+                  <option value="0">Seleccionar categoría</option>
+                  @for (cat of categorias(); track cat.id_categoria) {
+                    <option [value]="cat.id_categoria">{{ cat.nombre }}</option>
                   }
                 </select>
               </div>
 
               <div class="form-group">
                 <label for="zona">Zona</label>
-                <select id="zona" [value]="zona()" (change)="zona.set($any($event.target).value)">
-                  <option value="">Seleccionar zona</option>
-                  @for (z of zonas; track z) {
-                    <option [value]="z">{{ z }}</option>
+                <select
+                  id="zona"
+                  [value]="zona()"
+                  (change)="zona.set(toNumber($any($event.target).value))"
+                >
+                  <option value="0">Seleccionar zona</option>
+                  @for (z of zonas(); track z.id_zona) {
+                    <option [value]="z.id_zona">{{ z.nombre }}</option>
                   }
                 </select>
               </div>
@@ -149,7 +137,13 @@
 
             <div class="form-actions">
               <a routerLink="/buscar-tecnicos" class="btn-secondary">Cancelar</a>
-              <button type="submit" class="btn-primary" [disabled]="!puedeEnviar()">Enviar solicitud</button>
+              <button type="submit" class="btn-primary" [disabled]="!puedeEnviar() || loading()">
+                @if (loading()) {
+                  Enviando…
+                } @else {
+                  Enviar solicitud
+                }
+              </button>
             </div>
           </form>
         </section>
@@ -158,8 +152,8 @@
       <div class="confirmacion">
         <div class="confirmacion-icono" aria-hidden="true">✓</div>
         <h2>¡Solicitud enviada!</h2>
-        <p>Tu solicitud de servicio ha sido enviada exitosamente a Carlos Mendoza.</p>
-        <p>El técnico revisará los detalles y te enviará una cotización estimada.</p>
+        <p>Tu solicitud de servicio ha sido enviada exitosamente.</p>
+        <p>Los técnicos revisarán los detalles y te enviarán una cotización estimada.</p>
         <button type="button" class="btn-primary" (click)="irAlPanel()">Ir a mi panel</button>
       </div>
     }

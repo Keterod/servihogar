@@ -68,8 +68,8 @@
               Describe tu problema y recibe una cotización personalizada de
               {{ t.nombres }} {{ t.apellidos }}.
             </p>
-            <a routerLink="/login" class="btn-primary btn-block">Solicitar cotización</a>
-            <p class="cotizar-helper">Inicia sesión como cliente para continuar</p>
+            <a [routerLink]="['/solicitud-servicio']" [queryParams]="{tecnicoId: t.id_tecnico, tecnicoNombre: t.nombres + ' ' + t.apellidos, categoriaId: t.categorias[0]?.id_categoria}" class="btn-primary btn-block">Solicitar cotización</a>
+            <p class="cotizar-helper">Tu solicitud será enviada al técnico para cotización</p>
           </article>
 
           <article class="info-card section-card">
