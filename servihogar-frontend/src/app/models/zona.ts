@@ -1,4 +1,5 @@
 export interface Zona {
-  id: number;
+  id_zona: number;
   nombre: string;
+  id_ciudad: number;
 }

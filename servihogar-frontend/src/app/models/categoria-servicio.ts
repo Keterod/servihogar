@@ -1,5 +1,5 @@
 export interface CategoriaServicio {
-  id: number;
+  id_categoria: number;
   nombre: string;
-  descripcion?: string;
+  descripcion: string | null;
 }

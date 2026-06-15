@@ -26,29 +26,36 @@ The home page SHALL present the ServiHogar purpose with a brief hero mentioning 
 
 ### Requirement: Technician search page
 
-The search page SHALL display functional in-memory filters for category using the official category vocabulary, zone, and minimum rating, and a list of simulated technicians filtered accordingly.
+The search page SHALL display filters for category (populated from the backend), zone (populated from the backend), and minimum rating, and a list of technicians fetched from the backend `GET /tecnicos` endpoint, filtered accordingly.
 
-#### Scenario: Filters aligned with official categories
+#### Scenario: Filters populated from backend categories and zones
 
 - **WHEN** the user navigates to `/buscar-tecnicos`
-- **THEN** the category filter includes the five official categories (Gasfitería menor, Electricidad básica, Mantenimiento de computadoras, Pintura básica, Armado de muebles)
-- **THEN** the page displays at least three simulated technician cards with name, specialty, zone, and rating
+- **THEN** the category filter options SHALL be fetched from `GET /categorias`
+- **THEN** the zone filter options SHALL be fetched from `GET /zonas`
+- **THEN** the page displays at least three technician cards when the backend has seed data
 
-#### Scenario: Carlos Mendoza in search results
-
-- **WHEN** the user views simulated technicians
-- **THEN** Carlos Mendoza appears with Gasfitería menor specialty and Huancayo Centro zone
-
-#### Scenario: In-memory filtering unchanged
+#### Scenario: Filtering is client-side with Signals
 
 - **WHEN** the user changes category, zone, or minimum rating filters
-- **THEN** the displayed technician list updates to show only simulated technicians matching the selected criteria
-- **THEN** no HTTP requests are made to the backend
+- **THEN** the displayed technician list updates using `computed()` and filtering is done client-side on the fetched data
+- **THEN** no additional backend requests are made per filter change
 
-#### Scenario: Navigate to technician profile
+#### Scenario: Loading state displayed
 
-- **WHEN** the user selects a simulated technician from the search results
-- **THEN** the application navigates to `/perfil-tecnico` without a full page reload
+- **WHEN** the user navigates to `/buscar-tecnicos` and data is being fetched
+- **THEN** the page SHALL show a loading indicator or message
+
+#### Scenario: Error state displayed
+
+- **WHEN** the backend is unreachable or returns an error
+- **THEN** the page SHALL display an error message indicating the backend is unavailable
+- **THEN** filter dropdowns SHALL be empty
+
+#### Scenario: Empty state displayed
+
+- **WHEN** the backend returns zero technicians
+- **THEN** the page SHALL display a "no technicians found" message (distinct from loading and error states)
 
 ### Requirement: Technician profile page
 
@@ -127,15 +134,4 @@ The four public screens SHALL adapt to small viewports with readable content and
 
 - **THEN** lists, filters, and profile sections adapt without horizontal page scroll
 
-### Requirement: Simulated data only
-
-The public screens SHALL use static or simulated data defined within components without connecting to the backend API.
-
-#### Scenario: No backend calls from public screens
-
-- **WHEN** the user views or interacts with the four public screens
-
-- **THEN** no HTTP requests are made to the FastAPI backend
-
-- **THEN** displayed technician and category data comes from static or in-component simulated data
 

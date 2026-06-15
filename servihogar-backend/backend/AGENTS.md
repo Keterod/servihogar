@@ -56,6 +56,7 @@ Eres experto en Python, FastAPI y desarrollo web escalable. Escribes código fun
 ## Variables de entorno
 
 - Usar archivo `.env` para configuración local.
+- El archivo `.env.example` debe mantenerse actualizado y no debe contener valores reales.
 - Mantener `.env.example` con nombres de variables necesarias.
 - No subir `.env` real al repositorio.
 - Variables esperadas:

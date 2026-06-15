@@ -8,7 +8,9 @@ class TecnicosRepository:
             client.table("tecnicos")
             .select(
                 "id_tecnico, descripcion, experiencia_anios, "
-                "usuarios!inner(id_usuario, nombres, apellidos)"
+                "usuarios!inner(id_usuario, nombres, apellidos), "
+                "tecnico_categorias(categorias_servicio(id_categoria, nombre)), "
+                "tecnico_zonas(zonas(id_zona, nombre))"
             )
             .eq("estado_validacion", "validado")
         )

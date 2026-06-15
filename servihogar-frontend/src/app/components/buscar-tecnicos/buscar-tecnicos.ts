@@ -1,74 +1,13 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
-interface TecnicoSimulado {
-  id: number;
-  nombre: string;
-  especialidad: string;
-  categoria: string;
-  zona: string;
-  valoracion: number;
-  servicios: number;
-  perfilValidado?: boolean;
-}
-
-const CATEGORIAS_OFICIALES = [
-  'Gasfitería menor',
-  'Electricidad básica',
-  'Mantenimiento de PC',
-  'Armado de muebles',
-  'Pintura básica',
-  'Reparaciones menores',
-] as const;
-
-const TECNICOS_SIMULADOS: TecnicoSimulado[] = [
-  {
-    id: 1,
-    nombre: 'Carlos Mendoza',
-    especialidad: 'Gasfitería menor',
-    categoria: 'Gasfitería menor',
-    zona: 'Huancayo Centro',
-    valoracion: 4.8,
-    servicios: 42,
-    perfilValidado: true,
-  },
-  {
-    id: 2,
-    nombre: 'Ana Ramírez',
-    especialidad: 'Electricidad básica',
-    categoria: 'Electricidad básica',
-    zona: 'El Tambo',
-    valoracion: 4.5,
-    servicios: 28,
-  },
-  {
-    id: 3,
-    nombre: 'Roberto Salas',
-    especialidad: 'Gasfitería menor',
-    categoria: 'Gasfitería menor',
-    zona: 'Chilca',
-    valoracion: 4.2,
-    servicios: 15,
-  },
-  {
-    id: 4,
-    nombre: 'María Gómez',
-    especialidad: 'Pintura básica',
-    categoria: 'Pintura básica',
-    zona: 'Huancayo Centro',
-    valoracion: 4.9,
-    servicios: 36,
-  },
-  {
-    id: 5,
-    nombre: 'Pedro Sánchez',
-    especialidad: 'Mantenimiento de PC',
-    categoria: 'Mantenimiento de PC',
-    zona: 'El Tambo',
-    valoracion: 3.8,
-    servicios: 19,
-  },
-];
+import { CategoriaServicioService } from '../../services/categoria-servicio.service';
+import { ZonaService } from '../../services/zona.service';
+import { TecnicoService } from '../../services/tecnico.service';
+import { CategoriaServicio } from '../../models/categoria-servicio';
+import { Zona } from '../../models/zona';
+import { Tecnico } from '../../models/tecnico';
 
 @Component({
   selector: 'app-buscar-tecnicos',
@@ -76,9 +15,15 @@ const TECNICOS_SIMULADOS: TecnicoSimulado[] = [
   templateUrl: './buscar-tecnicos.html',
   styleUrl: './buscar-tecnicos.css',
 })
-export class BuscarTecnicos {
-  readonly categorias = ['', ...CATEGORIAS_OFICIALES];
-  readonly zonas = ['', 'Huancayo Centro', 'El Tambo', 'Chilca'];
+export class BuscarTecnicos implements OnInit {
+  private readonly categoriaServicioService = inject(CategoriaServicioService);
+  private readonly zonaService = inject(ZonaService);
+  private readonly tecnicoService = inject(TecnicoService);
+
+  readonly loading = signal(true);
+  readonly error = signal(false);
+  readonly categorias = signal<CategoriaServicio[]>([]);
+  readonly zonas = signal<Zona[]>([]);
   readonly calificaciones = [
     { valor: 0, etiqueta: 'Todas' },
     { valor: 3.5, etiqueta: '3.5+' },
@@ -91,26 +36,54 @@ export class BuscarTecnicos {
   readonly calificacionMinima = signal(0);
   readonly nombreBusqueda = signal('');
 
-  private readonly tecnicos = signal(TECNICOS_SIMULADOS);
+  private readonly tecnicos = signal<Tecnico[]>([]);
 
   readonly tecnicosFiltrados = computed(() => {
     const busqueda = this.nombreBusqueda().trim().toLowerCase();
+    const categoria = this.categoriaFiltro();
+    const zona = this.zonaFiltro();
+
     return this.tecnicos().filter((tecnico) => {
-      if (this.categoriaFiltro() && tecnico.categoria !== this.categoriaFiltro()) {
+      if (
+        this.calificacionMinima() > 0 &&
+        (tecnico.calificacion === null || tecnico.calificacion < this.calificacionMinima())
+      ) {
         return false;
       }
-      if (this.zonaFiltro() && tecnico.zona !== this.zonaFiltro()) {
+      if (categoria && !tecnico.categorias.some((c) => c.nombre === categoria)) {
         return false;
       }
-      if (this.calificacionMinima() > 0 && tecnico.valoracion < this.calificacionMinima()) {
+      if (zona && !tecnico.zonas.some((z) => z.nombre === zona)) {
         return false;
       }
-      if (busqueda && !tecnico.nombre.toLowerCase().includes(busqueda)) {
-        return false;
+      if (busqueda) {
+        const nombreCompleto = `${tecnico.nombres} ${tecnico.apellidos}`.toLowerCase();
+        if (!nombreCompleto.includes(busqueda)) {
+          return false;
+        }
       }
       return true;
     });
   });
+
+  ngOnInit(): void {
+    forkJoin({
+      categorias: this.categoriaServicioService.obtenerCategorias(),
+      zonas: this.zonaService.obtenerZonas(),
+      tecnicos: this.tecnicoService.obtenerTecnicos(),
+    }).subscribe({
+      next: ({ categorias, zonas, tecnicos }) => {
+        this.categorias.set(categorias);
+        this.zonas.set(zonas);
+        this.tecnicos.set(tecnicos);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set(true);
+        this.loading.set(false);
+      },
+    });
+  }
 
   onCategoriaChange(event: Event): void {
     this.categoriaFiltro.set((event.target as HTMLSelectElement).value);
