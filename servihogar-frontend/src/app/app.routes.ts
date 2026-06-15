@@ -9,7 +9,7 @@ export const routes: Routes = [
       import('./components/buscar-tecnicos/buscar-tecnicos').then((m) => m.BuscarTecnicos),
   },
   {
-    path: 'perfil-tecnico',
+    path: 'perfil-tecnico/:id',
     loadComponent: () =>
       import('./components/perfil-tecnico/perfil-tecnico').then((m) => m.PerfilTecnico),
   },

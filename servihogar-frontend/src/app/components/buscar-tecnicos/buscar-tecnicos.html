@@ -99,7 +99,7 @@
                   </div>
 
                   <div class="tecnico-action">
-                    <a routerLink="/perfil-tecnico" class="btn-secondary btn-sm">Ver perfil</a>
+                    <a [routerLink]="['/perfil-tecnico', tecnico.id_tecnico]" class="btn-secondary btn-sm">Ver perfil</a>
                   </div>
                 </article>
               }

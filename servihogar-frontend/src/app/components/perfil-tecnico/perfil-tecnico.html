@@ -1,111 +1,118 @@
 <div class="perfil-tecnico page-shell">
   <div class="container">
-    <div class="profile-layout">
-      <!-- Columna izquierda: perfil y galería -->
-      <div class="profile-main">
-        <article class="profile-card section-card">
-          <div class="profile-header">
-            <div class="profile-avatar" aria-hidden="true">
-              {{ getIniciales(tecnico.nombre) }}
+    @if (loading()) {
+      <div class="status-message">Cargando perfil del técnico…</div>
+    } @else if (error()) {
+      <div class="status-message error">
+        No se pudo conectar con el servidor. Intenta nuevamente más tarde.
+      </div>
+    } @else if (notFound()) {
+      <div class="status-message">Técnico no encontrado.</div>
+    } @else {
+      @let t = tecnico()!;
+      <div class="profile-layout">
+        <div class="profile-main">
+          <article class="profile-card section-card">
+            <div class="profile-header">
+              <div class="profile-avatar" aria-hidden="true">
+                {{ getIniciales(t.nombres + ' ' + t.apellidos) }}
+              </div>
+              <div class="profile-identity">
+                <div class="profile-name-row">
+                  <h1>{{ t.nombres }} {{ t.apellidos }}</h1>
+                </div>
+                <p class="profile-specialty">{{ t.descripcion }}</p>
+                <p class="profile-location">
+                  <span aria-hidden="true">📍</span>
+                  {{ t.zonas[0]?.nombre ?? '—' }}, Huancayo
+                </p>
+                <div class="profile-rating-summary">
+                  <span class="rating-value">{{ t.calificacion ?? '—' }}</span>
+                  <span class="rating-stars" aria-hidden="true">★★★★★</span>
+                  <span class="rating-count">({{ t.experiencia_anios }} años de experiencia)</span>
+                </div>
+              </div>
             </div>
-            <div class="profile-identity">
-              <div class="profile-name-row">
-                <h1>{{ tecnico.nombre }}</h1>
-                @if (tecnico.perfilValidado) {
-                  <span class="badge-validado">Perfil validado</span>
+
+            <section class="profile-section">
+              <h2>Sobre el técnico</h2>
+              <p>{{ t.descripcion }}</p>
+            </section>
+
+            <section class="profile-section">
+              <h2>Servicios ofrecidos</h2>
+              <ul class="services-chips">
+                @for (cat of t.categorias; track cat.id_categoria) {
+                  <li>{{ cat.nombre }}</li>
+                }
+              </ul>
+            </section>
+
+            <section class="profile-section">
+              <h2>Galería de trabajos</h2>
+              <div class="gallery-grid">
+                @for (item of t.portafolio; track item.id_portafolio) {
+                  <div class="gallery-item">
+                    <img [src]="item.imagen_url" [alt]="item.titulo" class="gallery-img" />
+                  </div>
                 }
               </div>
-              <p class="profile-specialty">{{ tecnico.especialidad }}</p>
-              <p class="profile-location">
-                <span aria-hidden="true">📍</span>
-                {{ tecnico.zona }}, Huancayo
-              </p>
-              <div class="profile-rating-summary">
-                <span class="rating-value">{{ tecnico.valoracion }}</span>
-                <span class="rating-stars" aria-hidden="true">★★★★★</span>
-                <span class="rating-count">({{ tecnico.serviciosCompletados }} servicios)</span>
+            </section>
+          </article>
+        </div>
+
+        <aside class="profile-sidebar">
+          <article class="cotizar-card section-card">
+            <h2>Solicitar cotización</h2>
+            <p class="cotizar-desc">
+              Describe tu problema y recibe una cotización personalizada de
+              {{ t.nombres }} {{ t.apellidos }}.
+            </p>
+            <a routerLink="/login" class="btn-primary btn-block">Solicitar cotización</a>
+            <p class="cotizar-helper">Inicia sesión como cliente para continuar</p>
+          </article>
+
+          <article class="info-card section-card">
+            <h2>Información</h2>
+            <dl class="info-list">
+              <div>
+                <dt>Experiencia</dt>
+                <dd>{{ t.experiencia_anios }} años</dd>
               </div>
-            </div>
-          </div>
+              <div>
+                <dt>Zona de servicio</dt>
+                <dd>{{ t.zonas[0]?.nombre ?? '—' }}</dd>
+              </div>
+              <div>
+                <dt>Servicios completados</dt>
+                <dd>{{ t.portafolio.length }} trabajos</dd>
+              </div>
+              <div>
+                <dt>Valoración promedio</dt>
+                <dd>{{ t.calificacion ?? '—' }} / 5</dd>
+              </div>
+            </dl>
+          </article>
 
-          <section class="profile-section">
-            <h2>Sobre el técnico</h2>
-            <p>{{ tecnico.descripcion }}</p>
-          </section>
-
-          <section class="profile-section">
-            <h2>Servicios ofrecidos</h2>
-            <ul class="services-chips">
-              @for (servicio of tecnico.servicios; track servicio) {
-                <li>{{ servicio }}</li>
-              }
-            </ul>
-          </section>
-
-          <section class="profile-section">
-            <h2>Galería de trabajos</h2>
-            <div class="gallery-grid">
-              @for (item of galeria; track item.id) {
-                <div class="gallery-placeholder" role="img" [attr.aria-label]="item.alt">
-                  <span class="gallery-icon" aria-hidden="true">📷</span>
+          <article class="ratings-card section-card">
+            <h2>Valoraciones de clientes</h2>
+            <div class="rating-bars">
+              @for (bar of ratingBars; track bar.etiqueta) {
+                <div class="rating-bar-row">
+                  <span class="rating-bar-label">{{ bar.etiqueta }}</span>
+                  <div class="rating-bar-track" role="presentation">
+                    <div
+                      class="rating-bar-fill"
+                      [style.width.%]="bar.porcentaje"
+                    ></div>
+                  </div>
+                  <span class="rating-bar-pct">{{ bar.porcentaje }}%</span>
                 </div>
               }
             </div>
-          </section>
-        </article>
+          </article>
+        </aside>
       </div>
-
-      <!-- Columna derecha: cotizar, info y valoraciones -->
-      <aside class="profile-sidebar">
-        <article class="cotizar-card section-card">
-          <h2>Solicitar cotización</h2>
-          <p class="cotizar-desc">
-            Describe tu problema y recibe una cotización personalizada de Carlos Mendoza.
-          </p>
-          <a routerLink="/login" class="btn-primary btn-block">Solicitar cotización</a>
-          <p class="cotizar-helper">Inicia sesión como cliente para continuar</p>
-        </article>
-
-        <article class="info-card section-card">
-          <h2>Información</h2>
-          <dl class="info-list">
-            <div>
-              <dt>Experiencia</dt>
-              <dd>{{ tecnico.experiencia }}</dd>
-            </div>
-            <div>
-              <dt>Zona de servicio</dt>
-              <dd>{{ tecnico.zona }}</dd>
-            </div>
-            <div>
-              <dt>Servicios completados</dt>
-              <dd>{{ tecnico.serviciosCompletados }}</dd>
-            </div>
-            <div>
-              <dt>Valoración promedio</dt>
-              <dd>{{ tecnico.valoracion }} / 5</dd>
-            </div>
-          </dl>
-        </article>
-
-        <article class="ratings-card section-card">
-          <h2>Valoraciones de clientes</h2>
-          <div class="rating-bars">
-            @for (bar of ratingBars; track bar.etiqueta) {
-              <div class="rating-bar-row">
-                <span class="rating-bar-label">{{ bar.etiqueta }}</span>
-                <div class="rating-bar-track" role="presentation">
-                  <div
-                    class="rating-bar-fill"
-                    [style.width.%]="bar.porcentaje"
-                  ></div>
-                </div>
-                <span class="rating-bar-pct">{{ bar.porcentaje }}%</span>
-              </div>
-            }
-          </div>
-        </article>
-      </aside>
-    </div>
+    }
   </div>
 </div>

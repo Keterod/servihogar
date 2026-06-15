@@ -8,6 +8,13 @@ export interface TecnicoZonaRef {
   nombre: string;
 }
 
+export interface PortafolioItem {
+  id_portafolio: number;
+  titulo: string;
+  descripcion: string | null;
+  imagen_url: string;
+}
+
 export interface Tecnico {
   id_tecnico: number;
   nombres: string;
@@ -17,4 +24,8 @@ export interface Tecnico {
   calificacion: number | null;
   categorias: TecnicoCategoriaRef[];
   zonas: TecnicoZonaRef[];
+}
+
+export interface TecnicoDetalle extends Tecnico {
+  portafolio: PortafolioItem[];
 }

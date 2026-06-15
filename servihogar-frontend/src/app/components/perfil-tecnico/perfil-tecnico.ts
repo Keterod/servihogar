@@ -1,26 +1,12 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
-interface TecnicoPerfil {
-  nombre: string;
-  especialidad: string;
-  experiencia: string;
-  zona: string;
-  valoracion: number;
-  descripcion: string;
-  servicios: string[];
-  serviciosCompletados: number;
-  perfilValidado: boolean;
-}
+import { TecnicoService } from '../../services/tecnico.service';
+import { TecnicoDetalle } from '../../models/tecnico';
 
 interface RatingBar {
   etiqueta: string;
   porcentaje: number;
-}
-
-interface GaleriaItem {
-  id: number;
-  alt: string;
 }
 
 @Component({
@@ -29,33 +15,14 @@ interface GaleriaItem {
   templateUrl: './perfil-tecnico.html',
   styleUrl: './perfil-tecnico.css',
 })
-export class PerfilTecnico {
-  readonly tecnico: TecnicoPerfil = {
-    nombre: 'Carlos Mendoza',
-    especialidad: 'Gasfitería menor',
-    experiencia: '8 años de experiencia en reparaciones domésticas',
-    zona: 'Huancayo Centro',
-    valoracion: 4.8,
-    descripcion:
-      'Técnico independiente especializado en gasfitería menor. Atiendo reparaciones de agua, grifos y desagüe en hogares de Huancayo.',
-    servicios: [
-      'Reparación de tuberías',
-      'Instalación de grifos',
-      'Desagües obstruidos',
-      'Mantenimiento preventivo',
-      'Cambio de llaves de paso',
-      'Detección de fugas',
-    ],
-    serviciosCompletados: 42,
-    perfilValidado: true,
-  };
+export class PerfilTecnico implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly tecnicoService = inject(TecnicoService);
 
-  readonly galeria: GaleriaItem[] = [
-    { id: 1, alt: 'Trabajo de gasfitería 1' },
-    { id: 2, alt: 'Trabajo de gasfitería 2' },
-    { id: 3, alt: 'Trabajo de gasfitería 3' },
-    { id: 4, alt: 'Trabajo de gasfitería 4' },
-  ];
+  readonly loading = signal(true);
+  readonly error = signal(false);
+  readonly notFound = signal(false);
+  readonly tecnico = signal<TecnicoDetalle | null>(null);
 
   readonly ratingBars: RatingBar[] = [
     { etiqueta: 'Puntualidad', porcentaje: 92 },
@@ -64,6 +31,29 @@ export class PerfilTecnico {
     { etiqueta: 'Limpieza', porcentaje: 85 },
     { etiqueta: 'Cumplimiento de precio', porcentaje: 90 },
   ];
+
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (!id) {
+      this.notFound.set(true);
+      this.loading.set(false);
+      return;
+    }
+    this.tecnicoService.obtenerTecnicoPorId(id).subscribe({
+      next: (data) => {
+        if (data === null) {
+          this.notFound.set(true);
+        } else {
+          this.tecnico.set(data);
+        }
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set(true);
+        this.loading.set(false);
+      },
+    });
+  }
 
   getIniciales(nombre: string): string {
     return nombre
