@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Render build artifacts (generated at deploy time)
+/src/app/env.generated.ts

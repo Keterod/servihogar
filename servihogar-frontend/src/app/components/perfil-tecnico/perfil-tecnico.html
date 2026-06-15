@@ -1,113 +1,113 @@
 <div class="perfil-tecnico page-shell">
   <div class="container">
     @if (loading()) {
-      <div class="status-message">Cargando perfil del técnico…</div>
+    <div class="status-message">Cargando perfil del técnico…</div>
     } @else if (error()) {
-      <div class="status-message error">
-        {{ error() }}
-      </div>
+    <div class="status-message error">
+      {{ error() }}
+    </div>
     } @else if (notFound()) {
-      <div class="status-message">Técnico no encontrado.</div>
+    <div class="status-message">Técnico no encontrado.</div>
     } @else {
-      @let t = tecnico()!;
-      <div class="profile-layout">
-        <div class="profile-main">
-          <article class="profile-card section-card">
-            <div class="profile-header">
-              <div class="profile-avatar" aria-hidden="true">
-                {{ getIniciales(t.nombres + ' ' + t.apellidos) }}
+    @let t = tecnico()!;
+    <div class="profile-layout">
+      <div class="profile-main">
+        <article class="profile-card section-card">
+          <div class="profile-header">
+            <div class="profile-avatar" aria-hidden="true">
+              {{ getIniciales(t.nombres + ' ' + t.apellidos) }}
+            </div>
+            <div class="profile-identity">
+              <div class="profile-name-row">
+                <h1>{{ t.nombres }} {{ t.apellidos }}</h1>
               </div>
-              <div class="profile-identity">
-                <div class="profile-name-row">
-                  <h1>{{ t.nombres }} {{ t.apellidos }}</h1>
-                </div>
-                <p class="profile-specialty">{{ t.descripcion }}</p>
-                <p class="profile-location">
-                  <span aria-hidden="true">📍</span>
-                  {{ t.zonas[0]?.nombre ?? '—' }}, Huancayo
-                </p>
-                <div class="profile-rating-summary">
-                  <span class="rating-value">{{ t.calificacion ?? '—' }}</span>
-                  <span class="rating-stars" aria-hidden="true">★★★★★</span>
-                  <span class="rating-count">({{ t.experiencia_anios }} años de experiencia)</span>
-                </div>
+              <p class="profile-specialty">{{ t.descripcion }}</p>
+              <p class="profile-location">
+                <span aria-hidden="true">📍</span>
+                {{ t.zonas[0]?.nombre ?? '—' }}, Huancayo
+              </p>
+              <div class="profile-rating-summary">
+                <span class="rating-value">{{ t.calificacion ?? '—' }}</span>
+                <span class="rating-stars" aria-hidden="true">★★★★★</span>
+                <span class="rating-count">({{ t.experiencia_anios }} años de experiencia)</span>
               </div>
             </div>
+          </div>
 
-            <section class="profile-section">
-              <h2>Sobre el técnico</h2>
-              <p>{{ t.descripcion }}</p>
-            </section>
+          <section class="profile-section">
+            <h2>Sobre el técnico</h2>
+            <p>{{ t.descripcion }}</p>
+          </section>
 
-            <section class="profile-section">
-              <h2>Servicios ofrecidos</h2>
-              <ul class="services-chips">
-                @for (cat of t.categorias; track cat.id_categoria) {
-                  <li>{{ cat.nombre }}</li>
-                }
-              </ul>
-            </section>
+          <section class="profile-section">
+            <h2>Servicios ofrecidos</h2>
+            <ul class="services-chips">
+              @for (cat of t.categorias; track cat.id_categoria) {
+              <li>{{ cat.nombre }}</li>
+              }
+            </ul>
+          </section>
 
-            <section class="profile-section">
-              <h2>Galería de trabajos</h2>
-              <div class="gallery-grid">
-                @for (item of t.portafolio; track item.id_portafolio) {
-                  <div class="gallery-item">
-                    <img [src]="resolveImagenUrl(item)" [alt]="item.titulo" class="gallery-img" />
-                  </div>
-                }
+          <section class="profile-section">
+            <h2>Galería de trabajos</h2>
+            <div class="gallery-grid">
+              @for (item of t.portafolio; track item.id_portafolio) {
+              <div class="gallery-item">
+                <img [src]="resolveImagenUrl(item)" [alt]="item.titulo" class="gallery-img" />
               </div>
-            </section>
-          </article>
-        </div>
-
-        <aside class="profile-sidebar">
-          <article class="cotizar-card section-card">
-            <h2>Solicitar cotización</h2>
-            <p class="cotizar-desc">
-              Describe tu problema y recibe una cotización personalizada de
-              {{ t.nombres }} {{ t.apellidos }}.
-            </p>
-            <button type="button" class="btn-primary btn-block" (click)="solicitarCotizacion(t)">
-              Solicitar cotización
-            </button>
-            @if (mensajeSolicitud()) {
-              <p class="cotizar-helper cotizar-error" role="alert">{{ mensajeSolicitud() }}</p>
-            } @else {
-              <p class="cotizar-helper">Tu solicitud será enviada al técnico para cotización</p>
-            }
-          </article>
-
-          <article class="info-card section-card">
-            <h2>Información</h2>
-            <dl class="info-list">
-              <div>
-                <dt>Experiencia</dt>
-                <dd>{{ t.experiencia_anios }} años</dd>
-              </div>
-              <div>
-                <dt>Zona de servicio</dt>
-                <dd>{{ t.zonas[0]?.nombre ?? '—' }}</dd>
-              </div>
-              <div>
-                <dt>Servicios completados</dt>
-                <dd>{{ t.portafolio.length }} trabajos</dd>
-              </div>
-              <div>
-                <dt>Valoración promedio</dt>
-                <dd>{{ t.calificacion ?? '—' }} / 5</dd>
-              </div>
-            </dl>
-          </article>
-
-          <article class="ratings-card section-card">
-            <h2>Valoraciones de clientes</h2>
-            <p class="proximamente-nota">
-              El desglose detallado de valoraciones estará disponible próximamente.
-            </p>
-          </article>
-        </aside>
+              }
+            </div>
+          </section>
+        </article>
       </div>
+
+      <aside class="profile-sidebar">
+        <article class="cotizar-card section-card">
+          <h2>Solicitar cotización</h2>
+          <p class="cotizar-desc">
+            Describe tu problema y recibe una cotización personalizada de
+            {{ t.nombres }} {{ t.apellidos }}.
+          </p>
+          <button type="button" class="btn-primary btn-block" (click)="solicitarCotizacion(t)">
+            Solicitar cotización
+          </button>
+          @if (mensajeSolicitud()) {
+          <p class="cotizar-helper cotizar-error" role="alert">{{ mensajeSolicitud() }}</p>
+          } @else {
+          <p class="cotizar-helper">Tu solicitud será enviada al técnico para cotización</p>
+          }
+        </article>
+
+        <article class="info-card section-card">
+          <h2>Información</h2>
+          <dl class="info-list">
+            <div>
+              <dt>Experiencia</dt>
+              <dd>{{ t.experiencia_anios }} años</dd>
+            </div>
+            <div>
+              <dt>Zona de servicio</dt>
+              <dd>{{ t.zonas[0]?.nombre ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Servicios completados</dt>
+              <dd>{{ t.portafolio.length }} trabajos</dd>
+            </div>
+            <div>
+              <dt>Valoración promedio</dt>
+              <dd>{{ t.calificacion ?? '—' }} / 5</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="ratings-card section-card">
+          <h2>Valoraciones de clientes</h2>
+          <p class="proximamente-nota">
+            El desglose detallado de valoraciones estará disponible próximamente.
+          </p>
+        </article>
+      </aside>
+    </div>
     }
   </div>
 </div>

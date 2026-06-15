@@ -2,209 +2,190 @@
   <a [routerLink]="volverRuta()" class="back-link">← {{ volverTexto() }}</a>
 
   @if (loading()) {
-    <div class="estado-card">Cargando detalle de la solicitud…</div>
+  <div class="estado-card">Cargando detalle de la solicitud…</div>
   } @else if (error()) {
-    <div class="estado-card estado-error">
-      No se pudo cargar la solicitud. Verifica que el backend esté disponible.
-    </div>
+  <div class="estado-card estado-error">
+    No se pudo cargar la solicitud. Verifica que el backend esté disponible.
+  </div>
   } @else if (forbidden()) {
-    <div class="estado-card estado-error">
-      No tienes permiso para ver esta solicitud.
-    </div>
+  <div class="estado-card estado-error">
+    No tienes permiso para ver esta solicitud.
+  </div>
   } @else if (notFound()) {
-    <div class="estado-card">Solicitud no encontrada.</div>
+  <div class="estado-card">Solicitud no encontrada.</div>
   } @else {
-    @let s = solicitud()!;
+  @let s = solicitud()!;
 
-    <header class="detalle-header">
-      <div>
-        <h1>Solicitud #{{ ('0000' + s.id_solicitud).slice(-4) }}</h1>
-        <p class="detalle-fecha">Creada el {{ s.fecha_publicacion | date:'mediumDate' }}</p>
-      </div>
-      <span class="solicitud-estado" [attr.data-estado]="estadoDisplay()">
-        {{ getEstadoLabel(estadoDisplay()) }}
-      </span>
-    </header>
+  <header class="detalle-header">
+    <div>
+      <h1>Solicitud #{{ ('0000' + s.id_solicitud).slice(-4) }}</h1>
+      <p class="detalle-fecha">Creada el {{ s.fecha_publicacion | date:'mediumDate' }}</p>
+    </div>
+    <span class="solicitud-estado" [attr.data-estado]="estadoDisplay()">
+      {{ getEstadoLabel(estadoDisplay()) }}
+    </span>
+  </header>
 
-    <nav class="timeline" aria-label="Progreso de la solicitud">
-      @for (paso of pasosTimeline; track paso.key) {
-        <div
-          class="timeline-step"
-          [class.completed]="esPasoCompletado(paso.key)"
-          [class.active]="esPasoActual(paso.key)"
-        >
-          <span class="timeline-dot"></span>
-          <span class="timeline-label">{{ paso.label }}</span>
-        </div>
-      }
-    </nav>
-
-    @if (hayAceptada()) {
-      <div class="mensaje-confirmacion">
-        <span class="confirmacion-icono">✓</span>
-        <p>Cotización aceptada. El técnico se pondrá en contacto contigo.</p>
-      </div>
+  <nav class="timeline" aria-label="Progreso de la solicitud">
+    @for (paso of pasosTimeline; track paso.key) {
+    <div class="timeline-step" [class.completed]="esPasoCompletado(paso.key)" [class.active]="esPasoActual(paso.key)">
+      <span class="timeline-dot"></span>
+      <span class="timeline-label">{{ paso.label }}</span>
+    </div>
     }
+  </nav>
 
-    @if (errorAccion()) {
-      <p class="mensaje-accion-error">{{ errorAccion() }}</p>
-    }
+  @if (hayAceptada()) {
+  <div class="mensaje-confirmacion">
+    <span class="confirmacion-icono">✓</span>
+    <p>Cotización aceptada. El técnico se pondrá en contacto contigo.</p>
+  </div>
+  }
 
-    <div class="detalle-grid">
-      <div class="detalle-main">
-        <section class="section-card servicio-datos">
-          <h2>Datos del servicio</h2>
-          <dl class="datos-lista">
-            <div>
-              <dt>Categoría</dt>
-              <dd>{{ s.categoria_nombre }}</dd>
-            </div>
-            <div>
-              <dt>Título</dt>
-              <dd>{{ s.titulo }}</dd>
-            </div>
-            <div>
-              <dt>Descripción</dt>
-              <dd>{{ s.descripcion }}</dd>
-            </div>
-            <div>
-              <dt>Zona</dt>
-              <dd>{{ s.zona_nombre }}</dd>
-            </div>
-            <div>
-              <dt>Dirección</dt>
-              <dd>{{ s.direccion ?? '—' }}</dd>
-            </div>
-          </dl>
-        </section>
+  @if (errorAccion()) {
+  <p class="mensaje-accion-error">{{ errorAccion() }}</p>
+  }
 
-        @if (s.imagenes?.length) {
-          <section class="section-card galeria-solicitud">
-            <h2>Imágenes adjuntas ({{ s.imagenes?.length ?? 0 }})</h2>
-            <div class="galeria-grid">
-              @for (img of s.imagenes ?? []; track img.id_imagen) {
-                <figure class="galeria-item">
-                  <img
-                    [src]="resolveImagenUrl(img.imagen_url)"
-                    [alt]="img.descripcion ?? 'Imagen de la solicitud'"
-                  />
-                </figure>
-              }
-            </div>
-          </section>
-        }
+  <div class="detalle-grid">
+    <div class="detalle-main">
+      <section class="section-card servicio-datos">
+        <h2>Datos del servicio</h2>
+        <dl class="datos-lista">
+          <div>
+            <dt>Categoría</dt>
+            <dd>{{ s.categoria_nombre }}</dd>
+          </div>
+          <div>
+            <dt>Título</dt>
+            <dd>{{ s.titulo }}</dd>
+          </div>
+          <div>
+            <dt>Descripción</dt>
+            <dd>{{ s.descripcion }}</dd>
+          </div>
+          <div>
+            <dt>Zona</dt>
+            <dd>{{ s.zona_nombre }}</dd>
+          </div>
+          <div>
+            <dt>Dirección</dt>
+            <dd>{{ s.direccion ?? '—' }}</dd>
+          </div>
+        </dl>
+      </section>
 
-        <section class="section-card cotizaciones-lista-seccion">
-          <h2>Cotizaciones recibidas ({{ cotizaciones().length }})</h2>
-
-          @if (cotizaciones().length === 0) {
-            <p class="lista-vacia">Aún no hay cotizaciones para esta solicitud.</p>
-          } @else {
-            <p class="lista-hint">Selecciona una cotización para ver el detalle.</p>
-
-            <ul class="cotizaciones-selector">
-              @for (cotizacion of cotizaciones(); track cotizacion.id_cotizacion) {
-                <li>
-                  <button
-                    type="button"
-                    class="cotizacion-item"
-                    [class.selected]="selectedCotizacionId() === cotizacion.id_cotizacion"
-                    [attr.data-estado]="cotizacion.estado"
-                    (click)="selectCotizacion(cotizacion.id_cotizacion)"
-                  >
-                    <div class="cotizacion-item-info">
-                      <span class="cotizacion-item-nombre">{{ cotizacion.tecnico_nombre }}</span>
-                      <span class="cotizacion-item-meta">
-                        {{ cotizacion.tecnico_descripcion ?? '—' }}
-                      </span>
-                    </div>
-                    <div class="cotizacion-item-right">
-                      <span class="cotizacion-item-precio">S/. {{ cotizacion.precio }}</span>
-                      @if (cotizacion.estado !== 'pendiente') {
-                        <span class="estado-badge" [attr.data-estado]="cotizacion.estado">
-                          {{ getCotizacionEstadoLabel(cotizacion.estado) }}
-                        </span>
-                      }
-                    </div>
-                  </button>
-                </li>
-              }
-            </ul>
+      @if (s.imagenes?.length) {
+      <section class="section-card galeria-solicitud">
+        <h2>Imágenes adjuntas ({{ s.imagenes?.length ?? 0 }})</h2>
+        <div class="galeria-grid">
+          @for (img of s.imagenes ?? []; track img.id_imagen) {
+          <figure class="galeria-item">
+            <img [src]="resolveImagenUrl(img.imagen_url)" [alt]="img.descripcion ?? 'Imagen de la solicitud'" />
+          </figure>
           }
-        </section>
-      </div>
-
-      @if (selectedCotizacion(); as cotizacion) {
-        <aside class="cotizacion-sidebar section-card">
-          <div class="sidebar-tecnico">
-            <div class="avatar avatar-md">{{ cotizacion.tecnico_nombre.charAt(0) }}</div>
-            <div>
-              <h3>{{ cotizacion.tecnico_nombre }}</h3>
-              <p>{{ cotizacion.tecnico_descripcion ?? '—' }}</p>
-              <p class="sidebar-rating">
-                {{ cotizacion.tiempo_estimado ?? 'Tiempo no indicado' }}
-              </p>
-            </div>
-          </div>
-
-          <div class="sidebar-precio">
-            <span class="precio-label">Precio estimado</span>
-            <span class="precio-valor">S/. {{ cotizacion.precio }}</span>
-          </div>
-
-          <div class="sidebar-propuesta">
-            <h4>Propuesta</h4>
-            <p>{{ cotizacion.descripcion_propuesta }}</p>
-          </div>
-
-          <div class="sidebar-acciones">
-            @if (esVistaCliente()) {
-              @if (cotizacion.estado === 'pendiente' && !hayAceptada()) {
-                <button
-                  type="button"
-                  class="btn-primary btn-aceptar"
-                  [disabled]="accionEnCurso(cotizacion.id_cotizacion)"
-                  (click)="aceptarCotizacion(cotizacion.id_cotizacion)"
-                >
-                  @if (accionEnCurso(cotizacion.id_cotizacion)) {
-                    Aceptando…
-                  } @else {
-                    Aceptar cotización
-                  }
-                </button>
-                <button
-                  type="button"
-                  class="btn-secondary btn-rechazar"
-                  [disabled]="accionEnCurso(cotizacion.id_cotizacion)"
-                  (click)="rechazarCotizacion(cotizacion.id_cotizacion)"
-                >
-                  @if (accionEnCurso(cotizacion.id_cotizacion)) {
-                    Rechazando…
-                  } @else {
-                    Rechazar
-                  }
-                </button>
-              } @else if (cotizacion.estado === 'aceptada') {
-                <span class="estado-badge aceptada-badge">Cotización aceptada</span>
-              } @else if (cotizacion.estado === 'rechazada') {
-                <span class="estado-badge rechazada-badge">Cotización rechazada</span>
-              }
-            } @else if (cotizacion.estado !== 'pendiente') {
-              <span class="estado-badge" [attr.data-estado]="cotizacion.estado">
-                {{ getCotizacionEstadoLabel(cotizacion.estado) }}
-              </span>
-            }
-          </div>
-        </aside>
+        </div>
+      </section>
       }
+
+      <section class="section-card cotizaciones-lista-seccion">
+        <h2>Cotizaciones recibidas ({{ cotizaciones().length }})</h2>
+
+        @if (cotizaciones().length === 0) {
+        <p class="lista-vacia">Aún no hay cotizaciones para esta solicitud.</p>
+        } @else {
+        <p class="lista-hint">Selecciona una cotización para ver el detalle.</p>
+
+        <ul class="cotizaciones-selector">
+          @for (cotizacion of cotizaciones(); track cotizacion.id_cotizacion) {
+          <li>
+            <button type="button" class="cotizacion-item"
+              [class.selected]="selectedCotizacionId() === cotizacion.id_cotizacion"
+              [attr.data-estado]="cotizacion.estado" (click)="selectCotizacion(cotizacion.id_cotizacion)">
+              <div class="cotizacion-item-info">
+                <span class="cotizacion-item-nombre">{{ cotizacion.tecnico_nombre }}</span>
+                <span class="cotizacion-item-meta">
+                  {{ cotizacion.tecnico_descripcion ?? '—' }}
+                </span>
+              </div>
+              <div class="cotizacion-item-right">
+                <span class="cotizacion-item-precio">S/. {{ cotizacion.precio }}</span>
+                @if (cotizacion.estado !== 'pendiente') {
+                <span class="estado-badge" [attr.data-estado]="cotizacion.estado">
+                  {{ getCotizacionEstadoLabel(cotizacion.estado) }}
+                </span>
+                }
+              </div>
+            </button>
+          </li>
+          }
+        </ul>
+        }
+      </section>
     </div>
 
-    @if (puedeValorar()) {
-      <div class="acciones-finales">
-        <button type="button" class="btn-valorar" (click)="irAValorar()">
-          Valorar servicio
-        </button>
+    @if (selectedCotizacion(); as cotizacion) {
+    <aside class="cotizacion-sidebar section-card">
+      <div class="sidebar-tecnico">
+        <div class="avatar avatar-md">{{ cotizacion.tecnico_nombre.charAt(0) }}</div>
+        <div>
+          <h3>{{ cotizacion.tecnico_nombre }}</h3>
+          <p>{{ cotizacion.tecnico_descripcion ?? '—' }}</p>
+          <p class="sidebar-rating">
+            {{ cotizacion.tiempo_estimado ?? 'Tiempo no indicado' }}
+          </p>
+        </div>
       </div>
+
+      <div class="sidebar-precio">
+        <span class="precio-label">Precio estimado</span>
+        <span class="precio-valor">S/. {{ cotizacion.precio }}</span>
+      </div>
+
+      <div class="sidebar-propuesta">
+        <h4>Propuesta</h4>
+        <p>{{ cotizacion.descripcion_propuesta }}</p>
+      </div>
+
+      <div class="sidebar-acciones">
+        @if (esVistaCliente()) {
+        @if (cotizacion.estado === 'pendiente' && !hayAceptada()) {
+        <button type="button" class="btn-primary btn-aceptar" [disabled]="accionEnCurso(cotizacion.id_cotizacion)"
+          (click)="aceptarCotizacion(cotizacion.id_cotizacion)">
+          @if (accionEnCurso(cotizacion.id_cotizacion)) {
+          Aceptando…
+          } @else {
+          Aceptar cotización
+          }
+        </button>
+        <button type="button" class="btn-secondary btn-rechazar" [disabled]="accionEnCurso(cotizacion.id_cotizacion)"
+          (click)="rechazarCotizacion(cotizacion.id_cotizacion)">
+          @if (accionEnCurso(cotizacion.id_cotizacion)) {
+          Rechazando…
+          } @else {
+          Rechazar
+          }
+        </button>
+        } @else if (cotizacion.estado === 'aceptada') {
+        <span class="estado-badge aceptada-badge">Cotización aceptada</span>
+        } @else if (cotizacion.estado === 'rechazada') {
+        <span class="estado-badge rechazada-badge">Cotización rechazada</span>
+        }
+        } @else if (cotizacion.estado !== 'pendiente') {
+        <span class="estado-badge" [attr.data-estado]="cotizacion.estado">
+          {{ getCotizacionEstadoLabel(cotizacion.estado) }}
+        </span>
+        }
+      </div>
+    </aside>
     }
+  </div>
+
+  @if (puedeValorar()) {
+  <div class="acciones-finales">
+    <button type="button" class="btn-valorar" (click)="irAValorar()">
+      Valorar servicio
+    </button>
+  </div>
+  }
   }
 </div>
