@@ -5,12 +5,21 @@ import { catchError } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../env';
 import {
+  CotizacionRequest,
+  CotizacionResponse,
   SolicitudDetalle,
   SolicitudDisponible,
   SolicitudListResponse,
   SolicitudRequest,
   SolicitudResponse,
 } from '../models/solicitud';
+
+export type CrearCotizacionResult =
+  | CotizacionResponse
+  | 'duplicate'
+  | 'not_found'
+  | 'bad_request'
+  | null;
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +47,23 @@ export class SolicitudService {
         params: { _: Date.now().toString() },
       })
       .pipe(catchError(() => of(null)));
+  }
+
+  crearCotizacion(data: CotizacionRequest): Observable<CrearCotizacionResult> {
+    return this.http.post<CotizacionResponse>(`${API_BASE_URL}/cotizaciones`, data).pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 409) {
+          return of('duplicate' as const);
+        }
+        if (err.status === 404) {
+          return of('not_found' as const);
+        }
+        if (err.status === 400) {
+          return of('bad_request' as const);
+        }
+        return of(null);
+      }),
+    );
   }
 
   obtenerDetalle(id: number): Observable<SolicitudDetalle | null> {

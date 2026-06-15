@@ -97,7 +97,12 @@ export class PanelTecnico implements OnInit {
     },
   ]);
 
-  readonly solicitudSeleccionada = signal<SolicitudDisponible | null>(null);
+  readonly solicitudActivaId = signal<number | null>(null);
+  readonly solicitudFormulario = signal<SolicitudDisponible | null>(null);
+
+  readonly solicitudSeleccionada = computed(
+    () => this.solicitudFormulario() ?? this._buscarSolicitudEnLista(this.solicitudActivaId()),
+  );
 
   readonly formCotizacion = signal<FormCotizacion>({
     precio: '',
@@ -105,7 +110,9 @@ export class PanelTecnico implements OnInit {
     propuesta: '',
   });
 
-  private nextCotizacionId = 2;
+  readonly enviandoCotizacion = signal(false);
+  readonly errorCotizacion = signal<string | null>(null);
+  readonly exitoCotizacion = signal(false);
 
   readonly totalSolicitudesDisponibles = computed(() => this.solicitudesDisponibles().length);
 
@@ -121,17 +128,24 @@ export class PanelTecnico implements OnInit {
 
   readonly totalServiciosAceptados = computed(() => this.serviciosAceptados().length);
 
-  readonly puedeEnviarCotizacion = computed(() => {
-    if (this.estadoValidacion() !== 'validado') {
-      return false;
+  readonly mensajeAyudaFormulario = computed(() => {
+    if (!this.solicitudSeleccionada()) {
+      return 'Selecciona una solicitud y pulsa «Cotizar» para abrir el formulario.';
     }
-    const solicitud = this.solicitudSeleccionada();
-    if (!solicitud || solicitud.ya_cotizada_por_tecnico) {
-      return false;
+    if (this.solicitudSeleccionada()!.ya_cotizada_por_tecnico) {
+      return 'Esta solicitud ya tiene tu cotización.';
     }
     const form = this.formCotizacion();
-    const precio = Number(form.precio);
-    return precio > 0 && form.tiempo.trim() !== '' && form.propuesta.trim() !== '';
+    if (!form.precio.trim() || Number(form.precio) <= 0) {
+      return 'Completa el precio estimado (mayor a 0).';
+    }
+    if (!form.tiempo.trim()) {
+      return 'Completa el tiempo estimado.';
+    }
+    if (!form.propuesta.trim()) {
+      return 'Completa la propuesta de trabajo.';
+    }
+    return 'Listo para enviar. Pulsa «Enviar cotización».';
   });
 
   ngOnInit(): void {
@@ -140,7 +154,6 @@ export class PanelTecnico implements OnInit {
         tap(() => {
           this.cargando.set(true);
           this.error.set(false);
-          this.solicitudesDisponibles.set([]);
         }),
         switchMap(() => this.solicitudService.solicitudesDisponiblesTecnico()),
         takeUntilDestroyed(this.destroyRef),
@@ -169,44 +182,161 @@ export class PanelTecnico implements OnInit {
     return this.router.url.split('?')[0] === '/panel-tecnico';
   }
 
-  seleccionarSolicitud(solicitud: SolicitudDisponible): void {
-    this.solicitudSeleccionada.set(solicitud);
-    this.formCotizacion.set({ precio: '', tiempo: '', propuesta: '' });
+  private _buscarSolicitudEnLista(id: number | null): SolicitudDisponible | null {
+    if (id === null) {
+      return null;
+    }
+    return this.solicitudesDisponibles().find((s) => s.id_solicitud === id) ?? null;
   }
 
-  enviarCotizacion(): void {
-    if (!this.puedeEnviarCotizacion()) {
+  abrirFormularioCotizacion(solicitud: SolicitudDisponible): void {
+    if (solicitud.ya_cotizada_por_tecnico) {
+      this.solicitudActivaId.set(null);
+      this.solicitudFormulario.set(null);
+      this.formCotizacion.set({ precio: '', tiempo: '', propuesta: '' });
+      this.errorCotizacion.set('Ya enviaste una cotización para esta solicitud.');
+      this.exitoCotizacion.set(false);
       return;
     }
 
-    const solicitud = this.solicitudSeleccionada();
-    if (!solicitud) {
+    this.solicitudActivaId.set(solicitud.id_solicitud);
+    this.solicitudFormulario.set(solicitud);
+    this.formCotizacion.set({ precio: '', tiempo: '', propuesta: '' });
+    this.errorCotizacion.set(null);
+    this.exitoCotizacion.set(false);
+
+    queueMicrotask(() => {
+      document.getElementById('seccion-cotizacion')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }
+
+  enviarCotizacion(): void {
+    if (this.enviandoCotizacion()) {
+      return;
+    }
+
+    const idSolicitud = this.solicitudActivaId();
+    const solicitud = this.solicitudFormulario() ?? this._buscarSolicitudEnLista(idSolicitud);
+
+    if (idSolicitud === null || solicitud === null) {
+      this.errorCotizacion.set('Selecciona una solicitud antes de enviar la cotización.');
+      this.exitoCotizacion.set(false);
+      return;
+    }
+
+    if (solicitud.ya_cotizada_por_tecnico) {
+      this.errorCotizacion.set('Ya enviaste una cotización para esta solicitud.');
+      this.exitoCotizacion.set(false);
+      return;
+    }
+
+    if (this.estadoValidacion() !== 'validado') {
+      this.errorCotizacion.set('Tu perfil debe estar validado para enviar cotizaciones.');
+      this.exitoCotizacion.set(false);
       return;
     }
 
     const form = this.formCotizacion();
-    const nuevaCotizacion: CotizacionEnviada = {
-      id: this.nextCotizacionId++,
-      solicitudId: solicitud.id_solicitud,
-      categoria: solicitud.categoria_nombre,
-      descripcion: solicitud.descripcion,
+    const precio = Number(form.precio);
+    if (!form.precio.trim() || Number.isNaN(precio) || precio <= 0) {
+      this.errorCotizacion.set('Ingresa un precio válido mayor a 0.');
+      this.exitoCotizacion.set(false);
+      return;
+    }
+    if (!form.tiempo.trim()) {
+      this.errorCotizacion.set('Ingresa el tiempo estimado.');
+      this.exitoCotizacion.set(false);
+      return;
+    }
+    if (!form.propuesta.trim()) {
+      this.errorCotizacion.set('Ingresa una propuesta de trabajo.');
+      this.exitoCotizacion.set(false);
+      return;
+    }
+
+    this.enviandoCotizacion.set(true);
+    this.errorCotizacion.set(null);
+    this.exitoCotizacion.set(false);
+
+    const payload = {
+      id_solicitud: idSolicitud,
       precio: Number(form.precio),
-      tiempoEstimado: form.tiempo.trim(),
-      propuesta: form.propuesta.trim(),
-      estado: 'pendiente',
-      fechaEnvio: new Date().toISOString().slice(0, 10),
+      tiempo_estimado: form.tiempo.trim(),
+      descripcion_propuesta: form.propuesta.trim(),
     };
 
-    this.cotizacionesEnviadas.update((lista) => [...lista, nuevaCotizacion]);
+    this.solicitudService.crearCotizacion(payload).subscribe((resultado) => {
+      this.enviandoCotizacion.set(false);
+
+      if (resultado === 'duplicate') {
+        this.marcarComoCotizada(idSolicitud);
+        this.errorCotizacion.set('Ya enviaste una cotización para esta solicitud.');
+        this.exitoCotizacion.set(false);
+        return;
+      }
+
+      if (resultado === 'not_found') {
+        this.errorCotizacion.set(
+          'La solicitud seleccionada no existe o ya no está disponible. Recarga el panel e inténtalo de nuevo.',
+        );
+        return;
+      }
+
+      if (resultado === 'bad_request') {
+        this.errorCotizacion.set(
+          'Esta solicitud ya no se puede cotizar (estado o categoría/zona no válidos). Recarga el panel.',
+        );
+        return;
+      }
+
+      if (resultado === null) {
+        this.errorCotizacion.set(
+          'No se pudo enviar la cotización. Verifica que el backend esté disponible.',
+        );
+        return;
+      }
+
+      this.marcarComoCotizada(idSolicitud);
+      this.cotizacionesEnviadas.update((lista) => [
+        ...lista,
+        {
+          id: resultado.id_cotizacion,
+          solicitudId: resultado.id_solicitud,
+          categoria: solicitud.categoria_nombre,
+          descripcion: solicitud.descripcion,
+          precio: resultado.precio,
+          tiempoEstimado: resultado.tiempo_estimado ?? form.tiempo.trim(),
+          propuesta: resultado.descripcion_propuesta,
+          estado: 'pendiente',
+          fechaEnvio: resultado.fecha_creacion.slice(0, 10),
+        },
+      ]);
+      this.exitoCotizacion.set(true);
+      this.errorCotizacion.set(null);
+    });
+  }
+
+  private marcarComoCotizada(idSolicitud: number): void {
     this.solicitudesDisponibles.update((lista) =>
       lista.map((s) =>
-        s.id_solicitud === solicitud.id_solicitud
-          ? { ...s, ya_cotizada_por_tecnico: true }
+        s.id_solicitud === idSolicitud
+          ? {
+              ...s,
+              ya_cotizada_por_tecnico: true,
+              cotizaciones_count: s.cotizaciones_count + (s.ya_cotizada_por_tecnico ? 0 : 1),
+            }
           : s,
       ),
     );
-    this.solicitudSeleccionada.set(null);
-    this.formCotizacion.set({ precio: '', tiempo: '', propuesta: '' });
+
+    if (this.solicitudActivaId() === idSolicitud) {
+      this.solicitudActivaId.set(null);
+      this.solicitudFormulario.set(null);
+      this.formCotizacion.set({ precio: '', tiempo: '', propuesta: '' });
+    }
   }
 
   actualizarPrecio(event: Event): void {
@@ -225,7 +355,7 @@ export class PanelTecnico implements OnInit {
   }
 
   esSolicitudActiva(id: number): boolean {
-    return this.solicitudSeleccionada()?.id_solicitud === id;
+    return this.solicitudActivaId() === id;
   }
 
   getEstadoDisponibleLabel(solicitud: SolicitudDisponible): string {

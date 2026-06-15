@@ -30,6 +30,37 @@ class SolicitudesRepository:
             return None
         return result.data[0]
 
+    def get_solicitud_by_id(self, id_solicitud: int) -> dict | None:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("solicitudes_servicio")
+            .select("id_solicitud, estado, id_categoria, id_zona")
+            .eq("id_solicitud", id_solicitud)
+            .limit(1)
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+
+    def get_solicitud_for_cotizacion(
+        self, id_solicitud: int, categorias: list[int], zonas: list[int]
+    ) -> dict | None:
+        """Return a pending solicitud eligible for the technician (same filters as disponibles)."""
+        if not categorias or not zonas:
+            return None
+
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("solicitudes_servicio")
+            .select("id_solicitud, estado, id_categoria, id_zona")
+            .eq("id_solicitud", id_solicitud)
+            .eq("estado", "pendiente")
+            .in_("id_categoria", categorias)
+            .in_("id_zona", zonas)
+            .limit(1)
+        )
+        rows = result.data or []
+        return rows[0] if rows else None
+
     def get_by_cliente_id(self, id_cliente: int) -> list[dict]:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(

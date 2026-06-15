@@ -72,9 +72,11 @@
                 <tr
                   class="table-row"
                   [class.row-active]="esSolicitudActiva(solicitud.id_solicitud)"
-                  (click)="seleccionarSolicitud(solicitud)"
-                  (keydown.enter)="seleccionarSolicitud(solicitud)"
-                  tabindex="0"
+                  [class.row-cotizada]="solicitud.ya_cotizada_por_tecnico"
+                  (click)="abrirFormularioCotizacion(solicitud)"
+                  (keydown.enter)="abrirFormularioCotizacion(solicitud)"
+                  [attr.tabindex]="solicitud.ya_cotizada_por_tecnico ? -1 : 0"
+                  [attr.aria-disabled]="solicitud.ya_cotizada_por_tecnico"
                   role="button"
                 >
                   <td class="cell-cliente">
@@ -96,22 +98,24 @@
                     </span>
                   </td>
                   <td class="cell-acciones" (click)="$event.stopPropagation()">
-                    <a
-                      [routerLink]="['/detalle-solicitud', solicitud.id_solicitud]"
-                      [queryParams]="{ from: 'tecnico' }"
-                      class="btn-table btn-link"
-                    >
-                      Ver detalle
-                    </a>
-                    <button
-                      type="button"
-                      class="btn-table btn-cotizar"
-                      [class.active]="esSolicitudActiva(solicitud.id_solicitud)"
-                      [disabled]="solicitud.ya_cotizada_por_tecnico"
-                      (click)="seleccionarSolicitud(solicitud)"
-                    >
-                      Enviar cotización
-                    </button>
+                    <div class="acciones-grupo">
+                      <a
+                        [routerLink]="['/detalle-solicitud', solicitud.id_solicitud]"
+                        [queryParams]="{ from: 'tecnico' }"
+                        class="btn-accion btn-detalle"
+                      >
+                        Ver detalle
+                      </a>
+                      <button
+                        type="button"
+                        class="btn-accion btn-cotizar"
+                        [class.active]="esSolicitudActiva(solicitud.id_solicitud)"
+                        [disabled]="solicitud.ya_cotizada_por_tecnico"
+                        (click)="abrirFormularioCotizacion(solicitud)"
+                      >
+                        Cotizar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -121,8 +125,21 @@
       }
     </section>
 
+    @if (errorCotizacion() && !solicitudSeleccionada()) {
+      <p class="mensaje-estado mensaje-error">{{ errorCotizacion() }}</p>
+    }
+    @if (exitoCotizacion()) {
+      <p class="mensaje-estado mensaje-form-exito" role="status">
+        Cotización enviada correctamente. Esta solicitud ya no admite otra cotización tuya.
+      </p>
+    }
+
     @if (solicitudSeleccionada(); as solicitud) {
-      <section class="section-card seccion-detalle" aria-labelledby="titulo-detalle">
+      <section
+        id="seccion-cotizacion"
+        class="section-card seccion-detalle seccion-cotizacion-activa"
+        aria-labelledby="titulo-detalle"
+      >
         <h2 id="titulo-detalle">Detalle y cotización — Solicitud #{{ solicitud.id_solicitud }}</h2>
         <div class="detalle-contenido">
           <dl class="detalle-lista">
@@ -158,8 +175,26 @@
             }
           </dl>
 
-          <form class="form-cotizacion" (submit)="$event.preventDefault()">
+          <form
+            class="form-cotizacion"
+            (submit)="$event.preventDefault(); enviarCotizacion()"
+          >
             <h3>Enviar cotización</h3>
+            @if (errorCotizacion()) {
+              <p class="mensaje-form-error">{{ errorCotizacion() }}</p>
+            }
+            @if (exitoCotizacion()) {
+              <p class="mensaje-form-exito" role="status">
+                Cotización enviada correctamente. Esta solicitud ya no admite otra cotización tuya.
+              </p>
+            }
+            @if (solicitud.ya_cotizada_por_tecnico) {
+              <p class="mensaje-form-ayuda mensaje-form-bloqueada">
+                Ya enviaste una cotización para esta solicitud.
+              </p>
+            } @else {
+              <p class="mensaje-form-ayuda">{{ mensajeAyudaFormulario() }}</p>
+            }
             <div class="form-group">
               <label for="precio">Precio estimado (S/)</label>
               <input
@@ -169,6 +204,7 @@
                 step="0.01"
                 placeholder="0.00"
                 [value]="formCotizacion().precio"
+                [disabled]="enviandoCotizacion() || solicitud.ya_cotizada_por_tecnico"
                 (input)="actualizarPrecio($event)"
               />
             </div>
@@ -179,6 +215,7 @@
                 type="text"
                 placeholder="Ej. 2 horas"
                 [value]="formCotizacion().tiempo"
+                [disabled]="enviandoCotizacion() || solicitud.ya_cotizada_por_tecnico"
                 (input)="actualizarTiempo($event)"
               />
             </div>
@@ -189,16 +226,20 @@
                 rows="3"
                 placeholder="Describe tu propuesta de trabajo..."
                 [value]="formCotizacion().propuesta"
+                [disabled]="enviandoCotizacion() || solicitud.ya_cotizada_por_tecnico"
                 (input)="actualizarPropuesta($event)"
               ></textarea>
             </div>
             <button
-              type="button"
+              type="submit"
               class="btn-primary btn-enviar"
-              [disabled]="!puedeEnviarCotizacion()"
-              (click)="enviarCotizacion()"
+              [disabled]="enviandoCotizacion() || solicitud.ya_cotizada_por_tecnico"
             >
-              Enviar cotización
+              @if (enviandoCotizacion()) {
+                Enviando cotización…
+              } @else {
+                Enviar cotización
+              }
             </button>
           </form>
         </div>

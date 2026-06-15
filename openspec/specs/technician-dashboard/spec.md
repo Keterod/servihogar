@@ -53,11 +53,10 @@ The technician dashboard SHALL display available service requests fetched from `
 - **WHEN** the user clicks "Ver detalle" on an available request
 - **THEN** the application navigates to `/detalle-solicitud/{id_solicitud}` without a full page reload
 
-#### Scenario: Visual cotización action without backend submit
+#### Scenario: Cotización form opens from available request
 
-- **WHEN** the user clicks "Enviar cotización" on an available request
-- **THEN** the UI SHALL present the quotation form or equivalent visual flow
-- **THEN** no HTTP POST request for cotización SHALL be made
+- **WHEN** the user clicks "Enviar cotización" on an available request that is not yet quoted
+- **THEN** the UI SHALL present the quotation form with precio, tiempo estimado, and propuesta fields
 
 ### Requirement: Request selection and detail
 
@@ -90,24 +89,41 @@ The technician dashboard SHALL provide a quotation form with estimated price (nu
 
 ### Requirement: One quotation per request
 
-The technician dashboard SHALL allow only one quotation per service request per session.
+The technician dashboard SHALL allow only one cotización per service request for the demo technician, enforced by the backend.
 
-#### Scenario: Submit valid quotation
+#### Scenario: Submit valid quotation to backend
 
 - **WHEN** the user fills a valid quotation and submits while validated
-- **THEN** a new card appears in sent quotations with pendiente status and simulated send date
-- **THEN** the request is removed from available requests
-- **THEN** the request cannot be quoted again in the same session
+- **THEN** the application SHALL POST to `/cotizaciones` with `id_solicitud`, `precio`, `tiempo_estimado`, and `descripcion_propuesta`
+- **THEN** on HTTP 201 the solicitud SHALL be marked as already quoted in the available list
+- **THEN** `cotizaciones_count` for that solicitud SHALL increase if displayed
+
+#### Scenario: Submit loading state
+
+- **WHEN** the user submits a quotation and the request is in flight
+- **THEN** the submit button SHALL be disabled and a loading state SHALL be visible
+
+#### Scenario: Submit success feedback
+
+- **WHEN** the backend returns HTTP 201
+- **THEN** the form SHALL reset and the solicitud selection SHALL clear
+- **THEN** a success indication SHALL be shown to the user
+
+#### Scenario: Duplicate quotation error
+
+- **WHEN** the backend returns HTTP 409 because the technician already quoted the solicitud
+- **THEN** the page SHALL display a clear error message
+- **THEN** the solicitud SHALL remain marked as already quoted
+
+#### Scenario: Submit error for other failures
+
+- **WHEN** the backend is unreachable or returns an error other than 409
+- **THEN** the page SHALL display an error message indicating the cotización could not be sent
 
 #### Scenario: Quotation blocked when not validated
 
 - **WHEN** the technician validation status is pendiente or rechazado
-- **THEN** the submit quotation button is visually disabled
-
-#### Scenario: No backend on submit
-
-- **WHEN** the user submits a quotation
-- **THEN** no HTTP request is made to the backend
+- **THEN** the submit quotation button SHALL be visually disabled
 
 ### Requirement: Sent quotations as cards
 
