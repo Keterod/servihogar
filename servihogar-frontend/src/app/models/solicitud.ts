@@ -13,3 +13,15 @@ export interface SolicitudResponse {
   estado: string;
   fecha_publicacion: string;
 }
+
+export interface SolicitudListResponse {
+  id_solicitud: number;
+  titulo: string;
+  descripcion: string;
+  direccion: string | null;
+  estado: string;
+  fecha_publicacion: string;
+  categoria_nombre: string;
+  zona_nombre: string;
+  cotizaciones_count: number;
+}

@@ -29,7 +29,7 @@ export const routes: Routes = [
       import('./components/panel-cliente/panel-cliente').then((m) => m.PanelCliente),
   },
   {
-    path: 'detalle-solicitud',
+    path: 'detalle-solicitud/:id',
     loadComponent: () =>
       import('./components/detalle-solicitud/detalle-solicitud').then((m) => m.DetalleSolicitud),
   },

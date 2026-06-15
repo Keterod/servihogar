@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from src.schemas.solicitud import SolicitudRequest, SolicitudResponse
+from src.schemas.solicitud import SolicitudListResponse, SolicitudRequest, SolicitudResponse
 from src.services.solicitudes_service import SolicitudesService
 
 router = APIRouter()
@@ -15,3 +15,8 @@ async def crear_solicitud(data: SolicitudRequest):
             status_code=503, detail="No se pudo crear la solicitud. Intenta nuevamente."
         )
     return resultado
+
+
+@router.get("/clientes/demo/solicitudes", response_model=list[SolicitudListResponse])
+async def listar_solicitudes_cliente():
+    return _service.obtener_por_cliente()

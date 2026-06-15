@@ -1,5 +1,5 @@
-import { Component, signal, computed } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 interface Cotizacion {
   id: number;
@@ -22,7 +22,9 @@ type PasoTimeline = 'pendiente' | 'cotizada' | 'aceptada' | 'en_proceso' | 'fina
   templateUrl: './detalle-solicitud.html',
   styleUrl: './detalle-solicitud.css',
 })
-export class DetalleSolicitud {
+export class DetalleSolicitud implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+
   readonly solicitudEstado = signal<'pendiente' | 'en_proceso'>('pendiente');
 
   readonly solicitud = signal({
@@ -106,6 +108,13 @@ export class DetalleSolicitud {
   ];
 
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (id > 0) {
+      this.solicitud.update((actual) => ({ ...actual, id }));
+    }
+  }
 
   selectCotizacion(id: number): void {
     this.selectedCotizacionId.set(id);

@@ -28,64 +28,79 @@
       </div>
     </header>
 
-    <div class="summary-grid">
-      <div class="summary-card">
-        <span class="summary-value">{{ pendientes() }}</span>
-        <span class="summary-label">Pendientes</span>
+    @if (cargando()) {
+      <div class="estado-card">
+        <p>Cargando tus solicitudes…</p>
       </div>
-      <div class="summary-card">
-        <span class="summary-value">{{ totalCotizaciones() }}</span>
-        <span class="summary-label">Cotizaciones recibidas</span>
+    } @else if (error()) {
+      <div class="estado-card estado-error">
+        <p>No se pudieron cargar tus solicitudes. Verifica que el backend esté disponible.</p>
       </div>
-      <div class="summary-card">
-        <span class="summary-value">{{ enProceso() }}</span>
-        <span class="summary-label">Aceptados</span>
+    } @else if (solicitudes().length === 0) {
+      <div class="estado-card">
+        <p>Aún no tienes solicitudes registradas.</p>
+        <a routerLink="/solicitud-servicio" class="btn-primary">Crear mi primera solicitud</a>
       </div>
-      <div class="summary-card">
-        <span class="summary-value">{{ finalizadas() }}</span>
-        <span class="summary-label">Finalizadas</span>
+    } @else {
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span class="summary-value">{{ pendientes() }}</span>
+          <span class="summary-label">Pendientes</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value">{{ totalCotizaciones() }}</span>
+          <span class="summary-label">Cotizaciones recibidas</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value">{{ enProceso() }}</span>
+          <span class="summary-label">Aceptados</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value">{{ finalizadas() }}</span>
+          <span class="summary-label">Finalizadas</span>
+        </div>
       </div>
-    </div>
 
-    <section class="solicitudes-seccion">
-      <h2 class="seccion-titulo">Mis solicitudes</h2>
+      <section class="solicitudes-seccion">
+        <h2 class="seccion-titulo">Mis solicitudes</h2>
 
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Categoría</th>
-              <th>Descripción</th>
-              <th>Zona</th>
-              <th>Fecha</th>
-              <th>Estado</th>
-              <th>Cotiz.</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (solicitud of solicitudes(); track solicitud.id) {
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
               <tr>
-                <td><span class="chip">#{{ ('00' + solicitud.id).slice(-3) }}</span></td>
-                <td>{{ solicitud.categoria }}</td>
-                <td class="col-descripcion">{{ solicitud.descripcion }}</td>
-                <td>{{ solicitud.zona }}</td>
-                <td>{{ solicitud.fechaTentativa }}</td>
-                <td>
-                  <span class="solicitud-estado" [attr.data-estado]="solicitud.estado">
-                    {{ getEstadoLabel(solicitud.estado) }}
-                  </span>
-                </td>
-                <td>{{ solicitud.cotizaciones }}</td>
-                <td>
-                  <button type="button" class="btn-link" (click)="verDetalle()">Ver detalle</button>
-                </td>
+                <th>ID</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Zona</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Cotiz.</th>
+                <th></th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
+            </thead>
+            <tbody>
+              @for (solicitud of solicitudes(); track solicitud.id_solicitud) {
+                <tr>
+                  <td><span class="chip">#{{ ('0000' + solicitud.id_solicitud).slice(-4) }}</span></td>
+                  <td>{{ solicitud.categoria_nombre }}</td>
+                  <td class="col-descripcion">{{ solicitud.descripcion }}</td>
+                  <td>{{ solicitud.zona_nombre }}</td>
+                  <td>{{ solicitud.fecha_publicacion | date:'shortDate' }}</td>
+                  <td>
+                    <span class="solicitud-estado" [attr.data-estado]="solicitud.estado">
+                      {{ getEstadoLabel(solicitud.estado) }}
+                    </span>
+                  </td>
+                  <td>{{ solicitud.cotizaciones_count }}</td>
+                  <td>
+                    <a [routerLink]="['/detalle-solicitud', solicitud.id_solicitud]" class="btn-link">Ver detalle</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
   </main>
 </div>

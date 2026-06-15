@@ -3,7 +3,7 @@
 
   <header class="detalle-header">
     <div>
-      <h1>Solicitud #{{ ('00' + solicitud().id).slice(-3) }}</h1>
+      <h1>Solicitud #{{ ('0000' + solicitud().id).slice(-4) }}</h1>
       <p class="detalle-fecha">Creada el {{ solicitud().fechaCreacion }}</p>
     </div>
     <span class="solicitud-estado" [attr.data-estado]="solicitudEstado()">

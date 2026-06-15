@@ -9,10 +9,12 @@
 }
 
 .col-descripcion {
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 12rem;
+  max-width: 28rem;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.45;
+  vertical-align: top;
 }
 
 .btn-link {
@@ -30,10 +32,4 @@
 .btn-link:hover {
   background: #eef2ff;
   color: var(--color-primary);
-}
-
-@media (max-width: 900px) {
-  .col-descripcion {
-    max-width: 140px;
-  }
 }

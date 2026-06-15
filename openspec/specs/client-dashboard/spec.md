@@ -7,17 +7,28 @@ Provides the client dashboard showing a summary of service requests.
 
 ### Requirement: Client dashboard display
 
-The client dashboard SHALL display a summary of three simulated service requests.
+The client dashboard SHALL display the demo client's service requests fetched from `GET /clientes/demo/solicitudes`.
 
-#### Scenario: Requests list visible
+#### Scenario: Requests list fetched from backend
 
 - **WHEN** the user navigates to `/panel-cliente`
-- **THEN** the page displays at least three simulated service requests
+- **THEN** the page fetches requests from `GET /clientes/demo/solicitudes`
+- **THEN** each request displays category name, description, zone name, tentative date, status, and number of quotations
 
-#### Scenario: Each request shows key information
+#### Scenario: Loading state displayed
 
-- **WHEN** the user views a service request in the list
-- **THEN** the request displays category, brief description, zone, tentative date, status, and number of quotations
+- **WHEN** the user navigates to `/panel-cliente` and data is being fetched
+- **THEN** the page SHALL show a loading indicator or message
+
+#### Scenario: Error state displayed
+
+- **WHEN** the backend is unreachable or returns an error
+- **THEN** the page SHALL display an error message indicating the backend is unavailable
+
+#### Scenario: Empty state displayed
+
+- **WHEN** the demo client has no service requests
+- **THEN** the page SHALL display a message indicating no requests found, with a link to create one
 
 ### Requirement: Dashboard uses signals
 
@@ -50,7 +61,7 @@ The client dashboard SHALL allow navigation to request details.
 #### Scenario: Select request
 
 - **WHEN** the user clicks "Ver detalle" on a service request
-- **THEN** the application navigates to `/detalle-solicitud` without a full page reload
+- **THEN** the application navigates to `/detalle-solicitud/{id_solicitud}` without a full page reload
 
 #### Scenario: Route accessible
 
