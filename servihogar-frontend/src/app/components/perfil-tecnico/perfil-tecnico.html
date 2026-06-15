@@ -53,7 +53,7 @@
               <div class="gallery-grid">
                 @for (item of t.portafolio; track item.id_portafolio) {
                   <div class="gallery-item">
-                    <img [src]="item.imagen_url" [alt]="item.titulo" class="gallery-img" />
+                    <img [src]="resolveImagenUrl(item)" [alt]="item.titulo" class="gallery-img" />
                   </div>
                 }
               </div>

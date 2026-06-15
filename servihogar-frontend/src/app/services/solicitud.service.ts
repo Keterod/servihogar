@@ -9,6 +9,8 @@ import {
   CotizacionActionResponse,
   CotizacionRequest,
   CotizacionResponse,
+  ImagenSolicitud,
+  ImagenSolicitudRequest,
   SolicitudDetalle,
   SolicitudDisponible,
   ServicioAceptado,
@@ -51,6 +53,15 @@ export type CotizacionAccionResult =
   | 'conflict'
   | null;
 
+export type RegistrarImagenResult =
+  | ImagenSolicitud
+  | 'unauthorized'
+  | 'forbidden'
+  | 'not_found'
+  | 'validation'
+  | 'limit'
+  | null;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -66,6 +77,40 @@ export class SolicitudService {
     return this.http
       .post<SolicitudResponse>(`${API_BASE_URL}/solicitudes`, data, { headers })
       .pipe(catchError(() => of(null)));
+  }
+
+  registrarImagen(
+    idSolicitud: number,
+    data: ImagenSolicitudRequest,
+  ): Observable<RegistrarImagenResult> {
+    const headers = this.authService.getAuthHeaders();
+    if (!headers) {
+      return of('unauthorized');
+    }
+    return this.http
+      .post<ImagenSolicitud>(`${API_BASE_URL}/solicitudes/${idSolicitud}/imagenes`, data, {
+        headers,
+      })
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 401) {
+            return of('unauthorized' as const);
+          }
+          if (err.status === 403) {
+            return of('forbidden' as const);
+          }
+          if (err.status === 404) {
+            return of('not_found' as const);
+          }
+          if (err.status === 422) {
+            return of('validation' as const);
+          }
+          if (err.status === 409) {
+            return of('limit' as const);
+          }
+          return of(null);
+        }),
+      );
   }
 
   solicitudesCliente(): Observable<SolicitudListResponse[] | null> {

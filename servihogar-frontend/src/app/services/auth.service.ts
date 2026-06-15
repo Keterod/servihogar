@@ -76,6 +76,10 @@ export class AuthService {
     return this.session();
   }
 
+  getSupabase(): SupabaseClient {
+    return this.supabase;
+  }
+
   getCurrentUser(): AuthProfile | null {
     return this.profile();
   }

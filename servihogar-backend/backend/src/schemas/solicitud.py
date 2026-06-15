@@ -45,6 +45,18 @@ class SolicitudDisponibleResponse(BaseModel):
     ya_cotizada_por_tecnico: bool = False
 
 
+class ImagenSolicitudRequest(BaseModel):
+    imagen_url: str
+    descripcion: str | None = None
+
+
+class ImagenSolicitudResponse(BaseModel):
+    id_imagen: int
+    imagen_url: str
+    descripcion: str | None = None
+    fecha_subida: datetime
+
+
 class CotizacionDetalleResponse(BaseModel):
     id_cotizacion: int
     id_tecnico: int
@@ -67,6 +79,7 @@ class SolicitudDetalleResponse(BaseModel):
     categoria_nombre: str
     zona_nombre: str
     cotizaciones: list[CotizacionDetalleResponse] = []
+    imagenes: list[ImagenSolicitudResponse] = []
 
 
 class ServicioAceptadoResponse(BaseModel):

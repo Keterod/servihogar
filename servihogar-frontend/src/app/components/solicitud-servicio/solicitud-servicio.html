@@ -120,8 +120,25 @@
             </div>
 
             <div class="form-group">
-              <label for="imagen">Imagen del problema (opcional)</label>
-              <div class="dropzone" id="imagen" role="button" tabindex="0" aria-label="Zona para arrastrar imagen">
+              <label for="imagen">Imágenes del problema (opcional, máx. {{ maxImagenes }})</label>
+              <input
+                #fileInput
+                type="file"
+                id="imagen"
+                class="visually-hidden"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                [disabled]="!puedeAgregarImagenes() || loading()"
+                (change)="onFileInputChange($event)"
+              />
+              <div
+                class="dropzone"
+                role="button"
+                tabindex="0"
+                aria-label="Zona para arrastrar imágenes"
+                (click)="onDropzoneClick(fileInput)"
+                (keydown)="onDropzoneKeydown($event, fileInput)"
+              >
                 <div class="dropzone-icon" aria-hidden="true">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -129,10 +146,25 @@
                   </svg>
                 </div>
                 <p class="dropzone-text">
-                  <strong>Arrastra una imagen aquí</strong>
-                  <span>o haz clic para seleccionar (JPG, PNG — máx. 5 MB)</span>
+                  <strong>Arrastra imágenes aquí</strong>
+                  <span>o haz clic para seleccionar (JPG, PNG, WebP — máx. 5 MB c/u)</span>
                 </p>
               </div>
+              @if (imagenError()) {
+                <p class="imagen-error" role="alert">{{ imagenError() }}</p>
+              }
+              @if (previews().length > 0) {
+                <ul class="imagen-previews">
+                  @for (preview of previews(); track preview; let i = $index) {
+                    <li>
+                      <img [src]="preview" alt="Vista previa {{ i + 1 }}" />
+                      <button type="button" class="btn-quitar-imagen" (click)="removeImagen(i)">
+                        Quitar
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
             </div>
 
             <div class="form-actions">
@@ -154,6 +186,9 @@
         <h2>¡Solicitud enviada!</h2>
         <p>Tu solicitud de servicio ha sido enviada exitosamente.</p>
         <p>Los técnicos revisarán los detalles y te enviarán una cotización estimada.</p>
+        @if (advertenciaImagenes()) {
+          <p class="confirmacion-advertencia" role="alert">{{ advertenciaImagenes() }}</p>
+        }
         <button type="button" class="btn-primary" (click)="irAlPanel()">Ir a mi panel</button>
       </div>
     }

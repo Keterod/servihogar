@@ -24,19 +24,23 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 
-allowed_origins = [
+ALLOWED_ORIGINS = [
     "http://localhost:4300",
     "http://127.0.0.1:4300",
     "http://localhost:4200",
     "http://127.0.0.1:4200",
 ]
 
+ALLOWED_METHODS = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
+
+ALLOWED_HEADERS = ["Authorization", "Content-Type"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
 )
 
 
@@ -46,6 +50,15 @@ async def supabase_exception_handler(request: Request, exc: SupabaseException):
     detail = str(exc)
     status_code = 422 if "query failed" in detail.lower() else 503
     return JSONResponse(status_code=status_code, content={"detail": detail})
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Excepción no capturada en %s", request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Error interno del servidor"},
+    )
 
 
 app.include_router(health_router)

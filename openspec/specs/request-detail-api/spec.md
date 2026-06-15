@@ -3,37 +3,39 @@
 ## Purpose
 
 Provides a backend endpoint for fetching a demo client's service request detail with associated cotizaciones and technician information.
-
 ## Requirements
-
 ### Requirement: GET /solicitudes/{id_solicitud} endpoint
 
-The backend SHALL expose a `GET /solicitudes/{id_solicitud}` endpoint returning the full detail of a service request belonging to the demo client, including associated cotizaciones.
+The backend SHALL expose a `GET /solicitudes/{id_solicitud}` endpoint requiring Bearer token. Access SHALL be granted to the owning client, authorized technicians, or administrators per role-based rules. The response SHALL include solicitud detail, cotizaciones, and an `imagenes` array.
 
-#### Scenario: Returns detail for existing demo-client solicitud
+#### Scenario: Returns detail for authorized client
 
-- **WHEN** a GET request is made to `/solicitudes/1` and solicitud 1 belongs to the demo client
+- **WHEN** the owning client GETs `/solicitudes/12`
 - **THEN** the response SHALL be HTTP 200
-- **THEN** the response SHALL include `id_solicitud`, `titulo`, `descripcion`, `direccion`, `estado`, `fecha_publicacion`, `categoria_nombre`, `zona_nombre`, and `cotizaciones`
+- **THEN** the response SHALL include `id_solicitud`, `titulo`, `descripcion`, `direccion`, `estado`, `fecha_publicacion`, `categoria_nombre`, `zona_nombre`, `cotizaciones`, and `imagenes`
 
 #### Scenario: Returns cotizaciones with technician info
 
-- **WHEN** a GET request is made to `/solicitudes/1` and solicitud 1 has cotizaciones in seed data
-- **THEN** each cotización in the response SHALL include `id_cotizacion`, `id_tecnico`, `tecnico_nombre`, `precio`, `descripcion_propuesta`, `estado`, and `fecha_creacion`
-- **THEN** `tecnico_descripcion` or equivalent specialty field SHALL be included when available from the technician profile
+- **WHEN** the solicitud has cotizaciones
+- **THEN** each cotización SHALL include `id_cotizacion`, `id_tecnico`, `tecnico_nombre`, `precio`, `descripcion_propuesta`, `estado`, and `fecha_creacion`
 
-#### Scenario: Returns empty cotizaciones array
+#### Scenario: Returns empty imagenes array
 
-- **WHEN** a GET request is made to `/solicitudes/{id}` for a solicitud with no cotizaciones
-- **THEN** the response SHALL be HTTP 200
-- **THEN** `cotizaciones` SHALL be an empty array
+- **WHEN** the solicitud has no images
+- **THEN** `imagenes` SHALL be an empty array
+
+#### Scenario: Returns 401 without token
+
+- **WHEN** GET is made without Authorization
+- **THEN** the response SHALL be HTTP 401
+
+#### Scenario: Returns 403 for unauthorized user
+
+- **WHEN** a user without access GETs the solicitud
+- **THEN** the response SHALL be HTTP 403
 
 #### Scenario: Returns 404 for nonexistent solicitud
 
-- **WHEN** a GET request is made to `/solicitudes/99999`
-- **THEN** the response SHALL be HTTP 404 with a descriptive error message
+- **WHEN** GET is made to `/solicitudes/99999`
+- **THEN** the response SHALL be HTTP 404
 
-#### Scenario: Returns 404 for solicitud not owned by demo client
-
-- **WHEN** a GET request is made to `/solicitudes/{id}` for a solicitud that exists but belongs to a different client
-- **THEN** the response SHALL be HTTP 404 with a descriptive error message

@@ -78,6 +78,22 @@
           </dl>
         </section>
 
+        @if (s.imagenes?.length) {
+          <section class="section-card galeria-solicitud">
+            <h2>Imágenes adjuntas ({{ s.imagenes?.length ?? 0 }})</h2>
+            <div class="galeria-grid">
+              @for (img of s.imagenes ?? []; track img.id_imagen) {
+                <figure class="galeria-item">
+                  <img
+                    [src]="resolveImagenUrl(img.imagen_url)"
+                    [alt]="img.descripcion ?? 'Imagen de la solicitud'"
+                  />
+                </figure>
+              }
+            </div>
+          </section>
+        }
+
         <section class="section-card cotizaciones-lista-seccion">
           <h2>Cotizaciones recibidas ({{ cotizaciones().length }})</h2>
 

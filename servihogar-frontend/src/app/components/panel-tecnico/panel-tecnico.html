@@ -361,5 +361,83 @@
         </div>
       }
     </section>
+
+    <section class="panel-seccion portafolio-seccion">
+      <div class="seccion-header">
+        <h2>Mi portafolio</h2>
+        <span class="chip">{{ portafolio().length }} trabajos</span>
+      </div>
+
+      @if (cargandoPortafolio()) {
+        <p class="mensaje-estado">Cargando portafolio…</p>
+      } @else if (errorPortafolio()) {
+        <p class="mensaje-estado mensaje-error">
+          No se pudo cargar tu portafolio. Verifica que el backend esté disponible.
+        </p>
+      } @else {
+        @if (portafolio().length > 0) {
+          <div class="portafolio-grid">
+            @for (item of portafolio(); track item.id_portafolio) {
+              <article class="portafolio-card">
+                <img [src]="resolveImagenUrl(item)" [alt]="item.titulo" />
+                <div class="portafolio-card-body">
+                  <h3>{{ item.titulo }}</h3>
+                  @if (item.descripcion) {
+                    <p>{{ item.descripcion }}</p>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="mensaje-vacio">Aún no has publicado trabajos en tu portafolio.</p>
+        }
+
+        <form class="portafolio-form" (submit)="$event.preventDefault(); agregarPortafolio()">
+          <h3>Agregar trabajo</h3>
+          @if (portafolioError()) {
+            <p class="mensaje-error" role="alert">{{ portafolioError() }}</p>
+          }
+          <div class="form-group">
+            <label for="portafolio-titulo">Título</label>
+            <input
+              id="portafolio-titulo"
+              type="text"
+              [value]="portafolioTitulo()"
+              (input)="portafolioTitulo.set($any($event.target).value)"
+              placeholder="Ej: Instalación eléctrica completa"
+            />
+          </div>
+          <div class="form-group">
+            <label for="portafolio-descripcion">Descripción (opcional)</label>
+            <textarea
+              id="portafolio-descripcion"
+              rows="2"
+              [value]="portafolioDescripcion()"
+              (input)="portafolioDescripcion.set($any($event.target).value)"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="portafolio-imagen">Imagen (JPG, PNG, WebP — máx. 5 MB)</label>
+            <input
+              id="portafolio-imagen"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              (change)="onPortafolioFileChange($event)"
+            />
+            @if (portafolioPreview()) {
+              <img class="portafolio-preview" [src]="portafolioPreview()!" alt="Vista previa" />
+            }
+          </div>
+          <button type="submit" class="btn-accion btn-detalle" [disabled]="subiendoPortafolio()">
+            @if (subiendoPortafolio()) {
+              Subiendo…
+            } @else {
+              Publicar en portafolio
+            }
+          </button>
+        </form>
+      }
+    </section>
   </div>
 </div>

@@ -1,10 +1,14 @@
 from typing import Literal
 
 from src.repository.cotizaciones_repository import CotizacionesRepository
+from src.repository.imagenes_solicitud_repository import ImagenesSolicitudRepository
 from src.repository.solicitudes_repository import SolicitudesRepository
 from src.repository.tecnicos_repository import TecnicosRepository
 from src.schemas.auth import AuthMeResponse, TipoUsuario
-from src.schemas.solicitud import (    CotizacionDetalleResponse,
+from src.schemas.solicitud import (
+    CotizacionDetalleResponse,
+    ImagenSolicitudRequest,
+    ImagenSolicitudResponse,
     ServicioAceptadoResponse,
     SolicitudDetalleResponse,
     SolicitudDisponibleResponse,
@@ -13,12 +17,81 @@ from src.schemas.solicitud import (    CotizacionDetalleResponse,
     SolicitudResponse,
 )
 
+MAX_IMAGENES_POR_SOLICITUD = 5
+ALLOWED_IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp")
+
+
+class ImagenError(Exception):
+    def __init__(self, code: str, message: str):
+        self.code = code
+        super().__init__(message)
+
 
 class SolicitudesService:
     def __init__(self):
         self._repo = SolicitudesRepository()
         self._tecnicos_repo = TecnicosRepository()
         self._cotizaciones_repo = CotizacionesRepository()
+        self._imagenes_repo = ImagenesSolicitudRepository()
+
+    @staticmethod
+    def _validar_imagen_url(imagen_url: str, prefix: str) -> None:
+        if ".." in imagen_url or imagen_url.startswith("/"):
+            raise ImagenError("validation", "Ruta de imagen inválida")
+        if not imagen_url.startswith(prefix):
+            raise ImagenError(
+                "validation",
+                f"La imagen debe estar bajo el prefijo {prefix}",
+            )
+        lower = imagen_url.lower()
+        if not any(lower.endswith(ext) for ext in ALLOWED_IMAGE_SUFFIXES):
+            raise ImagenError(
+                "validation",
+                "Solo se permiten imágenes JPEG, PNG o WebP",
+            )
+
+    @staticmethod
+    def _to_imagen_response(row: dict) -> ImagenSolicitudResponse:
+        return ImagenSolicitudResponse(
+            id_imagen=row["id_imagen"],
+            imagen_url=row["imagen_url"],
+            descripcion=row.get("descripcion"),
+            fecha_subida=row["fecha_subida"],
+        )
+
+    def registrar_imagen(
+        self, id_solicitud: int, id_cliente: int, data: ImagenSolicitudRequest
+    ) -> ImagenSolicitudResponse:
+        row = self._repo.get_solicitud_by_id(id_solicitud)
+        if row is None:
+            raise ImagenError("not_found", "Solicitud no encontrada")
+        if int(row["id_cliente"]) != id_cliente:
+            raise ImagenError(
+                "forbidden",
+                "No tienes permiso para agregar imágenes a esta solicitud",
+            )
+
+        prefix = f"solicitudes/{id_solicitud}/"
+        self._validar_imagen_url(data.imagen_url, prefix)
+
+        count = self._imagenes_repo.count_by_solicitud(id_solicitud)
+        if count >= MAX_IMAGENES_POR_SOLICITUD:
+            raise ImagenError(
+                "limit",
+                f"Máximo {MAX_IMAGENES_POR_SOLICITUD} imágenes por solicitud",
+            )
+
+        inserted = self._imagenes_repo.insert(
+            id_solicitud, data.imagen_url, data.descripcion
+        )
+        if inserted is None:
+            raise ImagenError("failed", "No se pudo registrar la imagen")
+
+        return self._to_imagen_response(inserted)
+
+    def listar_imagenes(self, id_solicitud: int) -> list[ImagenSolicitudResponse]:
+        rows = self._imagenes_repo.list_by_solicitud(id_solicitud)
+        return [self._to_imagen_response(r) for r in rows]
 
     def crear_solicitud(self, data: SolicitudRequest) -> SolicitudResponse | None:
         id_cliente = self._repo.get_demo_cliente_id()
@@ -135,6 +208,9 @@ class SolicitudesService:
             for c in cotizaciones_rows
         ]
 
+        imagenes_rows = self._imagenes_repo.list_by_solicitud(id_solicitud)
+        imagenes = [self._to_imagen_response(r) for r in imagenes_rows]
+
         return SolicitudDetalleResponse(
             id_solicitud=row["id_solicitud"],
             titulo=row["titulo"],
@@ -145,6 +221,7 @@ class SolicitudesService:
             categoria_nombre=row["categoria_nombre"],
             zona_nombre=row["zona_nombre"],
             cotizaciones=cotizaciones,
+            imagenes=imagenes,
         )
 
     def obtener_detalle(self, id_solicitud: int) -> SolicitudDetalleResponse | None:

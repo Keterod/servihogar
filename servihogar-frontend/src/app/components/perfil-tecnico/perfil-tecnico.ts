@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { TecnicoPerfil } from '../../models/tecnico';
 import { AuthService } from '../../services/auth.service';
+import { StorageService } from '../../services/storage.service';
 import { TecnicoService } from '../../services/tecnico.service';
 
 @Component({
@@ -16,6 +17,7 @@ export class PerfilTecnico implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly tecnicoService = inject(TecnicoService);
+  private readonly storageService = inject(StorageService);
 
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
@@ -54,6 +56,10 @@ export class PerfilTecnico implements OnInit {
       .join('')
       .slice(0, 2)
       .toUpperCase();
+  }
+
+  resolveImagenUrl(item: { imagen_url: string; storage_path?: string | null }): string {
+    return this.storageService.resolveMediaUrl(item.imagen_url, item.storage_path);
   }
 
   async solicitarCotizacion(tecnico: TecnicoPerfil): Promise<void> {

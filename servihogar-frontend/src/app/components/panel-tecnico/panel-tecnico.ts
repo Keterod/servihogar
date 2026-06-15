@@ -8,6 +8,8 @@ import { filter, tap } from 'rxjs/operators';
 import { SolicitudService } from '../../services/solicitud.service';
 import { AuthService } from '../../services/auth.service';
 import { TecnicoService } from '../../services/tecnico.service';
+import { StorageService } from '../../services/storage.service';
+import { PortafolioItemPanel } from '../../models/tecnico';
 import { ServicioAceptado, SolicitudDisponible } from '../../models/solicitud';
 
 interface Tecnico {
@@ -47,6 +49,7 @@ export class PanelTecnico implements OnInit {
   private readonly solicitudService = inject(SolicitudService);
   private readonly authService = inject(AuthService);
   private readonly tecnicoService = inject(TecnicoService);
+  private readonly storageService = inject(StorageService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly recargar = new Subject<void>();
@@ -189,6 +192,9 @@ export class PanelTecnico implements OnInit {
       this.cargandoPerfil.set(false);
       return;
     }
+
+    this.idTecnicoActual = idTecnico;
+    this.cargarPortafolio();
 
     this.tecnicoService.obtenerTecnicoPorId(idTecnico).subscribe({
       next: (data) => {
@@ -427,5 +433,119 @@ export class PanelTecnico implements OnInit {
 
   formatPrecio(precio: number): string {
     return `S/ ${precio.toFixed(2)}`;
+  }
+
+  readonly portafolio = signal<PortafolioItemPanel[]>([]);
+  readonly cargandoPortafolio = signal(true);
+  readonly errorPortafolio = signal(false);
+  readonly portafolioTitulo = signal('');
+  readonly portafolioDescripcion = signal('');
+  readonly portafolioArchivo = signal<File | null>(null);
+  readonly portafolioPreview = signal<string | null>(null);
+  readonly portafolioError = signal<string | null>(null);
+  readonly subiendoPortafolio = signal(false);
+
+  private idTecnicoActual: number | null = null;
+
+  cargarPortafolio(): void {
+    this.cargandoPortafolio.set(true);
+    this.errorPortafolio.set(false);
+
+    this.tecnicoService.obtenerMiPortafolio().subscribe({
+      next: (items) => {
+        this.cargandoPortafolio.set(false);
+        if (items === null) {
+          this.errorPortafolio.set(true);
+          return;
+        }
+        this.portafolio.set(items);
+      },
+    });
+  }
+
+  onPortafolioFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+
+    if (this.portafolioPreview()) {
+      URL.revokeObjectURL(this.portafolioPreview()!);
+    }
+
+    if (!file) {
+      this.portafolioArchivo.set(null);
+      this.portafolioPreview.set(null);
+      return;
+    }
+
+    const validationError = this.storageService.validateImageFile(file);
+    if (validationError) {
+      this.portafolioError.set(validationError);
+      this.portafolioArchivo.set(null);
+      this.portafolioPreview.set(null);
+      return;
+    }
+
+    this.portafolioError.set(null);
+    this.portafolioArchivo.set(file);
+    this.portafolioPreview.set(URL.createObjectURL(file));
+  }
+
+  async agregarPortafolio(): Promise<void> {
+    const titulo = this.portafolioTitulo().trim();
+    const file = this.portafolioArchivo();
+    const idTecnico = this.idTecnicoActual;
+
+    if (!titulo || !file || !idTecnico) {
+      this.portafolioError.set('Completa el título y selecciona una imagen.');
+      return;
+    }
+
+    this.subiendoPortafolio.set(true);
+    this.portafolioError.set(null);
+
+    const path = this.storageService.buildPortafolioPath(idTecnico, file.name);
+    const upload = await this.storageService.uploadFile(path, file);
+
+    if ('error' in upload) {
+      this.subiendoPortafolio.set(false);
+      this.portafolioError.set(upload.error);
+      return;
+    }
+
+    this.tecnicoService
+      .crearPortafolioItem({
+        titulo,
+        imagen_url: upload.path,
+        descripcion: this.portafolioDescripcion().trim() || undefined,
+      })
+      .subscribe(async (result) => {
+        this.subiendoPortafolio.set(false);
+
+        if (!result || typeof result === 'string') {
+          await this.storageService.removeFile(upload.path);
+          if (result === 'limit') {
+            this.portafolioError.set('Has alcanzado el límite de ítems en tu portafolio.');
+          } else if (result === 'validation') {
+            this.portafolioError.set('Los datos del portafolio no son válidos.');
+          } else {
+            this.portafolioError.set('No se pudo guardar el ítem de portafolio.');
+          }
+          return;
+        }
+
+        this.portafolio.update((items) => [result, ...items]);
+        this.portafolioTitulo.set('');
+        this.portafolioDescripcion.set('');
+        this.portafolioArchivo.set(null);
+        if (this.portafolioPreview()) {
+          URL.revokeObjectURL(this.portafolioPreview()!);
+        }
+        this.portafolioPreview.set(null);
+      });
+  }
+
+  resolveImagenUrl(item: { imagen_url: string; storage_path?: string | null }): string {
+    return this.storageService.resolveMediaUrl(item.imagen_url, item.storage_path);
   }
 }

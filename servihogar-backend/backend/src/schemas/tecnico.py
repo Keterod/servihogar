@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class TecnicoCategoriaRef(BaseModel):
@@ -16,6 +18,23 @@ class PortafolioItem(BaseModel):
     titulo: str
     descripcion: str | None = None
     imagen_url: str
+    storage_path: str | None = None
+
+
+class PortafolioCreateRequest(BaseModel):
+    titulo: str = Field(max_length=150)
+    imagen_url: str
+    descripcion: str | None = None
+
+
+class PortafolioItemResponse(BaseModel):
+    id_portafolio: int
+    titulo: str
+    descripcion: str | None = None
+    imagen_url: str
+    storage_path: str | None = None
+    estado: str
+    fecha_subida: datetime
 
 
 class TecnicoResponse(BaseModel):

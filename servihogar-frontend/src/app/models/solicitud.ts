@@ -1,3 +1,15 @@
+export interface ImagenSolicitud {
+  id_imagen: number;
+  imagen_url: string;
+  descripcion: string | null;
+  fecha_subida: string;
+}
+
+export interface ImagenSolicitudRequest {
+  imagen_url: string;
+  descripcion?: string;
+}
+
 export interface SolicitudRequest {
   id_categoria: number;
   id_zona: number;
@@ -107,6 +119,7 @@ export interface SolicitudDetalle {
   categoria_nombre: string;
   zona_nombre: string;
   cotizaciones: CotizacionDetalle[];
+  imagenes?: ImagenSolicitud[];
 }
 
 export interface ValoracionRequest {

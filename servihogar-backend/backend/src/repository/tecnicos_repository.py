@@ -1,4 +1,8 @@
+import logging
+
 from src.repository.supabase_client import SupabaseClient
+
+logger = logging.getLogger(__name__)
 
 DEMO_TECNICO_AUTH_USER_ID = "9ce2ac73-1b61-40de-ac53-bafc12b3eb29"
 
@@ -80,3 +84,56 @@ class TecnicosRepository:
             .order("fecha_subida", desc=True)
         )
         return result.data
+
+    def list_portafolio_for_tecnico(self, id_tecnico: int):
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("portafolio_tecnico")
+            .select(
+                "id_portafolio, titulo, descripcion, imagen_url, estado, fecha_subida"
+            )
+            .eq("id_tecnico", id_tecnico)
+            .order("fecha_subida", desc=True)
+        )
+        return result.data or []
+
+    def count_portafolio_visible(self, id_tecnico: int) -> int:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("portafolio_tecnico")
+            .select("id_portafolio", count="exact")
+            .eq("id_tecnico", id_tecnico)
+            .eq("estado", "visible")
+        )
+        return result.count or 0
+
+    def insert_portafolio(
+        self,
+        id_tecnico: int,
+        titulo: str,
+        imagen_url: str,
+        descripcion: str | None = None,
+    ) -> dict | None:
+        client = SupabaseClient.get()
+        payload: dict = {
+            "id_tecnico": id_tecnico,
+            "titulo": titulo,
+            "imagen_url": imagen_url,
+            "estado": "visible",
+        }
+        if descripcion is not None:
+            payload["descripcion"] = descripcion
+
+        logger.info(
+            "Insert portafolio_tecnico id_tecnico=%s storage_path=%s payload=%s",
+            id_tecnico,
+            imagen_url,
+            payload,
+        )
+
+        result = SupabaseClient.execute(
+            client.table("portafolio_tecnico").insert(payload).select("*"),
+            context="insert portafolio_tecnico",
+        )
+        rows = result.data or []
+        return rows[0] if rows else None

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { SolicitudService } from '../../services/solicitud.service';
 import { AuthService } from '../../services/auth.service';
+import { StorageService } from '../../services/storage.service';
 import { CotizacionDetalle, SolicitudDetalle } from '../../models/solicitud';
 import type { CotizacionAccionResult } from '../../services/solicitud.service';
 
@@ -21,6 +22,7 @@ export class DetalleSolicitud implements OnInit {
   private readonly router = inject(Router);
   private readonly solicitudService = inject(SolicitudService);
   private readonly authService = inject(AuthService);
+  private readonly storageService = inject(StorageService);
 
   readonly loading = signal(true);
   readonly error = signal(false);
@@ -283,5 +285,9 @@ export class DetalleSolicitud implements OnInit {
     this.router.navigate(['/valorar-servicio'], {
       queryParams: { idSolicitud: id },
     });
+  }
+
+  resolveImagenUrl(pathOrUrl: string): string {
+    return this.storageService.resolvePublicUrl(pathOrUrl);
   }
 }

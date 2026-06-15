@@ -13,6 +13,18 @@ export interface PortafolioItem {
   titulo: string;
   descripcion: string | null;
   imagen_url: string;
+  storage_path?: string | null;
+}
+
+export interface PortafolioCreateRequest {
+  titulo: string;
+  imagen_url: string;
+  descripcion?: string;
+}
+
+export interface PortafolioItemPanel extends PortafolioItem {
+  estado: string;
+  fecha_subida: string;
 }
 
 export interface Tecnico {
