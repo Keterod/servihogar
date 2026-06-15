@@ -14,6 +14,7 @@ interface MetricaAdmin {
 
 @Component({
   selector: 'app-panel-administrador',
+  standalone: true,
   imports: [],
   templateUrl: './panel-administrador.html',
   styleUrl: './panel-administrador.css',
@@ -23,10 +24,10 @@ export class PanelAdministrador implements OnInit {
 
   readonly resumen = signal<AdminResumen | null>(null);
   readonly tecnicosPendientes = signal<TecnicoPendienteAdmin[]>([]);
-  readonly cargando = signal(false);
-  readonly error = signal('');
+  readonly cargando = signal<boolean>(false);
+  readonly error = signal<string | null>(null);
   readonly accionEnCurso = signal<number | null>(null);
-  readonly mensajeAccion = signal('');
+  readonly mensajeAccion = signal<string | null>(null);
 
   readonly tieneDatos = computed(() => this.resumen() !== null && !this.error());
   readonly sinPendientes = computed(
@@ -76,7 +77,7 @@ export class PanelAdministrador implements OnInit {
 
   cargarDatos(): void {
     this.cargando.set(true);
-    this.error.set('');
+    this.error.set(null);
 
     forkJoin({
       resumen: this.administradorService.obtenerResumen(),
@@ -124,8 +125,8 @@ export class PanelAdministrador implements OnInit {
     }
 
     this.accionEnCurso.set(idTecnico);
-    this.error.set('');
-    this.mensajeAccion.set('');
+    this.error.set(null);
+    this.mensajeAccion.set(null);
 
     const request =
       accion === 'aprobar'
