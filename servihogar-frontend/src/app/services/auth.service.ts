@@ -1,11 +1,11 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Session, SupabaseClient, createClient } from '@supabase/supabase-js';
 import { Observable, firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../env';
-import { AuthProfile, LoginResult } from '../models/auth';
+import { AuthProfile, LoginResult, RegisterPayload, RegisterResponse, RegisterResult } from '../models/auth';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../supabase.env';
 
 @Injectable({
@@ -25,6 +25,31 @@ export class AuthService {
   readonly displayName = computed(() => {
     const user = this.profile();
     return user ? `${user.nombres} ${user.apellidos}`.trim() : '';
+  });
+
+  readonly panelRoute = computed((): string | null => {
+    const user = this.profile();
+    if (!user) {
+      return null;
+    }
+    if (user.tipo_usuario === 'tecnico' && user.estado_validacion !== 'validado') {
+      return null;
+    }
+    switch (user.tipo_usuario) {
+      case 'cliente':
+        return '/panel-cliente';
+      case 'tecnico':
+        return '/panel-tecnico';
+      case 'administrador':
+        return '/panel-administrador';
+      default:
+        return null;
+    }
+  });
+
+  readonly isPendingTechnician = computed(() => {
+    const user = this.profile();
+    return user?.tipo_usuario === 'tecnico' && user.estado_validacion !== 'validado';
   });
 
   constructor() {
@@ -53,6 +78,14 @@ export class AuthService {
 
   getCurrentUser(): AuthProfile | null {
     return this.profile();
+  }
+
+  getAuthHeaders(): { Authorization: string } | null {
+    const token = this.session()?.access_token;
+    if (!token) {
+      return null;
+    }
+    return { Authorization: `Bearer ${token}` };
   }
 
   me(): Observable<AuthProfile | null> {
@@ -98,6 +131,17 @@ export class AuthService {
     return { ok: true, profile };
   }
 
+  async register(payload: RegisterPayload): Promise<RegisterResult> {
+    try {
+      const data = await firstValueFrom(
+        this.http.post<RegisterResponse>(`${API_BASE_URL}/auth/register`, payload),
+      );
+      return { ok: true, data };
+    } catch (err) {
+      return { ok: false, error: this.mapearErrorRegistro(err) };
+    }
+  }
+
   async logout(): Promise<void> {
     await this.supabase.auth.signOut();
     this.session.set(null);
@@ -127,5 +171,35 @@ export class AuthService {
         })
         .pipe(catchError(() => of(null))),
     );
+  }
+
+  private mapearErrorRegistro(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'No se pudo completar el registro. Inténtalo nuevamente.';
+    }
+
+    const detalle = err.error?.detail;
+    if (typeof detalle === 'string' && detalle.trim() !== '') {
+      return detalle;
+    }
+
+    if (err.status === 409) {
+      return 'El correo electrónico ya está registrado.';
+    }
+
+    if (err.status === 422) {
+      if (Array.isArray(detalle)) {
+        return detalle.map((item) => item.msg ?? item).join(' ');
+      }
+      return 'Revisa los datos del formulario e inténtalo nuevamente.';
+    }
+
+    if (err.status === 503) {
+      return typeof detalle === 'string' && detalle.trim() !== ''
+        ? detalle
+        : 'El servicio no está disponible. Inténtalo más tarde.';
+    }
+
+    return 'No se pudo completar el registro. Inténtalo nuevamente.';
   }
 }

@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { API_BASE_URL } from '../env';
+import { AuthService } from './auth.service';
 import {
   AdminResumen,
   TecnicoPendienteAdmin,
@@ -12,6 +13,8 @@ import {
 
 export type TecnicoValidacionAdminResult =
   | TecnicoValidacionAdminResponse
+  | 'unauthorized'
+  | 'forbidden'
   | 'not_found'
   | 'conflict'
   | null;
@@ -21,37 +24,80 @@ export type TecnicoValidacionAdminResult =
 })
 export class AdministradorService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
-  obtenerResumen(): Observable<AdminResumen | null> {
+  obtenerResumen(): Observable<AdminResumen | 'unauthorized' | 'forbidden' | null> {
+    const headers = this.authService.getAuthHeaders();
+    if (!headers) {
+      return of('unauthorized');
+    }
     return this.http
       .get<AdminResumen>(`${API_BASE_URL}/admin/demo/resumen`, {
+        headers,
         params: { _: Date.now().toString() },
       })
-      .pipe(catchError(() => of(null)));
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 401) {
+            return of('unauthorized' as const);
+          }
+          if (err.status === 403) {
+            return of('forbidden' as const);
+          }
+          return of(null);
+        }),
+      );
   }
 
-  obtenerTecnicosPendientes(): Observable<TecnicoPendienteAdmin[] | null> {
+  obtenerTecnicosPendientes(): Observable<
+    TecnicoPendienteAdmin[] | 'unauthorized' | 'forbidden' | null
+  > {
+    const headers = this.authService.getAuthHeaders();
+    if (!headers) {
+      return of('unauthorized');
+    }
     return this.http
       .get<TecnicoPendienteAdmin[]>(`${API_BASE_URL}/admin/demo/tecnicos-pendientes`, {
+        headers,
         params: { _: Date.now().toString() },
       })
-      .pipe(catchError(() => of(null)));
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          if (err.status === 401) {
+            return of('unauthorized' as const);
+          }
+          if (err.status === 403) {
+            return of('forbidden' as const);
+          }
+          return of(null);
+        }),
+      );
   }
 
   aprobarTecnico(idTecnico: number): Observable<TecnicoValidacionAdminResult> {
+    const headers = this.authService.getAuthHeaders();
+    if (!headers) {
+      return of('unauthorized');
+    }
     return this.http
       .patch<TecnicoValidacionAdminResponse>(
         `${API_BASE_URL}/admin/demo/tecnicos/${idTecnico}/aprobar`,
         {},
+        { headers },
       )
       .pipe(catchError((err: HttpErrorResponse) => this._mapValidacionError(err)));
   }
 
   rechazarTecnico(idTecnico: number): Observable<TecnicoValidacionAdminResult> {
+    const headers = this.authService.getAuthHeaders();
+    if (!headers) {
+      return of('unauthorized');
+    }
     return this.http
       .patch<TecnicoValidacionAdminResponse>(
         `${API_BASE_URL}/admin/demo/tecnicos/${idTecnico}/rechazar`,
         {},
+        { headers },
       )
       .pipe(catchError((err: HttpErrorResponse) => this._mapValidacionError(err)));
   }
@@ -59,6 +105,12 @@ export class AdministradorService {
   private _mapValidacionError(
     err: HttpErrorResponse,
   ): Observable<TecnicoValidacionAdminResult> {
+    if (err.status === 401) {
+      return of('unauthorized');
+    }
+    if (err.status === 403) {
+      return of('forbidden');
+    }
     if (err.status === 404) {
       return of('not_found');
     }

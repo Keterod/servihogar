@@ -33,28 +33,39 @@ class CotizacionesService:
             solicitud_estado=solicitud_estado,
         )
 
-    def _get_cotizacion_for_demo_client(self, id_cotizacion: int) -> tuple[dict, dict]:
+    def _get_cotizacion_for_cliente(
+        self, id_cotizacion: int, id_cliente: int
+    ) -> tuple[dict, dict]:
         cotizacion = self._repo.get_by_id(id_cotizacion)
         if cotizacion is None:
             raise CotizacionError("not_found", "Cotización no encontrada")
-
-        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
-        if id_cliente is None:
-            raise CotizacionError("failed", "Cliente demo no disponible")
 
         solicitud = self._solicitudes_repo.get_by_id_for_cliente(
             cotizacion["id_solicitud"], id_cliente
         )
         if solicitud is None:
-            raise CotizacionError("not_found", "Cotización no encontrada")
+            raise CotizacionError(
+                "forbidden",
+                "No tienes permiso para gestionar esta cotización",
+            )
 
         return cotizacion, solicitud
+
+    def _get_cotizacion_for_demo_client(self, id_cotizacion: int) -> tuple[dict, dict]:
+        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
+        if id_cliente is None:
+            raise CotizacionError("failed", "Cliente demo no disponible")
+        return self._get_cotizacion_for_cliente(id_cotizacion, id_cliente)
 
     def crear_cotizacion_demo(self, data: CotizacionRequest) -> CotizacionResponse:
         id_tecnico = self._tecnicos_repo.get_demo_tecnico_id()
         if id_tecnico is None:
             raise CotizacionError("failed", "Técnico demo no disponible")
+        return self.crear_cotizacion_para_tecnico(id_tecnico, data)
 
+    def crear_cotizacion_para_tecnico(
+        self, id_tecnico: int, data: CotizacionRequest
+    ) -> CotizacionResponse:
         categorias = self._tecnicos_repo.get_categorias_for_tecnico(id_tecnico)
         zonas = self._tecnicos_repo.get_zonas_for_tecnico(id_tecnico)
 
@@ -72,7 +83,7 @@ class CotizacionesService:
                 )
             raise CotizacionError(
                 "bad_request",
-                "La solicitud no corresponde a las categorías o zonas del técnico demo",
+                "La solicitud no corresponde a las categorías o zonas del técnico",
             )
 
         if self._repo.exists_for_tecnico(data.id_solicitud, id_tecnico):
@@ -103,8 +114,10 @@ class CotizacionesService:
             fecha_creacion=result["fecha_envio"],
         )
 
-    def aceptar_cotizacion_demo(self, id_cotizacion: int) -> CotizacionActionResponse:
-        cotizacion, solicitud = self._get_cotizacion_for_demo_client(id_cotizacion)
+    def aceptar_cotizacion_para_cliente(
+        self, id_cotizacion: int, id_cliente: int
+    ) -> CotizacionActionResponse:
+        cotizacion, solicitud = self._get_cotizacion_for_cliente(id_cotizacion, id_cliente)
 
         if cotizacion["estado"] != "pendiente":
             raise CotizacionError(
@@ -141,8 +154,10 @@ class CotizacionesService:
 
         return self._to_action_response(updated, solicitud_updated["estado"])
 
-    def rechazar_cotizacion_demo(self, id_cotizacion: int) -> CotizacionActionResponse:
-        cotizacion, solicitud = self._get_cotizacion_for_demo_client(id_cotizacion)
+    def rechazar_cotizacion_para_cliente(
+        self, id_cotizacion: int, id_cliente: int
+    ) -> CotizacionActionResponse:
+        cotizacion, solicitud = self._get_cotizacion_for_cliente(id_cotizacion, id_cliente)
 
         if cotizacion["estado"] != "pendiente":
             raise CotizacionError(
@@ -155,3 +170,15 @@ class CotizacionesService:
             raise CotizacionError("failed", "No se pudo rechazar la cotización")
 
         return self._to_action_response(updated, solicitud["estado"])
+
+    def aceptar_cotizacion_demo(self, id_cotizacion: int) -> CotizacionActionResponse:
+        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
+        if id_cliente is None:
+            raise CotizacionError("failed", "Cliente demo no disponible")
+        return self.aceptar_cotizacion_para_cliente(id_cotizacion, id_cliente)
+
+    def rechazar_cotizacion_demo(self, id_cotizacion: int) -> CotizacionActionResponse:
+        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
+        if id_cliente is None:
+            raise CotizacionError("failed", "Cliente demo no disponible")
+        return self.rechazar_cotizacion_para_cliente(id_cotizacion, id_cliente)

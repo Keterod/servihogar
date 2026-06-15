@@ -29,11 +29,11 @@
       <div class="hero-pattern"></div>
     </aside>
 
-    <main class="auth-panel">
-      <div class="auth-panel-inner">
+    <main class="auth-panel" [class.auth-panel-register]="modo() === 'register'">
+      <div class="auth-panel-inner" [class.auth-panel-register]="modo() === 'register'">
         <header class="auth-header">
-          <h2>Acceso a ServiHogar</h2>
-          <p>Inicia sesión o crea una cuenta para continuar.</p>
+          <h2>{{ tituloEncabezado() }}</h2>
+          <p>{{ subtituloEncabezado() }}</p>
         </header>
 
         <div class="auth-card">
@@ -56,135 +56,238 @@
               [attr.aria-selected]="modo() === 'register'"
               (click)="setModo('register')"
             >
-              Crear cuenta
+              Registrarse
             </button>
           </div>
 
-          <div class="roles" role="group" aria-label="Tipo de usuario">
-            <button
-              type="button"
-              class="role-btn"
-              [class.active]="rol() === 'cliente'"
-              (click)="setRol('cliente')"
-            >
-              <span class="role-icon" aria-hidden="true">👤</span>
-              Cliente
-            </button>
-            <button
-              type="button"
-              class="role-btn"
-              [class.active]="rol() === 'tecnico'"
-              (click)="setRol('tecnico')"
-            >
-              <span class="role-icon" aria-hidden="true">🔧</span>
-              Técnico
-            </button>
-          </div>
+          @if (modo() === 'register') {
+            <div class="roles" role="group" aria-label="Tipo de cuenta">
+              <button
+                type="button"
+                class="role-btn"
+                [class.active]="registerModel().tipoUsuario === 'cliente'"
+                (click)="setRol('cliente')"
+              >
+                Cliente
+              </button>
+              <button
+                type="button"
+                class="role-btn"
+                [class.active]="registerModel().tipoUsuario === 'tecnico'"
+                (click)="setRol('tecnico')"
+              >
+                Técnico
+              </button>
+            </div>
+          }
 
-          <form class="auth-form" (submit)="$event.preventDefault()">
-            <h3>{{ tituloFormulario() }}</h3>
+          @if (modo() === 'login') {
+            <form class="auth-form" (submit)="onLoginSubmit($event)">
+              @if (error()) {
+                <p class="auth-alert auth-alert-error" role="alert">{{ error() }}</p>
+              }
 
-            @if (error()) {
-              <p class="auth-alert auth-alert-error" role="alert">{{ error() }}</p>
-            }
+              @if (mensajePendiente()) {
+                <p class="auth-alert auth-alert-info" role="status">{{ mensajePendiente() }}</p>
+              }
 
-            @if (mensajePendiente()) {
-              <p class="auth-alert auth-alert-info" role="status">{{ mensajePendiente() }}</p>
-            }
+              @if (success()) {
+                <p class="auth-alert auth-alert-success" role="status">{{ success() }}</p>
+              }
 
-            @if (modo() === 'register') {
               <div class="form-group">
-                <label for="nombre">Nombre completo</label>
-                <input id="nombre" type="text" placeholder="Tu nombre" autocomplete="name" [value]="form().nombre" (input)="actualizarCampo('nombre', $any($event.target).value)" />
+                <label for="login-email">Correo electrónico</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  autocomplete="email"
+                  [formField]="loginForm.email"
+                />
+                @if (loginForm.email().touched() && loginForm.email().invalid()) {
+                  <p class="field-error">{{ loginForm.email().errors()[0]?.message }}</p>
+                }
               </div>
-            }
 
-            <div class="form-group">
-              <label for="email">Correo electrónico</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="correo@ejemplo.com"
-                autocomplete="email"
-                [value]="form().email"
-                (input)="actualizarCampo('email', $any($event.target).value)"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="password">Contraseña</label>
-              <input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                [attr.autocomplete]="modo() === 'login' ? 'current-password' : 'new-password'"
-                [value]="form().password"
-                (input)="actualizarCampo('password', $any($event.target).value)"
-              />
-            </div>
-
-            @if (modo() === 'register') {
               <div class="form-group">
-                <label for="confirm-password">Confirmar contraseña</label>
+                <label for="login-password">Contraseña</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  autocomplete="current-password"
+                  [formField]="loginForm.password"
+                />
+                @if (loginForm.password().touched() && loginForm.password().invalid()) {
+                  <p class="field-error">{{ loginForm.password().errors()[0]?.message }}</p>
+                }
+              </div>
+
+              <button
+                type="submit"
+                class="btn-submit"
+                [disabled]="loginForm().invalid() || loginForm().submitting()"
+              >
+                {{ loginTextoBoton() }}
+              </button>
+            </form>
+          } @else {
+            <form class="auth-form" (submit)="onRegisterSubmit($event)">
+              @if (error()) {
+                <p class="auth-alert auth-alert-error" role="alert">{{ error() }}</p>
+              }
+
+              @if (success()) {
+                <p class="auth-alert auth-alert-success" role="status">{{ success() }}</p>
+              }
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="register-nombres">Nombres</label>
                   <input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="Repite tu contraseña"
-                    autocomplete="new-password"
-                    [value]="form().confirmPassword"
-                    (input)="actualizarCampo('confirmPassword', $any($event.target).value)"
+                    id="register-nombres"
+                    type="text"
+                    autocomplete="given-name"
+                    [formField]="registerForm.nombres"
                   />
+                  @if (registerForm.nombres().touched() && registerForm.nombres().invalid()) {
+                    <p class="field-error">{{ registerForm.nombres().errors()[0]?.message }}</p>
+                  }
+                </div>
+                <div class="form-group">
+                  <label for="register-apellidos">Apellidos</label>
+                  <input
+                    id="register-apellidos"
+                    type="text"
+                    autocomplete="family-name"
+                    [formField]="registerForm.apellidos"
+                  />
+                  @if (registerForm.apellidos().touched() && registerForm.apellidos().invalid()) {
+                    <p class="field-error">{{ registerForm.apellidos().errors()[0]?.message }}</p>
+                  }
+                </div>
               </div>
-            }
 
-            @if (modo() === 'register' && rol() === 'tecnico') {
               <div class="form-group">
-                <label for="especialidad">Especialidad</label>
-                <input id="especialidad" type="text" placeholder="Ej. Gasfitería menor" [value]="form().especialidad" (input)="actualizarCampo('especialidad', $any($event.target).value)" />
+                <label for="register-email">Correo electrónico</label>
+                <input
+                  id="register-email"
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  autocomplete="email"
+                  [formField]="registerForm.email"
+                />
+                @if (registerForm.email().touched() && registerForm.email().invalid()) {
+                  <p class="field-error">{{ registerForm.email().errors()[0]?.message }}</p>
+                }
               </div>
+
               <div class="form-group">
-                <label for="zona">Zona de servicio</label>
-                <input id="zona" type="text" placeholder="Ej. Norte" [value]="form().zona" (input)="actualizarCampo('zona', $any($event.target).value)" />
+                <label for="register-password">Contraseña</label>
+                <input
+                  id="register-password"
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  autocomplete="new-password"
+                  [formField]="registerForm.password"
+                />
+                @if (registerForm.password().touched() && registerForm.password().invalid()) {
+                  <p class="field-error">{{ registerForm.password().errors()[0]?.message }}</p>
+                }
               </div>
-            }
 
-            @if (modo() === 'register' && rol() === 'cliente') {
               <div class="form-group">
-                <label for="telefono">Teléfono (opcional)</label>
-                <input id="telefono" type="tel" placeholder="300 123 4567" autocomplete="tel" [value]="form().telefono" (input)="actualizarCampo('telefono', $any($event.target).value)" />
+                <label for="register-telefono">Teléfono (opcional)</label>
+                <input
+                  id="register-telefono"
+                  type="tel"
+                  autocomplete="tel"
+                  [formField]="registerForm.telefono"
+                />
               </div>
-            }
 
-            @if (modo() === 'login') {
-              <div class="form-extras">
-                <label class="remember-me">
-                  <input type="checkbox" />
-                  Recordarme
-                </label>
-                <a href="#" class="forgot-link" (click)="$event.preventDefault()">
-                  ¿Olvidaste tu contraseña?
-                </a>
-              </div>
-            }
+              @if (esTecnico()) {
+                <div class="form-group">
+                  <label for="register-descripcion">Descripción profesional</label>
+                  <textarea
+                    id="register-descripcion"
+                    rows="3"
+                    placeholder="Describe tus servicios y experiencia"
+                    [formField]="registerForm.descripcion"
+                  ></textarea>
+                  @if (registerForm.descripcion().touched() && registerForm.descripcion().invalid()) {
+                    <p class="field-error">{{ registerForm.descripcion().errors()[0]?.message }}</p>
+                  }
+                </div>
 
-            <button
-              type="button"
-              class="btn-submit"
-              [disabled]="!puedeEnviar()"
-              (click)="enviarFormulario()"
-            >
-              {{ textoBoton() }}
-            </button>
-            @if (modo() === 'register') {
-              <p class="form-note">
-                El registro público estará disponible próximamente. Usa una cuenta demo para iniciar sesión.
-              </p>
-            } @else {
-              <p class="form-note">
-                Usa las cuentas demo de Supabase Auth para acceder según tu rol.
-              </p>
-            }
-          </form>
+                <div class="form-group">
+                  <label for="register-experiencia">Años de experiencia</label>
+                  <input
+                    id="register-experiencia"
+                    type="number"
+                    step="1"
+                    [formField]="registerForm.experienciaAnios"
+                  />
+                  @if (
+                    registerForm.experienciaAnios().touched() &&
+                    registerForm.experienciaAnios().invalid()
+                  ) {
+                    <p class="field-error">
+                      {{ registerForm.experienciaAnios().errors()[0]?.message }}
+                    </p>
+                  }
+                </div>
+
+                @if (catalogoCategorias().length > 0) {
+                  <fieldset class="checkbox-group">
+                    <legend>Categorías de servicio (opcional)</legend>
+                    <ul class="checkbox-list">
+                      @for (cat of catalogoCategorias(); track idCategoria(cat)) {
+                        <li>
+                          <label class="checkbox-item">
+                            <input
+                              type="checkbox"
+                              [checked]="categoriaMarcada(idCategoria(cat))"
+                              (change)="alternarCategoria(idCategoria(cat), $any($event.target).checked)"
+                            />
+                            <span>{{ cat.nombre }}</span>
+                          </label>
+                        </li>
+                      }
+                    </ul>
+                  </fieldset>
+                }
+
+                @if (catalogoZonas().length > 0) {
+                  <fieldset class="checkbox-group">
+                    <legend>Zonas de atención (opcional)</legend>
+                    <ul class="checkbox-list">
+                      @for (zona of catalogoZonas(); track idZona(zona)) {
+                        <li>
+                          <label class="checkbox-item">
+                            <input
+                              type="checkbox"
+                              [checked]="zonaMarcada(idZona(zona))"
+                              (change)="alternarZona(idZona(zona), $any($event.target).checked)"
+                            />
+                            <span>{{ zona.nombre }}</span>
+                          </label>
+                        </li>
+                      }
+                    </ul>
+                  </fieldset>
+                }
+              }
+
+              <button
+                type="submit"
+                class="btn-submit"
+                [disabled]="registerForm().invalid() || registerForm().submitting()"
+              >
+                {{ registerTextoBoton() }}
+              </button>
+            </form>
+          }
         </div>
       </div>
     </main>

@@ -44,6 +44,12 @@ html {
   scroll-margin-top: 90px;
 }
 
+.proximamente-nota {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
 body {
   margin: 0;
   font-family: var(--font-family);
@@ -312,7 +318,8 @@ button.btn-secondary {
 
 .sidebar-nav a:hover,
 .sidebar-nav a.active,
-.sidebar-nav button:hover {
+.sidebar-nav button:hover,
+.sidebar-nav button.active {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }

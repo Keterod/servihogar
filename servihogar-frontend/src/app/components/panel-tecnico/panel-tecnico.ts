@@ -6,6 +6,8 @@ import { Subject, forkJoin, switchMap } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 
 import { SolicitudService } from '../../services/solicitud.service';
+import { AuthService } from '../../services/auth.service';
+import { TecnicoService } from '../../services/tecnico.service';
 import { ServicioAceptado, SolicitudDisponible } from '../../models/solicitud';
 
 interface Tecnico {
@@ -43,18 +45,26 @@ type EstadoValidacion = 'pendiente' | 'validado' | 'rechazado';
 })
 export class PanelTecnico implements OnInit {
   private readonly solicitudService = inject(SolicitudService);
+  private readonly authService = inject(AuthService);
+  private readonly tecnicoService = inject(TecnicoService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly recargar = new Subject<void>();
 
-  readonly tecnico = signal<Tecnico>({
-    nombre: 'Carlos Mendoza',
-    especialidad: 'Gasfitería menor',
-    zona: 'Huancayo Centro',
-    calificacion: 4.8,
-  });
+  readonly tecnico = signal<Tecnico | null>(null);
+  readonly cargandoPerfil = signal(true);
 
   readonly estadoValidacion = signal<EstadoValidacion>('validado');
+
+  readonly inicialesTecnico = computed(() => {
+    const nombre = this.tecnico()?.nombre ?? '';
+    return nombre
+      .split(' ')
+      .map((parte) => parte.charAt(0))
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  });
 
   readonly solicitudesDisponibles = signal<SolicitudDisponible[]>([]);
   readonly cargando = signal(true);
@@ -64,20 +74,7 @@ export class PanelTecnico implements OnInit {
   readonly cargandoAceptados = signal(true);
   readonly errorAceptados = signal(false);
 
-  readonly cotizacionesEnviadas = signal<CotizacionEnviada[]>([
-    {
-      id: 1,
-      solicitudId: 1,
-      categoria: 'Gasfitería menor',
-      descripcion: 'Fuga de agua en cocina',
-      precio: 85,
-      tiempoEstimado: '2 horas',
-      propuesta:
-        'Reparación completa de la fuga, reemplazo de lavadero si es necesario, revisión de tuberías.',
-      estado: 'pendiente',
-      fechaEnvio: '2026-06-01',
-    },
-  ]);
+  readonly cotizacionesEnviadas = signal<CotizacionEnviada[]>([]);
 
   readonly solicitudActivaId = signal<number | null>(null);
   readonly solicitudFormulario = signal<SolicitudDisponible | null>(null);
@@ -131,40 +128,44 @@ export class PanelTecnico implements OnInit {
   });
 
   ngOnInit(): void {
-    this.recargar
-      .pipe(
-        tap(() => {
-          this.cargando.set(true);
-          this.error.set(false);
-          this.cargandoAceptados.set(true);
-          this.errorAceptados.set(false);
-        }),
-        switchMap(() =>
-          forkJoin({
-            disponibles: this.solicitudService.solicitudesDisponiblesTecnico(),
-            aceptados: this.solicitudService.serviciosAceptadosTecnico(),
+    void this.authService.whenReady().then(() => {
+      this.cargarPerfilTecnico();
+
+      this.recargar
+        .pipe(
+          tap(() => {
+            this.cargando.set(true);
+            this.error.set(false);
+            this.cargandoAceptados.set(true);
+            this.errorAceptados.set(false);
           }),
-        ),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(({ disponibles, aceptados }) => {
-        this.cargando.set(false);
-        this.cargandoAceptados.set(false);
+          switchMap(() =>
+            forkJoin({
+              disponibles: this.solicitudService.solicitudesDisponiblesTecnico(),
+              aceptados: this.solicitudService.serviciosAceptadosTecnico(),
+            }),
+          ),
+          takeUntilDestroyed(this.destroyRef),
+        )
+        .subscribe(({ disponibles, aceptados }) => {
+          this.cargando.set(false);
+          this.cargandoAceptados.set(false);
 
-        if (disponibles === null) {
-          this.error.set(true);
-        } else {
-          this.solicitudesDisponibles.set(disponibles);
-        }
+          if (disponibles === null) {
+            this.error.set(true);
+          } else {
+            this.solicitudesDisponibles.set(disponibles);
+          }
 
-        if (aceptados === null) {
-          this.errorAceptados.set(true);
-        } else {
-          this.serviciosAceptados.set(aceptados);
-        }
-      });
+          if (aceptados === null) {
+            this.errorAceptados.set(true);
+          } else {
+            this.serviciosAceptados.set(aceptados);
+          }
+        });
 
-    this.recargar.next();
+      this.recargar.next();
+    });
 
     this.router.events
       .pipe(
@@ -173,6 +174,40 @@ export class PanelTecnico implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.recargar.next());
+  }
+
+  private cargarPerfilTecnico(): void {
+    const profile = this.authService.getCurrentUser();
+    const validacion = profile?.estado_validacion;
+
+    if (validacion === 'pendiente' || validacion === 'validado' || validacion === 'rechazado') {
+      this.estadoValidacion.set(validacion);
+    }
+
+    const idTecnico = profile?.id_tecnico;
+    if (!idTecnico) {
+      this.cargandoPerfil.set(false);
+      return;
+    }
+
+    this.tecnicoService.obtenerTecnicoPorId(idTecnico).subscribe({
+      next: (data) => {
+        this.cargandoPerfil.set(false);
+        if (!data) {
+          return;
+        }
+
+        this.tecnico.set({
+          nombre: `${data.nombres} ${data.apellidos}`.trim(),
+          especialidad: data.categorias[0]?.nombre ?? 'Sin categoría',
+          zona: data.zonas[0]?.nombre ?? '—',
+          calificacion: data.calificacion ?? 0,
+        });
+      },
+      error: () => {
+        this.cargandoPerfil.set(false);
+      },
+    });
   }
 
   private esRutaPanelTecnico(): boolean {

@@ -472,10 +472,6 @@
 }
 
 @media (max-width: 640px) {
-  .btn-editar {
-    width: 100%;
-  }
-
   .table-section .table-wrapper {
     overflow-x: auto;
   }

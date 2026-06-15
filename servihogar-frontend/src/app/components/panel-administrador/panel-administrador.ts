@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { AdminResumen, TecnicoPendienteAdmin } from '../../models/administrador';
@@ -6,6 +7,9 @@ import {
   AdministradorService,
   TecnicoValidacionAdminResult,
 } from '../../services/administrador.service';
+import { AuthService } from '../../services/auth.service';
+
+type SeccionAdmin = 'titulo-resumen' | 'titulo-tecnicos' | 'titulo-reportes';
 
 interface MetricaAdmin {
   etiqueta: string;
@@ -21,6 +25,12 @@ interface MetricaAdmin {
 })
 export class PanelAdministrador implements OnInit {
   private readonly administradorService = inject(AdministradorService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  readonly nombreAdmin = this.authService.displayName;
+  readonly seccionActiva = signal<SeccionAdmin>('titulo-resumen');
+  readonly scrollPendiente = signal<SeccionAdmin | null>(null);
 
   readonly resumen = signal<AdminResumen | null>(null);
   readonly tecnicosPendientes = signal<TecnicoPendienteAdmin[]>([]);
@@ -72,7 +82,7 @@ export class PanelAdministrador implements OnInit {
   });
 
   ngOnInit(): void {
-    this.cargarDatos();
+    void this.authService.whenReady().then(() => this.cargarDatos());
   }
 
   cargarDatos(): void {
@@ -85,6 +95,18 @@ export class PanelAdministrador implements OnInit {
     }).subscribe(({ resumen, tecnicos }) => {
       this.cargando.set(false);
 
+      if (resumen === 'unauthorized' || tecnicos === 'unauthorized') {
+        void this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.router.url },
+        });
+        return;
+      }
+
+      if (resumen === 'forbidden' || tecnicos === 'forbidden') {
+        this.error.set('No tienes permiso para acceder al panel administrador.');
+        return;
+      }
+
       if (!resumen || !tecnicos) {
         this.error.set('No se pudo cargar el panel administrador. Inténtalo nuevamente.');
         return;
@@ -92,7 +114,28 @@ export class PanelAdministrador implements OnInit {
 
       this.resumen.set(resumen);
       this.tecnicosPendientes.set(tecnicos);
+
+      const pendiente = this.scrollPendiente();
+      if (pendiente) {
+        this.scrollPendiente.set(null);
+        queueMicrotask(() => this.irASeccion(pendiente));
+      }
     });
+  }
+
+  irASeccion(sectionId: SeccionAdmin): void {
+    this.seccionActiva.set(sectionId);
+
+    if (this.cargando()) {
+      this.scrollPendiente.set(sectionId);
+      return;
+    }
+
+    if (!this.tieneDatos()) {
+      return;
+    }
+
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   validarTecnico(idTecnico: number): void {
@@ -135,6 +178,19 @@ export class PanelAdministrador implements OnInit {
 
     request.subscribe((resultado) => {
       this.accionEnCurso.set(null);
+
+      if (resultado === 'unauthorized') {
+        void this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.router.url },
+        });
+        return;
+      }
+
+      if (resultado === 'forbidden') {
+        this.error.set('No tienes permiso para gestionar técnicos.');
+        return;
+      }
+
       this.procesarResultadoAccion(resultado, accion);
     });
   }

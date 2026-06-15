@@ -2,20 +2,27 @@
   <div class="panel-inner">
     <header class="tecnico-profile-header section-card">
       <div class="profile-main">
-        <div class="avatar avatar-lg">CM</div>
+        <div class="avatar avatar-lg">{{ inicialesTecnico() || '—' }}</div>
         <div class="profile-details">
-          <h1>{{ tecnico().nombre }}</h1>
-          <p class="profile-meta">
-            {{ tecnico().especialidad }} · {{ tecnico().zona }}
-          </p>
-          <span [class]="getEstadoValidacionClass(estadoValidacion())">
-            {{ getEstadoValidacionLabel(estadoValidacion()) }}
-          </span>
+          @if (cargandoPerfil()) {
+            <h1>Cargando perfil…</h1>
+          } @else if (tecnico(); as perfil) {
+            <h1>{{ perfil.nombre }}</h1>
+            <p class="profile-meta">
+              {{ perfil.especialidad }} · {{ perfil.zona }}
+            </p>
+            <span [class]="getEstadoValidacionClass(estadoValidacion())">
+              {{ getEstadoValidacionLabel(estadoValidacion()) }}
+            </span>
+          } @else {
+            <h1>Panel técnico</h1>
+            <p class="profile-meta">No se pudo cargar tu perfil.</p>
+          }
         </div>
       </div>
-      <button type="button" class="btn-secondary btn-editar">Editar perfil</button>
     </header>
 
+    @if (tecnico(); as perfil) {
     <div class="summary-grid">
       <article class="summary-card">
         <span class="summary-value">{{ totalSolicitudesDisponibles() }}</span>
@@ -23,7 +30,7 @@
       </article>
       <article class="summary-card">
         <span class="summary-value">{{ totalCotizacionesEnviadas() }}</span>
-        <span class="summary-label">Cotizaciones enviadas</span>
+        <span class="summary-label">Cotizaciones en sesión</span>
       </article>
       <article class="summary-card">
         <span class="summary-value">{{ totalServiciosAceptados() }}</span>
@@ -31,12 +38,13 @@
       </article>
       <article class="summary-card summary-card-rating">
         <span class="summary-value">
-          {{ tecnico().calificacion }}
+          {{ perfil.calificacion || '—' }}
           <span class="rating-star" aria-hidden="true">★</span>
         </span>
         <span class="summary-label">Calificación promedio</span>
       </article>
     </div>
+    }
 
     <section class="section-card table-section" aria-labelledby="titulo-disponibles">
       <div class="section-header">
@@ -247,7 +255,12 @@
     }
 
     <section class="section-card" aria-labelledby="titulo-enviadas">
-      <h2 id="titulo-enviadas">Cotizaciones enviadas</h2>
+      <h2 id="titulo-enviadas">Cotizaciones enviadas en esta sesión</h2>
+      @if (cotizacionesEnviadas().length === 0) {
+        <p class="mensaje-vacio">
+          Aún no has enviado cotizaciones en esta sesión. Usa «Cotizar» en una solicitud disponible.
+        </p>
+      } @else {
       <div class="tarjetas-lista">
         @for (cotizacion of cotizacionesEnviadas(); track cotizacion.id) {
           <article class="tarjeta cotizacion-card">
@@ -277,6 +290,7 @@
           </article>
         }
       </div>
+      }
     </section>
 
     <section class="section-card" aria-labelledby="titulo-aceptados">

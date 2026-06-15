@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { SolicitudService } from '../../services/solicitud.service';
+import { AuthService } from '../../services/auth.service';
 import { CotizacionDetalle, SolicitudDetalle } from '../../models/solicitud';
 
 @Component({
@@ -14,6 +15,7 @@ export class ValorarServicio implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly solicitudService = inject(SolicitudService);
+  private readonly authService = inject(AuthService);
 
   readonly opcionesCalificacion = [1, 2, 3, 4, 5];
 
@@ -22,6 +24,7 @@ export class ValorarServicio implements OnInit {
   readonly cotizacionAceptada = signal<CotizacionDetalle | null>(null);
   readonly cargando = signal(true);
   readonly errorCarga = signal(false);
+  readonly sinPermiso = signal(false);
   readonly sinId = signal(false);
 
   readonly puntualidad = signal(0);
@@ -104,16 +107,27 @@ export class ValorarServicio implements OnInit {
     }
 
     this.idSolicitud.set(id);
-    this.cargarSolicitud(id);
+    void this.authService.whenReady().then(() => this.cargarSolicitud(id));
   }
 
   private cargarSolicitud(id: number): void {
     this.cargando.set(true);
     this.errorCarga.set(false);
+    this.sinPermiso.set(false);
 
     this.solicitudService.obtenerDetalle(id).subscribe({
       next: (detalle) => {
         this.cargando.set(false);
+        if (detalle === 'unauthorized') {
+          void this.router.navigate(['/login'], {
+            queryParams: { returnUrl: this.router.url },
+          });
+          return;
+        }
+        if (detalle === 'forbidden') {
+          this.sinPermiso.set(true);
+          return;
+        }
         if (detalle === null) {
           this.errorCarga.set(true);
           return;
@@ -178,6 +192,19 @@ export class ValorarServicio implements OnInit {
       })
       .subscribe((resultado) => {
         this.enviando.set(false);
+
+        if (resultado === 'unauthorized') {
+          void this.router.navigate(['/login'], {
+            queryParams: { returnUrl: this.router.url },
+          });
+          return;
+        }
+
+        if (resultado === 'forbidden') {
+          this.sinPermiso.set(true);
+          this.errorEnvio.set('No tienes permiso para valorar esta solicitud.');
+          return;
+        }
 
         if (resultado === 'duplicate') {
           this.duplicado.set(true);

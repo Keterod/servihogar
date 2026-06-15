@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException
+
+from src.apis.deps import require_tecnico_validado
+from src.schemas.auth import AuthMeResponse
 from src.schemas.solicitud import ServicioAceptadoResponse, SolicitudDisponibleResponse
 from src.schemas.tecnico import TecnicoDetalleResponse, TecnicoResponse
 from src.services.solicitudes_service import SolicitudesService
@@ -13,6 +17,28 @@ _solicitudes_service = SolicitudesService()
 @router.get("/tecnicos", response_model=list[TecnicoResponse])
 async def listar_tecnicos():
     return _service.obtener_todos()
+
+
+@router.get(
+    "/tecnicos/me/solicitudes-disponibles",
+    response_model=list[SolicitudDisponibleResponse],
+)
+async def listar_mis_solicitudes_disponibles(
+    tecnico: Annotated[AuthMeResponse, Depends(require_tecnico_validado)],
+):
+    return _solicitudes_service.obtener_solicitudes_disponibles_para_tecnico(
+        tecnico.id_tecnico
+    )
+
+
+@router.get(
+    "/tecnicos/me/servicios-aceptados",
+    response_model=list[ServicioAceptadoResponse],
+)
+async def listar_mis_servicios_aceptados(
+    tecnico: Annotated[AuthMeResponse, Depends(require_tecnico_validado)],
+):
+    return _solicitudes_service.obtener_servicios_aceptados_para_tecnico(tecnico.id_tecnico)
 
 
 @router.get(

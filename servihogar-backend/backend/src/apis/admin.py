@@ -1,10 +1,14 @@
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException
+
+from src.apis.deps import require_administrador
 from src.schemas.admin import (
     AdminResumenResponse,
     TecnicoPendienteAdminResponse,
     TecnicoValidacionResponse,
 )
+from src.schemas.auth import AuthMeResponse
 from src.services.admin_service import AdminError, AdminService
 
 router = APIRouter()
@@ -25,7 +29,9 @@ def _handle_error(exc: AdminError) -> HTTPException:
 
 
 @router.get("/admin/demo/resumen", response_model=AdminResumenResponse)
-async def obtener_resumen_admin_demo():
+async def obtener_resumen_admin_demo(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
     return _service.obtener_resumen_demo()
 
 
@@ -33,7 +39,9 @@ async def obtener_resumen_admin_demo():
     "/admin/demo/tecnicos-pendientes",
     response_model=list[TecnicoPendienteAdminResponse],
 )
-async def listar_tecnicos_pendientes_admin_demo():
+async def listar_tecnicos_pendientes_admin_demo(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
     return _service.obtener_tecnicos_pendientes_demo()
 
 
@@ -41,7 +49,10 @@ async def listar_tecnicos_pendientes_admin_demo():
     "/admin/demo/tecnicos/{id_tecnico}/aprobar",
     response_model=TecnicoValidacionResponse,
 )
-async def aprobar_tecnico_admin_demo(id_tecnico: int):
+async def aprobar_tecnico_admin_demo(
+    id_tecnico: int,
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
     try:
         return _service.aprobar_tecnico_demo(id_tecnico)
     except AdminError as exc:
@@ -52,7 +63,10 @@ async def aprobar_tecnico_admin_demo(id_tecnico: int):
     "/admin/demo/tecnicos/{id_tecnico}/rechazar",
     response_model=TecnicoValidacionResponse,
 )
-async def rechazar_tecnico_admin_demo(id_tecnico: int):
+async def rechazar_tecnico_admin_demo(
+    id_tecnico: int,
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
     try:
         return _service.rechazar_tecnico_demo(id_tecnico)
     except AdminError as exc:

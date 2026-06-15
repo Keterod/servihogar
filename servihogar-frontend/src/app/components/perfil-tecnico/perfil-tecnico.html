@@ -68,8 +68,14 @@
               Describe tu problema y recibe una cotización personalizada de
               {{ t.nombres }} {{ t.apellidos }}.
             </p>
-            <a [routerLink]="['/solicitud-servicio']" [queryParams]="{tecnicoId: t.id_tecnico, tecnicoNombre: t.nombres + ' ' + t.apellidos, categoriaId: t.categorias[0]?.id_categoria}" class="btn-primary btn-block">Solicitar cotización</a>
-            <p class="cotizar-helper">Tu solicitud será enviada al técnico para cotización</p>
+            <button type="button" class="btn-primary btn-block" (click)="solicitarCotizacion(t)">
+              Solicitar cotización
+            </button>
+            @if (mensajeSolicitud()) {
+              <p class="cotizar-helper cotizar-error" role="alert">{{ mensajeSolicitud() }}</p>
+            } @else {
+              <p class="cotizar-helper">Tu solicitud será enviada al técnico para cotización</p>
+            }
           </article>
 
           <article class="info-card section-card">
@@ -96,20 +102,9 @@
 
           <article class="ratings-card section-card">
             <h2>Valoraciones de clientes</h2>
-            <div class="rating-bars">
-              @for (bar of ratingBars; track bar.etiqueta) {
-                <div class="rating-bar-row">
-                  <span class="rating-bar-label">{{ bar.etiqueta }}</span>
-                  <div class="rating-bar-track" role="presentation">
-                    <div
-                      class="rating-bar-fill"
-                      [style.width.%]="bar.porcentaje"
-                    ></div>
-                  </div>
-                  <span class="rating-bar-pct">{{ bar.porcentaje }}%</span>
-                </div>
-              }
-            </div>
+            <p class="proximamente-nota">
+              El desglose detallado de valoraciones estará disponible próximamente.
+            </p>
           </article>
         </aside>
       </div>

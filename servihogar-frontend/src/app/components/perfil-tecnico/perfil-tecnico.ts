@@ -1,36 +1,27 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { TecnicoService } from '../../services/tecnico.service';
 import { TecnicoPerfil } from '../../models/tecnico';
-
-interface RatingBar {
-  etiqueta: string;
-  porcentaje: number;
-}
+import { AuthService } from '../../services/auth.service';
+import { TecnicoService } from '../../services/tecnico.service';
 
 @Component({
   selector: 'app-perfil-tecnico',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './perfil-tecnico.html',
   styleUrl: './perfil-tecnico.css',
 })
 export class PerfilTecnico implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   private readonly tecnicoService = inject(TecnicoService);
 
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
   readonly notFound = signal<boolean>(false);
   readonly tecnico = signal<TecnicoPerfil | null>(null);
-
-  readonly ratingBars: RatingBar[] = [
-    { etiqueta: 'Puntualidad', porcentaje: 92 },
-    { etiqueta: 'Calidad del trabajo', porcentaje: 96 },
-    { etiqueta: 'Trato al cliente', porcentaje: 88 },
-    { etiqueta: 'Limpieza', porcentaje: 85 },
-    { etiqueta: 'Cumplimiento de precio', porcentaje: 90 },
-  ];
+  readonly mensajeSolicitud = signal<string | null>(null);
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -63,5 +54,31 @@ export class PerfilTecnico implements OnInit {
       .join('')
       .slice(0, 2)
       .toUpperCase();
+  }
+
+  async solicitarCotizacion(tecnico: TecnicoPerfil): Promise<void> {
+    this.mensajeSolicitud.set(null);
+    await this.authService.whenReady();
+
+    if (!this.authService.isLoggedIn()) {
+      await this.router.navigate(['/login']);
+      return;
+    }
+
+    const perfil = this.authService.getCurrentUser();
+    if (perfil?.tipo_usuario !== 'cliente') {
+      this.mensajeSolicitud.set('Solo los clientes registrados pueden solicitar servicios.');
+      return;
+    }
+
+    await this.router.navigate(['/solicitud-servicio'], {
+      queryParams: {
+        tecnicoId: tecnico.id_tecnico,
+        tecnicoNombre: `${tecnico.nombres} ${tecnico.apellidos}`,
+        ...(tecnico.categorias[0]?.id_categoria
+          ? { categoriaId: tecnico.categorias[0].id_categoria }
+          : {}),
+      },
+    });
   }
 }

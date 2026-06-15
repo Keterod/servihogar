@@ -3,7 +3,9 @@ import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { SolicitudService } from '../../services/solicitud.service';
+import { AuthService } from '../../services/auth.service';
 import { CotizacionDetalle, SolicitudDetalle } from '../../models/solicitud';
+import type { CotizacionAccionResult } from '../../services/solicitud.service';
 
 type PasoTimeline = 'pendiente' | 'cotizada' | 'aceptada' | 'en_proceso' | 'finalizada';
 type CotizacionEstado = CotizacionDetalle['estado'];
@@ -18,10 +20,12 @@ export class DetalleSolicitud implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly solicitudService = inject(SolicitudService);
+  private readonly authService = inject(AuthService);
 
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly notFound = signal(false);
+  readonly forbidden = signal(false);
   readonly solicitud = signal<SolicitudDetalle | null>(null);
   readonly cotizaciones = signal<CotizacionDetalle[]>([]);
   readonly selectedCotizacionId = signal<number | null>(null);
@@ -88,18 +92,29 @@ export class DetalleSolicitud implements OnInit {
       this.loading.set(false);
       return;
     }
-    this.cargarDetalle(id);
+    void this.authService.whenReady().then(() => this.cargarDetalle(id));
   }
 
   private cargarDetalle(id: number): void {
     this.loading.set(true);
     this.error.set(false);
     this.notFound.set(false);
+    this.forbidden.set(false);
     this.errorAccion.set(null);
 
     this.solicitudService.obtenerDetalle(id).subscribe({
       next: (data) => {
         this.loading.set(false);
+        if (data === 'unauthorized') {
+          void this.router.navigate(['/login'], {
+            queryParams: { returnUrl: this.router.url },
+          });
+          return;
+        }
+        if (data === 'forbidden') {
+          this.forbidden.set(true);
+          return;
+        }
         if (data === null) {
           this.notFound.set(true);
           return;
@@ -135,6 +150,24 @@ export class DetalleSolicitud implements OnInit {
     return this.accionCotizacionId() === id;
   }
 
+  private manejarErrorAccionCotizacion(resultado: CotizacionAccionResult): boolean {
+    if (resultado === 'unauthorized') {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl: this.router.url },
+      });
+      return true;
+    }
+    if (resultado === 'forbidden') {
+      this.errorAccion.set('No tienes permiso para gestionar esta cotización.');
+      return true;
+    }
+    if (resultado === 'not_found') {
+      this.errorAccion.set('La cotización no existe o ya no está disponible.');
+      return true;
+    }
+    return false;
+  }
+
   aceptarCotizacion(id: number): void {
     if (!this.esVistaCliente() || this.accionCotizacionId() !== null || this.hayAceptada()) {
       return;
@@ -146,8 +179,7 @@ export class DetalleSolicitud implements OnInit {
     this.solicitudService.aceptarCotizacion(id).subscribe((resultado) => {
       this.accionCotizacionId.set(null);
 
-      if (resultado === 'not_found') {
-        this.errorAccion.set('La cotización no existe o ya no está disponible.');
+      if (this.manejarErrorAccionCotizacion(resultado)) {
         return;
       }
       if (resultado === 'bad_request') {
@@ -162,6 +194,9 @@ export class DetalleSolicitud implements OnInit {
         this.errorAccion.set(
           'No se pudo aceptar la cotización. Verifica que el backend esté disponible.',
         );
+        return;
+      }
+      if (typeof resultado !== 'object') {
         return;
       }
 
@@ -194,8 +229,7 @@ export class DetalleSolicitud implements OnInit {
     this.solicitudService.rechazarCotizacion(id).subscribe((resultado) => {
       this.accionCotizacionId.set(null);
 
-      if (resultado === 'not_found') {
-        this.errorAccion.set('La cotización no existe o ya no está disponible.');
+      if (this.manejarErrorAccionCotizacion(resultado)) {
         return;
       }
       if (resultado === 'bad_request') {
@@ -206,6 +240,9 @@ export class DetalleSolicitud implements OnInit {
         this.errorAccion.set(
           'No se pudo rechazar la cotización. Verifica que el backend esté disponible.',
         );
+        return;
+      }
+      if (typeof resultado !== 'object') {
         return;
       }
 

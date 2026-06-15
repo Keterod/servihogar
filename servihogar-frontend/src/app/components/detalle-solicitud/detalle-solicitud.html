@@ -7,6 +7,10 @@
     <div class="estado-card estado-error">
       No se pudo cargar la solicitud. Verifica que el backend esté disponible.
     </div>
+  } @else if (forbidden()) {
+    <div class="estado-card estado-error">
+      No tienes permiso para ver esta solicitud.
+    </div>
   } @else if (notFound()) {
     <div class="estado-card">Solicitud no encontrada.</div>
   } @else {

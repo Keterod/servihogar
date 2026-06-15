@@ -17,7 +17,10 @@
 .btn-quick {
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
-  text-decoration: none;
+}
+
+.admin-section-anchor {
+  scroll-margin-top: 1.5rem;
 }
 
 .summary-section {

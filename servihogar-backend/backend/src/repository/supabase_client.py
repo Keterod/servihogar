@@ -5,6 +5,19 @@ from supabase._sync.client import SupabaseException
 from src.core.config import settings
 
 
+def _format_api_error(exc: APIError, context: str) -> str:
+    parts = [f"Supabase query failed ({context})"]
+    if exc.message:
+        parts.append(exc.message)
+    if exc.code:
+        parts.append(f"code={exc.code}")
+    if exc.details:
+        parts.append(f"details={exc.details}")
+    if exc.hint:
+        parts.append(f"hint={exc.hint}")
+    return " | ".join(parts)
+
+
 class SupabaseClient:
     """Singleton Supabase client for backend data access.
 
@@ -29,9 +42,9 @@ class SupabaseClient:
         return cls._instance
 
     @staticmethod
-    def execute(query):
+    def execute(query, *, context: str = "consulta Supabase"):
         """Run a Supabase query and map API errors to SupabaseException."""
         try:
             return query.execute()
         except APIError as exc:
-            raise SupabaseException(f"Supabase query failed: {exc.message}") from exc
+            raise SupabaseException(_format_api_error(exc, context)) from exc

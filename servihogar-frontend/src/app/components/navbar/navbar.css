@@ -97,6 +97,33 @@
   white-space: nowrap;
 }
 
+a.navbar-user {
+  text-decoration: none;
+}
+
+a.navbar-user:hover {
+  color: var(--color-primary-light);
+}
+
+.navbar-user-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+.navbar-user-btn:hover {
+  color: var(--color-primary-light);
+}
+
+.navbar-pending-msg {
+  font-size: 0.75rem;
+  color: #b45309;
+  max-width: 12rem;
+  line-height: 1.3;
+}
+
 .navbar-actions button.btn-nav-outline {
   background: transparent;
   cursor: pointer;

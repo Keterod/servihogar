@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 
-from src.schemas.categoria import CategoriaResponse
-from src.services.categorias_service import CategoriasService
+from src.schemas.catalogo import CategoriaServicioResponse
+from src.services.catalogo_service import CatalogoService
 
 router = APIRouter()
-_service = CategoriasService()
+_service = CatalogoService()
 
 
-@router.get("/categorias", response_model=list[CategoriaResponse])
+@router.get("/categorias", response_model=list[CategoriaServicioResponse])
 async def listar_categorias():
-    return _service.obtener_todas()
+    return _service.listar_categorias()

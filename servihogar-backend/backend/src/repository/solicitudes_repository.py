@@ -34,7 +34,7 @@ class SolicitudesRepository:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
             client.table("solicitudes_servicio")
-            .select("id_solicitud, estado, id_categoria, id_zona")
+            .select("id_solicitud, id_cliente, estado, id_categoria, id_zona")
             .eq("id_solicitud", id_solicitud)
             .limit(1)
         )
@@ -126,6 +126,26 @@ class SolicitudesRepository:
             return float(value)
         except (TypeError, ValueError):
             return None
+
+    def get_by_id(self, id_solicitud: int) -> dict | None:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.table("solicitudes_servicio")
+            .select(
+                "*, categorias_servicio!inner(nombre), zonas!inner(nombre)"
+            )
+            .eq("id_solicitud", id_solicitud)
+            .limit(1)
+        )
+        rows = result.data or []
+        if not rows:
+            return None
+        solicitud = rows[0]
+        solicitud["categoria_nombre"] = self._join_nombre(
+            solicitud.pop("categorias_servicio", None)
+        )
+        solicitud["zona_nombre"] = self._join_nombre(solicitud.pop("zonas", None))
+        return solicitud
 
     def get_by_id_for_cliente(self, id_solicitud: int, id_cliente: int) -> dict | None:
         client = SupabaseClient.get()

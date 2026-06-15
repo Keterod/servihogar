@@ -18,16 +18,23 @@ class ValoracionesService:
         self._cotizaciones_repo = CotizacionesRepository()
         self._solicitudes_repo = SolicitudesRepository()
 
-    def crear_valoracion_demo(self, data: ValoracionRequest) -> ValoracionResponse:
-        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
-        if id_cliente is None:
-            raise ValoracionError("failed", "Cliente demo no disponible")
+    def _get_solicitud_para_cliente(self, id_solicitud: int, id_cliente: int) -> dict:
+        solicitud = self._solicitudes_repo.get_by_id_for_cliente(id_solicitud, id_cliente)
+        if solicitud is not None:
+            return solicitud
 
-        solicitud = self._solicitudes_repo.get_by_id_for_cliente(
-            data.id_solicitud, id_cliente
-        )
-        if solicitud is None:
+        exists = self._solicitudes_repo.get_solicitud_by_id(id_solicitud)
+        if exists is None:
             raise ValoracionError("not_found", "Solicitud no encontrada")
+        raise ValoracionError(
+            "forbidden",
+            "No tienes permiso para valorar esta solicitud",
+        )
+
+    def crear_valoracion_para_cliente(
+        self, id_cliente: int, data: ValoracionRequest
+    ) -> ValoracionResponse:
+        solicitud = self._get_solicitud_para_cliente(data.id_solicitud, id_cliente)
 
         estado = solicitud.get("estado")
         if estado not in self._ELIGIBLE_ESTADOS:
@@ -83,3 +90,9 @@ class ValoracionesService:
             fecha_valoracion=inserted["fecha_valoracion"],
             solicitud_estado=solicitud_estado,
         )
+
+    def crear_valoracion_demo(self, data: ValoracionRequest) -> ValoracionResponse:
+        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
+        if id_cliente is None:
+            raise ValoracionError("failed", "Cliente demo no disponible")
+        return self.crear_valoracion_para_cliente(id_cliente, data)

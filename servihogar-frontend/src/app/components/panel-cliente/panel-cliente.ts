@@ -6,6 +6,7 @@ import { Subject, switchMap } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 
 import { SolicitudService } from '../../services/solicitud.service';
+import { AuthService } from '../../services/auth.service';
 import { SolicitudListResponse } from '../../models/solicitud';
 
 @Component({
@@ -16,9 +17,23 @@ import { SolicitudListResponse } from '../../models/solicitud';
 })
 export class PanelCliente implements OnInit {
   private readonly solicitudService = inject(SolicitudService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly recargar = new Subject<void>();
+
+  readonly currentUser = this.authService.currentUser;
+  readonly nombreCompleto = this.authService.displayName;
+
+  readonly saludo = computed(() => {
+    const nombres = this.currentUser()?.nombres?.trim();
+    return nombres ? `Hola, ${nombres}` : 'Hola';
+  });
+
+  readonly sidebarSubtitulo = computed(() => {
+    const ciudad = this.currentUser()?.ciudad?.trim();
+    return ciudad ? `Cliente · ${ciudad}` : 'Cliente';
+  });
 
   readonly solicitudes = signal<SolicitudListResponse[]>([]);
   readonly cargando = signal(true);
@@ -64,7 +79,7 @@ export class PanelCliente implements OnInit {
         this.solicitudes.set(resultado);
       });
 
-    this.recargar.next();
+    void this.authService.whenReady().then(() => this.recargar.next());
 
     this.router.events
       .pipe(

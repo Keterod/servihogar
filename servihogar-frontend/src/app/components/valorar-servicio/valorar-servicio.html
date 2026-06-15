@@ -12,6 +12,10 @@
       </p>
     } @else if (cargando()) {
       <p class="mensaje-estado">Cargando información del servicio…</p>
+    } @else if (sinPermiso()) {
+      <p class="mensaje-estado mensaje-error">
+        No tienes permiso para valorar esta solicitud.
+      </p>
     } @else if (errorCarga()) {
       <p class="mensaje-estado mensaje-error">
         No se pudo cargar la solicitud. Verifica que el backend esté disponible.

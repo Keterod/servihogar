@@ -186,6 +186,10 @@
   text-align: center;
 }
 
+.cotizar-error {
+  color: #9b1c1c;
+}
+
 .info-list {
   margin: 0;
   display: flex;

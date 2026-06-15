@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+
+import { AuthService } from '../../services/auth.service';
 
 interface CategoriaDestacada {
   nombre: string;
@@ -20,6 +22,13 @@ interface PasoUso {
   styleUrl: './home.css',
 })
 export class Home {
+  private readonly authService = inject(AuthService);
+
+  readonly solicitudRuta = computed(() => {
+    const user = this.authService.getCurrentUser();
+    return user?.tipo_usuario === 'cliente' ? '/solicitud-servicio' : '/login';
+  });
+
   readonly categoriasDestacadas: CategoriaDestacada[] = [
     { nombre: 'Gasfitería menor', descripcion: 'Reparaciones de agua y desagüe.', icono: '🔧' },
     { nombre: 'Electricidad básica', descripcion: 'Instalaciones eléctricas menores.', icono: '⚡' },

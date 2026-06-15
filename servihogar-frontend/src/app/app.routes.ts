@@ -27,6 +27,7 @@ export const routes: Routes = [
   },
   {
     path: 'solicitud-servicio',
+    canActivate: [authGuard, clienteGuard],
     loadComponent: () =>
       import('./components/solicitud-servicio/solicitud-servicio').then((m) => m.SolicitudServicio),
   },
@@ -43,6 +44,7 @@ export const routes: Routes = [
   },
   {
     path: 'valorar-servicio',
+    canActivate: [authGuard, clienteGuard],
     loadComponent: () =>
       import('./components/valorar-servicio/valorar-servicio').then((m) => m.ValorarServicio),
   },

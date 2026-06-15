@@ -3,16 +3,14 @@
     <div class="sidebar-brand">ServiHogar</div>
 
     <div class="sidebar-user">
-      <strong>Mariana Quispe</strong>
-      <span>Cliente · Huancayo</span>
+      <strong>{{ nombreCompleto() || '—' }}</strong>
+      <span>{{ sidebarSubtitulo() }}</span>
     </div>
 
     <nav class="sidebar-nav">
       <a routerLink="/panel-cliente" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Mis solicitudes
       </a>
-      <a routerLink="/solicitud-servicio">Nueva solicitud</a>
-      <a routerLink="/valorar-servicio">Valorar servicio</a>
     </nav>
 
     <div class="sidebar-cta">
@@ -23,7 +21,7 @@
   <main class="content-area">
     <header class="content-header">
       <div>
-        <h1>Hola, Mariana</h1>
+        <h1>{{ saludo() }}</h1>
         <p>Revisa el estado de tus solicitudes y cotizaciones recibidas.</p>
       </div>
     </header>
@@ -38,7 +36,7 @@
       </div>
     } @else if (solicitudes().length === 0) {
       <div class="estado-card">
-        <p>Aún no tienes solicitudes registradas.</p>
+        <p>Aún no tienes solicitudes.</p>
         <a routerLink="/solicitud-servicio" class="btn-primary">Crear mi primera solicitud</a>
       </div>
     } @else {

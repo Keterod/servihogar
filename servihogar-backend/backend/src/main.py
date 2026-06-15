@@ -1,7 +1,11 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from supabase._sync.client import SupabaseException
+
+logger = logging.getLogger(__name__)
 
 from src.apis.admin import router as admin_router
 from src.apis.auth import router as auth_router
@@ -14,6 +18,11 @@ from src.apis.valoraciones import router as valoraciones_router
 from src.apis.zonas import router as zonas_router
 
 app = FastAPI(title="ServiHogar API", version="0.1.0")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
 
 allowed_origins = [
     "http://localhost:4300",
@@ -32,8 +41,11 @@ app.add_middleware(
 
 
 @app.exception_handler(SupabaseException)
-async def supabase_exception_handler(_request: Request, exc: SupabaseException):
-    return JSONResponse(status_code=503, content={"detail": str(exc)})
+async def supabase_exception_handler(request: Request, exc: SupabaseException):
+    logger.exception("SupabaseException no capturada en %s", request.url.path)
+    detail = str(exc)
+    status_code = 422 if "query failed" in detail.lower() else 503
+    return JSONResponse(status_code=status_code, content={"detail": detail})
 
 
 app.include_router(health_router)

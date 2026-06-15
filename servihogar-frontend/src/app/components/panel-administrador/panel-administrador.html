@@ -3,14 +3,32 @@
     <div class="sidebar-brand">ServiHogar Admin</div>
 
     <div class="sidebar-user">
-      <strong>Administrador Demo</strong>
+      <strong>{{ nombreAdmin() || 'Administrador' }}</strong>
       <span>Panel de gestión</span>
     </div>
 
     <nav class="sidebar-nav" aria-label="Menú administrador">
-      <a href="#titulo-resumen" class="active">Resumen</a>
-      <a href="#titulo-tecnicos">Técnicos pendientes</a>
-      <a href="#titulo-reportes">Reportes</a>
+      <button
+        type="button"
+        [class.active]="seccionActiva() === 'titulo-resumen'"
+        (click)="irASeccion('titulo-resumen')"
+      >
+        Resumen
+      </button>
+      <button
+        type="button"
+        [class.active]="seccionActiva() === 'titulo-tecnicos'"
+        (click)="irASeccion('titulo-tecnicos')"
+      >
+        Técnicos pendientes
+      </button>
+      <button
+        type="button"
+        [class.active]="seccionActiva() === 'titulo-reportes'"
+        (click)="irASeccion('titulo-reportes')"
+      >
+        Reportes
+      </button>
     </nav>
 
     <div class="sidebar-cta">
@@ -27,8 +45,12 @@
         <p>Datos reales del sistema desde FastAPI y Supabase</p>
       </div>
       <div class="quick-actions">
-        <a href="#titulo-tecnicos" class="btn-secondary btn-quick">Validar técnicos</a>
-        <a href="#titulo-reportes" class="btn-secondary btn-quick">Ver reportes</a>
+        <button type="button" class="btn-secondary btn-quick" (click)="irASeccion('titulo-tecnicos')">
+          Validar técnicos
+        </button>
+        <button type="button" class="btn-secondary btn-quick" (click)="irASeccion('titulo-reportes')">
+          Ver reportes
+        </button>
       </div>
     </header>
 
@@ -49,7 +71,7 @@
         <p>Consultando métricas y técnicos pendientes...</p>
       </section>
     } @else if (tieneDatos()) {
-      <section id="titulo-resumen" class="summary-section" aria-labelledby="heading-resumen">
+      <section id="titulo-resumen" class="summary-section admin-section-anchor" aria-labelledby="heading-resumen">
         <h2 id="heading-resumen" class="visually-hidden">Resumen general</h2>
         <div class="summary-grid summary-grid-admin">
           @for (metrica of metricasResumen(); track metrica.etiqueta) {
@@ -61,10 +83,10 @@
         </div>
       </section>
 
-      <section class="section-card" aria-labelledby="titulo-tecnicos">
+      <section class="section-card admin-section-anchor" id="titulo-tecnicos" aria-labelledby="heading-tecnicos">
         <div class="section-header-inline">
           <div>
-            <h2 id="titulo-tecnicos">Técnicos pendientes</h2>
+            <h2 id="heading-tecnicos">Técnicos pendientes</h2>
             <p>Revisa los perfiles que esperan validación administrativa.</p>
           </div>
           <button type="button" class="btn-secondary" (click)="cargarDatos()">Actualizar</button>
@@ -142,8 +164,8 @@
         }
       </section>
 
-      <section class="section-card" aria-labelledby="titulo-reportes">
-        <h2 id="titulo-reportes">Reportes básicos</h2>
+      <section class="section-card admin-section-anchor" id="titulo-reportes" aria-labelledby="heading-reportes">
+        <h2 id="heading-reportes">Reportes básicos</h2>
         <div class="reportes-grid">
           @for (metrica of metricasReportes(); track metrica.etiqueta) {
             <article class="reporte-card">

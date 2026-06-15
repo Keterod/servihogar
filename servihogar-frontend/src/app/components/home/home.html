@@ -10,7 +10,10 @@
         </p>
         <div class="hero-actions">
           <a routerLink="/buscar-tecnicos" class="btn-primary">Buscar técnico</a>
-          <a routerLink="/login" class="btn-secondary">Registrarme</a>
+          <a [routerLink]="solicitudRuta()" class="btn-secondary">Solicitar servicio</a>
+          <a routerLink="/login" [queryParams]="{ tab: 'register' }" class="btn-secondary btn-outline">
+            Registrarme
+          </a>
         </div>
       </div>
       <div class="hero-visual">
@@ -70,8 +73,8 @@
         <h2>Sobre ServiHogar</h2>
         <p>
           Proyecto académico que conecta clientes con técnicos independientes de servicios
-          domésticos menores en Huancayo. Sin backend ni autenticación real: un prototipo
-          funcional para demostrar el flujo completo del servicio.
+          domésticos menores en Huancayo. Publica solicitudes, recibe cotizaciones y valora
+          el servicio al finalizar.
         </p>
       </div>
       <div class="about-visual image-placeholder">ServiHogar</div>

@@ -29,13 +29,24 @@
     </ul>
     <div class="navbar-actions">
       @if (isLoggedIn()) {
-        <span class="navbar-user">{{ displayName() }}</span>
+        @if (panelRoute(); as route) {
+          <a [routerLink]="route" class="navbar-user">{{ displayName() }}</a>
+          <a [routerLink]="route" class="btn-nav-outline">Mi panel</a>
+        } @else {
+          <button type="button" class="navbar-user navbar-user-btn" (click)="irAMiPanel()">
+            {{ displayName() }}
+          </button>
+          <button type="button" class="btn-nav-outline" (click)="irAMiPanel()">Mi panel</button>
+        }
+        @if (pendingMessage()) {
+          <span class="navbar-pending-msg" role="status">{{ pendingMessage() }}</span>
+        }
         <button type="button" class="btn-nav-outline" (click)="cerrarSesion()">
           Cerrar sesión
         </button>
       } @else {
         <a routerLink="/login" class="btn-nav-outline">Iniciar sesión</a>
-        <a routerLink="/login" class="btn-nav-register">Registrarse</a>
+        <a routerLink="/login" [queryParams]="{ tab: 'register' }" class="btn-nav-register">Registrarse</a>
       }
     </div>
   </div>
