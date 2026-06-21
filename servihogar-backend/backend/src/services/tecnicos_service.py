@@ -1,6 +1,5 @@
 import logging
 
-from src.repository.supabase_client import SupabaseClient
 from src.repository.tecnicos_repository import TecnicosRepository
 from src.schemas.tecnico import (
     PortafolioCreateRequest,
@@ -23,6 +22,7 @@ class PortafolioError(Exception):
         self.code = code
         super().__init__(message)
 
+
 class TecnicosService:
     def __init__(self):
         self._repo = TecnicosRepository()
@@ -30,7 +30,7 @@ class TecnicosService:
     def obtener_todos(self) -> list[TecnicoResponse]:
         data = self._repo.get_all()
         result = []
-        for item in data:
+        for item in (data or []):
             usuario = item.pop("usuarios", {})
             categorias = self._map_categorias(item.pop("tecnico_categorias", []) or [])
             zonas = self._map_zonas(item.pop("tecnico_zonas", []) or [])
@@ -41,7 +41,7 @@ class TecnicosService:
                     apellidos=usuario.get("apellidos", ""),
                     descripcion=item.get("descripcion"),
                     experiencia_anios=item["experiencia_anios"],
-                    calificacion=self._calcular_calificacion(item["id_tecnico"]),
+                    calificacion=item.get("calificacion"),
                     categorias=categorias,
                     zonas=zonas,
                 )
@@ -55,14 +55,14 @@ class TecnicosService:
         usuario = item.pop("usuarios", {})
         categorias = self._map_categorias(item.pop("tecnico_categorias", []) or [])
         zonas = self._map_zonas(item.pop("tecnico_zonas", []) or [])
-        portafolio = self._map_portafolio(self._repo.get_portafolio(id_tecnico))
+        portafolio = self._map_portafolio(item.pop("portafolio", []) or [])
         return TecnicoDetalleResponse(
             id_tecnico=item["id_tecnico"],
             nombres=usuario.get("nombres", ""),
             apellidos=usuario.get("apellidos", ""),
             descripcion=item.get("descripcion"),
             experiencia_anios=item["experiencia_anios"],
-            calificacion=self._calcular_calificacion(item["id_tecnico"]),
+            calificacion=item.get("calificacion"),
             categorias=categorias,
             zonas=zonas,
             portafolio=portafolio,
@@ -176,24 +176,3 @@ class TecnicosService:
                     )
                 )
         return zonas
-
-    @staticmethod
-    def _calcular_calificacion(id_tecnico: int) -> float | None:
-        client = SupabaseClient.get()
-        cotizaciones = SupabaseClient.execute(
-            client.table("cotizaciones")
-            .select("id_cotizacion")
-            .eq("id_tecnico", id_tecnico)
-        )
-        if not cotizaciones.data:
-            return None
-        cot_ids = [c["id_cotizacion"] for c in cotizaciones.data]
-        valoraciones = SupabaseClient.execute(
-            client.table("valoraciones")
-            .select("puntuacion")
-            .in_("id_cotizacion", cot_ids)
-        )
-        if not valoraciones.data:
-            return None
-        scores = [v["puntuacion"] for v in valoraciones.data]
-        return round(sum(scores) / len(scores), 1)
