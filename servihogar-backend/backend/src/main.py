@@ -18,6 +18,7 @@ from src.apis.valoraciones import router as valoraciones_router
 from src.apis.zonas import router as zonas_router
 from src.core.config import settings
 
+
 app = FastAPI(title="ServiHogar API", version="0.1.0")
 
 logging.basicConfig(
@@ -25,16 +26,15 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
 )
 
-ALLOWED_METHODS = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
-
-ALLOWED_HEADERS = ["Authorization", "Content-Type"]
+cors_origins = settings.get_cors_origins()
+logger.info("CORS allow_origins=%s", cors_origins)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.get_cors_origins(),
-    allow_credentials=True,
-    allow_methods=ALLOWED_METHODS,
-    allow_headers=ALLOWED_HEADERS,
+    allow_origins=cors_origins,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

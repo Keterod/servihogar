@@ -5,6 +5,6 @@ class ZonasRepository:
     def get_all(self):
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("zonas").select("*").eq("estado", "activo")
+            client.rpc("rpc_listar_zonas")
         )
         return result.data

@@ -14,6 +14,8 @@ from src.services.tecnicos_service import PortafolioError, TecnicosService
 
 client = TestClient(app, raise_server_exceptions=False)
 
+PRODUCTION_ORIGIN = "https://servihogar-frontend.onrender.com"
+
 CLIENTE = AuthMeResponse(
     id_usuario=1,
     auth_user_id=UUID("11111111-1111-1111-1111-111111111111"),
@@ -204,13 +206,13 @@ def test_options_imagenes_incluye_cors():
     response = client.options(
         "/solicitudes/1/imagenes",
         headers={
-            "Origin": "http://localhost:4300",
+            "Origin": PRODUCTION_ORIGIN,
             "Access-Control-Request-Method": "POST",
             "Access-Control-Request-Headers": "authorization,content-type",
         },
     )
     assert response.status_code == 200
-    assert response.headers.get("access-control-allow-origin") == "http://localhost:4300"
+    assert response.headers.get("access-control-allow-origin") == PRODUCTION_ORIGIN
     assert "POST" in (response.headers.get("access-control-allow-methods") or "")
     assert "authorization" in (response.headers.get("access-control-allow-headers") or "").lower()
 
@@ -226,13 +228,13 @@ def test_post_imagen_error_interno_incluye_cors(mock_auth, mock_service):
         json={"imagen_url": "solicitudes/1/foto.jpg"},
         headers={
             "Authorization": "Bearer token",
-            "Origin": "http://localhost:4300",
+            "Origin": PRODUCTION_ORIGIN,
         },
     )
 
     assert response.status_code == 500
     assert response.json() == {"detail": "No se pudo registrar la imagen"}
-    assert response.headers.get("access-control-allow-origin") == "http://localhost:4300"
+    assert response.headers.get("access-control-allow-origin") == PRODUCTION_ORIGIN
 
 
 @patch("src.apis.tecnicos._service")
@@ -249,23 +251,23 @@ def test_post_portafolio_error_interno_incluye_cors(mock_auth, mock_service):
         },
         headers={
             "Authorization": "Bearer token",
-            "Origin": "http://localhost:4300",
+            "Origin": PRODUCTION_ORIGIN,
         },
     )
 
     assert response.status_code == 500
     assert response.json() == {"detail": "No se pudo guardar el ítem de portafolio"}
-    assert response.headers.get("access-control-allow-origin") == "http://localhost:4300"
+    assert response.headers.get("access-control-allow-origin") == PRODUCTION_ORIGIN
 
 
 def test_options_portafolio_incluye_cors():
     response = client.options(
         "/tecnicos/me/portafolio",
         headers={
-            "Origin": "http://127.0.0.1:4300",
+            "Origin": PRODUCTION_ORIGIN,
             "Access-Control-Request-Method": "POST",
             "Access-Control-Request-Headers": "authorization,content-type",
         },
     )
     assert response.status_code == 200
-    assert response.headers.get("access-control-allow-origin") == "http://127.0.0.1:4300"
+    assert response.headers.get("access-control-allow-origin") == PRODUCTION_ORIGIN

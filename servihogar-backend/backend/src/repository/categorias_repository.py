@@ -5,6 +5,6 @@ class CategoriasRepository:
     def get_all(self):
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("categorias_servicio").select("*").eq("estado", "activo")
+            client.rpc("rpc_listar_categorias")
         )
         return result.data
