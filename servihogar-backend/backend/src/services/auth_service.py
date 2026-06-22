@@ -37,47 +37,51 @@ class AuthService:
             raise self._map_auth_creation_error(exc) from exc
 
         try:
-            usuario = self._repo.insert_usuario(
-                auth_user_id,
-                data.nombres,
-                data.apellidos,
-                data.telefono,
-            )
-            id_usuario = usuario["id_usuario"]
-            logger.info("BD usuarios: fila creada id_usuario=%s", id_usuario)
-
             if data.tipo_usuario == TipoUsuario.cliente:
-                cliente = self._repo.insert_cliente(id_usuario)
-                logger.info("BD clientes: fila creada id_cliente=%s", cliente["id_cliente"])
+                result = self._repo.insert_cliente_completo(
+                    auth_user_id,
+                    data.nombres,
+                    data.apellidos,
+                    data.telefono,
+                )
+                id_usuario = result["usuario"]["id_usuario"]
+                logger.info(
+                    "BD clientes: fila creada id_usuario=%s id_cliente=%s",
+                    id_usuario,
+                    result["cliente"]["id_cliente"],
+                )
                 return AuthRegisterResponse(
                     id_usuario=id_usuario,
                     auth_user_id=UUID(auth_user_id),
                     email=data.email,
                     tipo_usuario=TipoUsuario.cliente,
-                    id_cliente=cliente["id_cliente"],
+                    id_cliente=result["cliente"]["id_cliente"],
                     mensaje="Cuenta de cliente creada correctamente. Ya puedes iniciar sesión.",
                 )
 
-            tecnico = self._repo.insert_tecnico(
-                id_usuario,
+            result = self._repo.insert_tecnico_completo(
+                auth_user_id,
+                data.nombres,
+                data.apellidos,
+                data.telefono,
                 data.descripcion or "",
                 data.experiencia_anios or 0,
+                data.id_categorias,
+                data.id_zonas,
             )
-            id_tecnico = tecnico["id_tecnico"]
-            logger.info("BD tecnicos: fila creada id_tecnico=%s", id_tecnico)
-
-            if data.id_categorias:
-                self._repo.insert_tecnico_categorias(id_tecnico, data.id_categorias)
-            if data.id_zonas:
-                self._repo.insert_tecnico_zonas(id_tecnico, data.id_zonas)
-
+            id_usuario = result["usuario"]["id_usuario"]
+            logger.info(
+                "BD tecnicos: fila creada id_usuario=%s id_tecnico=%s",
+                id_usuario,
+                result["tecnico"]["id_tecnico"],
+            )
             return AuthRegisterResponse(
                 id_usuario=id_usuario,
                 auth_user_id=UUID(auth_user_id),
                 email=data.email,
                 tipo_usuario=TipoUsuario.tecnico,
-                id_tecnico=id_tecnico,
-                estado_validacion=tecnico["estado_validacion"],
+                id_tecnico=result["tecnico"]["id_tecnico"],
+                estado_validacion=result["tecnico"]["estado_validacion"],
                 mensaje=(
                     "Tu cuenta fue creada y está pendiente de validación por un administrador."
                 ),
@@ -92,14 +96,13 @@ class AuthService:
             raise self._map_registration_error(exc) from exc
 
     def _rollback_registro(self, auth_user_id: str | None, id_usuario: int | None) -> None:
-        if id_usuario is not None:
-            try:
-                self._repo.delete_usuario(id_usuario)
-                logger.info("Rollback: eliminado usuario id_usuario=%s", id_usuario)
-            except Exception:
-                logger.exception("Rollback: no se pudo eliminar usuario id_usuario=%s", id_usuario)
-
         if auth_user_id:
+            try:
+                self._repo.delete_usuario_by_auth_user_id(auth_user_id)
+                logger.info("Rollback: eliminado usuario auth_user_id=%s", auth_user_id)
+            except Exception:
+                logger.exception("Rollback: no se pudo eliminar usuario auth_user_id=%s", auth_user_id)
+
             try:
                 self._repo.delete_auth_user(auth_user_id)
                 logger.info("Rollback: eliminado auth user auth_user_id=%s", auth_user_id)

@@ -23,18 +23,12 @@ class AuthRepository:
     def get_usuario_by_auth_user_id(self, auth_user_id: UUID | str) -> dict | None:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("usuarios")
-            .select(
-                "id_usuario, auth_user_id, nombres, apellidos, telefono, estado, "
-                "clientes(id_cliente), "
-                "tecnicos(id_tecnico, estado_validacion), "
-                "administradores(id_administrador)"
+            client.rpc(
+                "rpc_auth_get_profile_by_auth_user_id",
+                {"p_auth_user_id": str(auth_user_id)},
             )
-            .eq("auth_user_id", str(auth_user_id))
-            .limit(1)
         )
-        rows = result.data or []
-        return rows[0] if rows else None
+        return result.data
 
     def create_auth_user(self, email: str, password: str) -> str:
         client = SupabaseClient.get()
@@ -65,87 +59,86 @@ class AuthRepository:
         except Exception:
             pass
 
-    def delete_usuario(self, id_usuario: int) -> None:
+    def delete_usuario_by_auth_user_id(self, auth_user_id: str) -> None:
         client = SupabaseClient.get()
         SupabaseClient.execute(
-            client.table("usuarios").delete().eq("id_usuario", id_usuario),
-            context="delete usuarios",
+            client.rpc(
+                "rpc_auth_delete_usuario_by_auth_user_id",
+                {"p_auth_user_id": auth_user_id},
+            ),
+            context="delete usuarios by auth_user_id",
         )
 
-    def insert_usuario(
+    def insert_cliente_completo(
         self,
         auth_user_id: str,
         nombres: str,
         apellidos: str,
         telefono: str | None,
+        foto_perfil_url: str | None = None,
     ) -> dict:
         client = SupabaseClient.get()
-        payload = {
-            "auth_user_id": auth_user_id,
-            "nombres": nombres.strip(),
-            "apellidos": apellidos.strip(),
-            "telefono": telefono.strip() if telefono else None,
-            "estado": "activo",
+        params: dict = {
+            "p_auth_user_id": auth_user_id,
+            "p_nombres": nombres.strip(),
+            "p_apellidos": apellidos.strip(),
+            "p_telefono": telefono.strip() if telefono else None,
         }
-        result = SupabaseClient.execute(
-            client.table("usuarios").insert(payload).select("id_usuario, auth_user_id"),
-            context="insert usuarios",
-        )
-        rows = result.data or []
-        if not rows:
-            raise RuntimeError("Insert en usuarios no devolvió filas")
-        return rows[0]
+        if foto_perfil_url is not None:
+            params["p_foto_perfil_url"] = foto_perfil_url
 
-    def insert_cliente(self, id_usuario: int) -> dict:
-        client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("clientes")
-            .insert({"id_usuario": id_usuario, "estado": "activo"})
-            .select("id_cliente"),
-            context="insert clientes",
+            client.rpc("rpc_auth_insert_cliente", params),
+            context="insert cliente completo",
         )
-        rows = result.data or []
-        if not rows:
-            raise RuntimeError("Insert en clientes no devolvió filas")
-        return rows[0]
 
-    def insert_tecnico(
+        data = result.data
+        if not data or not data.get("ok"):
+            code = data.get("code", "failed") if data else "failed"
+            if code == "duplicate":
+                raise ValueError("auth_user_id ya existe")
+            raise RuntimeError(f"Error al insertar cliente: {code}")
+
+        return data
+
+    def insert_tecnico_completo(
         self,
-        id_usuario: int,
+        auth_user_id: str,
+        nombres: str,
+        apellidos: str,
+        telefono: str | None,
         descripcion: str,
         experiencia_anios: int,
+        id_categorias: list[int] | None = None,
+        id_zonas: list[int] | None = None,
+        foto_perfil_url: str | None = None,
     ) -> dict:
         client = SupabaseClient.get()
+        params: dict = {
+            "p_auth_user_id": auth_user_id,
+            "p_nombres": nombres.strip(),
+            "p_apellidos": apellidos.strip(),
+            "p_telefono": telefono.strip() if telefono else None,
+            "p_descripcion": descripcion.strip(),
+            "p_experiencia_anios": experiencia_anios,
+        }
+        if id_categorias:
+            params["p_categoria_ids"] = id_categorias
+        if id_zonas:
+            params["p_zona_ids"] = id_zonas
+        if foto_perfil_url is not None:
+            params["p_foto_perfil_url"] = foto_perfil_url
+
         result = SupabaseClient.execute(
-            client.table("tecnicos")
-            .insert(
-                {
-                    "id_usuario": id_usuario,
-                    "descripcion": descripcion.strip(),
-                    "experiencia_anios": experiencia_anios,
-                    "estado_validacion": "pendiente",
-                }
-            )
-            .select("id_tecnico, estado_validacion"),
-            context="insert tecnicos",
+            client.rpc("rpc_auth_insert_tecnico", params),
+            context="insert tecnico completo",
         )
-        rows = result.data or []
-        if not rows:
-            raise RuntimeError("tecnico_insert_failed")
-        return rows[0]
 
-    def insert_tecnico_categorias(self, id_tecnico: int, id_categorias: list[int]) -> None:
-        if not id_categorias:
-            return
+        data = result.data
+        if not data or not data.get("ok"):
+            code = data.get("code", "failed") if data else "failed"
+            if code == "duplicate":
+                raise ValueError("auth_user_id ya existe")
+            raise RuntimeError(f"Error al insertar técnico: {code}")
 
-        client = SupabaseClient.get()
-        rows = [{"id_tecnico": id_tecnico, "id_categoria": cid} for cid in id_categorias]
-        SupabaseClient.execute(client.table("tecnico_categorias").insert(rows))
-
-    def insert_tecnico_zonas(self, id_tecnico: int, id_zonas: list[int]) -> None:
-        if not id_zonas:
-            return
-
-        client = SupabaseClient.get()
-        rows = [{"id_tecnico": id_tecnico, "id_zona": zid} for zid in id_zonas]
-        SupabaseClient.execute(client.table("tecnico_zonas").insert(rows))
+        return data
