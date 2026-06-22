@@ -5,6 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.apis.deps import require_administrador
 from src.schemas.admin import (
     AdminResumenResponse,
+    ReporteCotizacionItem,
+    ReporteFinalizadoItem,
+    ReporteSolicitudItem,
+    ReporteTecnicoActivoItem,
+    ReporteUsuarioItem,
     TecnicoPendienteAdminResponse,
     TecnicoValidacionResponse,
 )
@@ -72,3 +77,53 @@ async def rechazar_tecnico_admin_demo(
         return _service.rechazar_tecnico_demo(id_tecnico)
     except AdminError as exc:
         raise _handle_error(exc) from exc
+
+
+@router.get(
+    "/admin/demo/reportes/usuarios",
+    response_model=list[ReporteUsuarioItem],
+)
+async def listar_reporte_usuarios(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
+    return _service.obtener_reporte_usuarios()
+
+
+@router.get(
+    "/admin/demo/reportes/solicitudes",
+    response_model=list[ReporteSolicitudItem],
+)
+async def listar_reporte_solicitudes(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
+    return _service.obtener_reporte_solicitudes()
+
+
+@router.get(
+    "/admin/demo/reportes/cotizaciones",
+    response_model=list[ReporteCotizacionItem],
+)
+async def listar_reporte_cotizaciones(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
+    return _service.obtener_reporte_cotizaciones()
+
+
+@router.get(
+    "/admin/demo/reportes/finalizados",
+    response_model=list[ReporteFinalizadoItem],
+)
+async def listar_reporte_servicios_finalizados(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
+    return _service.obtener_reporte_servicios_finalizados()
+
+
+@router.get(
+    "/admin/demo/reportes/tecnicos-activos",
+    response_model=list[ReporteTecnicoActivoItem],
+)
+async def listar_reporte_tecnicos_activos(
+    _admin: Annotated[AuthMeResponse, Depends(require_administrador)],
+):
+    return _service.obtener_reporte_tecnicos_activos()

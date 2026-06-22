@@ -28,3 +28,32 @@ class AdminRepository:
             })
         )
         return result.data
+
+    def get_reporte_usuarios(self) -> list[dict]:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(client.rpc("rpc_admin_reporte_usuarios"))
+        return result.data or []
+
+    def get_reporte_solicitudes(self) -> list[dict]:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(client.rpc("rpc_admin_reporte_solicitudes"))
+        return result.data or []
+
+    def get_reporte_cotizaciones(self) -> list[dict]:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(client.rpc("rpc_admin_reporte_cotizaciones"))
+        return result.data or []
+
+    def get_reporte_servicios_finalizados(self) -> list[dict]:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.rpc("rpc_admin_reporte_servicios_finalizados")
+        )
+        return result.data or []
+
+    def get_reporte_tecnicos_activos(self) -> list[dict]:
+        client = SupabaseClient.get()
+        result = SupabaseClient.execute(
+            client.rpc("rpc_admin_reporte_tecnicos_activos")
+        )
+        return result.data or []

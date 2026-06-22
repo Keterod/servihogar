@@ -1,6 +1,11 @@
 from src.repository.admin_repository import AdminRepository
 from src.schemas.admin import (
     AdminResumenResponse,
+    ReporteCotizacionItem,
+    ReporteFinalizadoItem,
+    ReporteSolicitudItem,
+    ReporteTecnicoActivoItem,
+    ReporteUsuarioItem,
     TecnicoPendienteAdminResponse,
     TecnicoValidacionResponse,
 )
@@ -89,3 +94,24 @@ class AdminService:
         if isinstance(value, list):
             return value[0] if value else None
         return value
+
+    def obtener_reporte_usuarios(self) -> list[ReporteUsuarioItem]:
+        return [ReporteUsuarioItem(**row) for row in self._repo.get_reporte_usuarios()]
+
+    def obtener_reporte_solicitudes(self) -> list[ReporteSolicitudItem]:
+        return [ReporteSolicitudItem(**row) for row in self._repo.get_reporte_solicitudes()]
+
+    def obtener_reporte_cotizaciones(self) -> list[ReporteCotizacionItem]:
+        return [ReporteCotizacionItem(**row) for row in self._repo.get_reporte_cotizaciones()]
+
+    def obtener_reporte_servicios_finalizados(self) -> list[ReporteFinalizadoItem]:
+        return [
+            ReporteFinalizadoItem(**row)
+            for row in self._repo.get_reporte_servicios_finalizados()
+        ]
+
+    def obtener_reporte_tecnicos_activos(self) -> list[ReporteTecnicoActivoItem]:
+        return [
+            ReporteTecnicoActivoItem(**row)
+            for row in self._repo.get_reporte_tecnicos_activos()
+        ]

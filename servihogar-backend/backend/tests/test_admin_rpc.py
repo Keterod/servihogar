@@ -276,3 +276,207 @@ class TestAdminService:
         with pytest.raises(AdminError) as exc:
             service.aprobar_tecnico_demo(2)
         assert exc.value.code == "conflict"
+
+
+# ── Reportes repository tests ──────────────────────────────
+
+FAKE_REPORTE_USUARIO = {
+    "id_usuario": 1,
+    "nombres": "Ana",
+    "apellidos": "Torres",
+    "telefono": "999888777",
+    "estado": "activo",
+    "fecha_registro": "2026-01-01T10:00:00+00:00",
+    "rol": "cliente",
+}
+
+FAKE_REPORTE_SOLICITUD = {
+    "id_solicitud": 1,
+    "titulo": "Reparación de caño",
+    "categoria": "Gasfitería",
+    "zona": "Huancayo",
+    "cliente": "Ana Torres",
+    "estado": "pendiente",
+    "fecha_publicacion": "2026-06-01T10:00:00+00:00",
+}
+
+FAKE_REPORTE_COTIZACION = {
+    "id_cotizacion": 1,
+    "solicitud": "Reparación de caño",
+    "tecnico": "Carlos Mendoza",
+    "monto": 150.0,
+    "estado": "pendiente",
+    "fecha_envio": "2026-06-02T10:00:00+00:00",
+}
+
+FAKE_REPORTE_FINALIZADO = {
+    "id_solicitud": 1,
+    "titulo": "Reparación de caño",
+    "cliente": "Ana Torres",
+    "tecnico": "Carlos Mendoza",
+    "estado": "finalizada",
+    "fecha_publicacion": "2026-06-01T10:00:00+00:00",
+}
+
+FAKE_REPORTE_TECNICO_ACTIVO = {
+    "id_tecnico": 1,
+    "nombres": "Carlos",
+    "apellidos": "Mendoza",
+    "telefono": "999888666",
+    "experiencia_anios": 5,
+    "categorias": ["Electricidad"],
+    "zonas": ["Huancayo"],
+    "fecha_validacion": "2026-03-01T10:00:00+00:00",
+}
+
+
+class TestAdminReportesRepository:
+
+    def test_reporte_usuarios_calls_rpc(self, mock_supabase):
+        from src.repository.admin_repository import AdminRepository
+        from src.repository.supabase_client import SupabaseClient
+
+        mock_supabase("rpc_admin_reporte_usuarios", [FAKE_REPORTE_USUARIO])
+
+        repo = AdminRepository()
+        result = repo.get_reporte_usuarios()
+
+        SupabaseClient.get().rpc.assert_called_once_with("rpc_admin_reporte_usuarios")
+        assert result == [FAKE_REPORTE_USUARIO]
+
+    def test_reporte_usuarios_empty(self, mock_supabase):
+        from src.repository.admin_repository import AdminRepository
+
+        mock_supabase("rpc_admin_reporte_usuarios", [])
+
+        repo = AdminRepository()
+        result = repo.get_reporte_usuarios()
+        assert result == []
+
+    def test_reporte_solicitudes_calls_rpc(self, mock_supabase):
+        from src.repository.admin_repository import AdminRepository
+        from src.repository.supabase_client import SupabaseClient
+
+        mock_supabase("rpc_admin_reporte_solicitudes", [FAKE_REPORTE_SOLICITUD])
+
+        repo = AdminRepository()
+        result = repo.get_reporte_solicitudes()
+
+        SupabaseClient.get().rpc.assert_called_once_with("rpc_admin_reporte_solicitudes")
+        assert result == [FAKE_REPORTE_SOLICITUD]
+
+    def test_reporte_cotizaciones_calls_rpc(self, mock_supabase):
+        from src.repository.admin_repository import AdminRepository
+        from src.repository.supabase_client import SupabaseClient
+
+        mock_supabase("rpc_admin_reporte_cotizaciones", [FAKE_REPORTE_COTIZACION])
+
+        repo = AdminRepository()
+        result = repo.get_reporte_cotizaciones()
+
+        SupabaseClient.get().rpc.assert_called_once_with("rpc_admin_reporte_cotizaciones")
+        assert result == [FAKE_REPORTE_COTIZACION]
+
+    def test_reporte_finalizados_calls_rpc(self, mock_supabase):
+        from src.repository.admin_repository import AdminRepository
+        from src.repository.supabase_client import SupabaseClient
+
+        mock_supabase("rpc_admin_reporte_servicios_finalizados", [FAKE_REPORTE_FINALIZADO])
+
+        repo = AdminRepository()
+        result = repo.get_reporte_servicios_finalizados()
+
+        SupabaseClient.get().rpc.assert_called_once_with(
+            "rpc_admin_reporte_servicios_finalizados"
+        )
+        assert result == [FAKE_REPORTE_FINALIZADO]
+
+    def test_reporte_tecnicos_activos_calls_rpc(self, mock_supabase):
+        from src.repository.admin_repository import AdminRepository
+        from src.repository.supabase_client import SupabaseClient
+
+        mock_supabase("rpc_admin_reporte_tecnicos_activos", [FAKE_REPORTE_TECNICO_ACTIVO])
+
+        repo = AdminRepository()
+        result = repo.get_reporte_tecnicos_activos()
+
+        SupabaseClient.get().rpc.assert_called_once_with(
+            "rpc_admin_reporte_tecnicos_activos"
+        )
+        assert result == [FAKE_REPORTE_TECNICO_ACTIVO]
+
+
+class TestAdminReportesService:
+
+    def test_reporte_usuarios(self, mock_supabase):
+        from src.services.admin_service import AdminService
+
+        mock_supabase("rpc_admin_reporte_usuarios", [FAKE_REPORTE_USUARIO])
+
+        service = AdminService()
+        result = service.obtener_reporte_usuarios()
+
+        assert len(result) == 1
+        assert result[0].id_usuario == 1
+        assert result[0].nombres == "Ana"
+        assert result[0].rol == "cliente"
+
+    def test_reporte_usuarios_empty(self, mock_supabase):
+        from src.services.admin_service import AdminService
+
+        mock_supabase("rpc_admin_reporte_usuarios", [])
+
+        service = AdminService()
+        result = service.obtener_reporte_usuarios()
+        assert result == []
+
+    def test_reporte_solicitudes(self, mock_supabase):
+        from src.services.admin_service import AdminService
+
+        mock_supabase("rpc_admin_reporte_solicitudes", [FAKE_REPORTE_SOLICITUD])
+
+        service = AdminService()
+        result = service.obtener_reporte_solicitudes()
+
+        assert len(result) == 1
+        assert result[0].id_solicitud == 1
+        assert result[0].categoria == "Gasfitería"
+        assert result[0].cliente == "Ana Torres"
+
+    def test_reporte_cotizaciones(self, mock_supabase):
+        from src.services.admin_service import AdminService
+
+        mock_supabase("rpc_admin_reporte_cotizaciones", [FAKE_REPORTE_COTIZACION])
+
+        service = AdminService()
+        result = service.obtener_reporte_cotizaciones()
+
+        assert len(result) == 1
+        assert result[0].id_cotizacion == 1
+        assert result[0].monto == 150.0
+        assert result[0].tecnico == "Carlos Mendoza"
+
+    def test_reporte_finalizados(self, mock_supabase):
+        from src.services.admin_service import AdminService
+
+        mock_supabase("rpc_admin_reporte_servicios_finalizados", [FAKE_REPORTE_FINALIZADO])
+
+        service = AdminService()
+        result = service.obtener_reporte_servicios_finalizados()
+
+        assert len(result) == 1
+        assert result[0].id_solicitud == 1
+        assert result[0].tecnico == "Carlos Mendoza"
+
+    def test_reporte_tecnicos_activos(self, mock_supabase):
+        from src.services.admin_service import AdminService
+
+        mock_supabase("rpc_admin_reporte_tecnicos_activos", [FAKE_REPORTE_TECNICO_ACTIVO])
+
+        service = AdminService()
+        result = service.obtener_reporte_tecnicos_activos()
+
+        assert len(result) == 1
+        assert result[0].id_tecnico == 1
+        assert result[0].categorias == ["Electricidad"]
+        assert result[0].zonas == ["Huancayo"]

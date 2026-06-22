@@ -35,3 +35,54 @@ export interface TecnicoValidacionAdminResponse {
   id_tecnico: number;
   estado_validacion: 'validado' | 'rechazado' | string;
 }
+
+export type TipoReporte = 'usuarios' | 'solicitudes' | 'cotizaciones' | 'finalizados' | 'tecnicos-activos';
+
+export interface ReporteUsuarioItem {
+  id_usuario: number;
+  nombres: string;
+  apellidos: string;
+  telefono: string | null;
+  estado: string;
+  fecha_registro: string;
+  rol: string;
+}
+
+export interface ReporteSolicitudItem {
+  id_solicitud: number;
+  titulo: string;
+  categoria: string;
+  zona: string;
+  cliente: string;
+  estado: string;
+  fecha_publicacion: string;
+}
+
+export interface ReporteCotizacionItem {
+  id_cotizacion: number;
+  solicitud: string;
+  tecnico: string;
+  monto: number;
+  estado: string;
+  fecha_envio: string;
+}
+
+export interface ReporteFinalizadoItem {
+  id_solicitud: number;
+  titulo: string;
+  cliente: string;
+  tecnico: string;
+  estado: string;
+  fecha_publicacion: string;
+}
+
+export interface ReporteTecnicoActivoItem {
+  id_tecnico: number;
+  nombres: string;
+  apellidos: string;
+  telefono: string | null;
+  experiencia_anios: number;
+  categorias: string[];
+  zonas: string[];
+  fecha_validacion: string | null;
+}

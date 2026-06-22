@@ -35,3 +35,52 @@ class TecnicoPendienteAdminResponse(BaseModel):
 class TecnicoValidacionResponse(BaseModel):
     id_tecnico: int
     estado_validacion: str
+
+
+class ReporteUsuarioItem(BaseModel):
+    id_usuario: int
+    nombres: str
+    apellidos: str
+    telefono: str | None = None
+    estado: str
+    fecha_registro: datetime
+    rol: str
+
+
+class ReporteSolicitudItem(BaseModel):
+    id_solicitud: int
+    titulo: str
+    categoria: str
+    zona: str
+    cliente: str
+    estado: str
+    fecha_publicacion: datetime
+
+
+class ReporteCotizacionItem(BaseModel):
+    id_cotizacion: int
+    solicitud: str
+    tecnico: str
+    monto: float
+    estado: str
+    fecha_envio: datetime
+
+
+class ReporteFinalizadoItem(BaseModel):
+    id_solicitud: int
+    titulo: str
+    cliente: str
+    tecnico: str
+    estado: str
+    fecha_publicacion: datetime
+
+
+class ReporteTecnicoActivoItem(BaseModel):
+    id_tecnico: int
+    nombres: str
+    apellidos: str
+    telefono: str | None = None
+    experiencia_anios: int
+    categorias: list[str] = []
+    zonas: list[str] = []
+    fecha_validacion: datetime | None = None

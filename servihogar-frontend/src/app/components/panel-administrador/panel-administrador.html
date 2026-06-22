@@ -166,14 +166,186 @@
 
       <section class="section-card admin-section-anchor" id="titulo-reportes" aria-labelledby="heading-reportes">
         <h2 id="heading-reportes">Reportes básicos</h2>
+        <p class="section-descripcion">Haz clic en una tarjeta para ver el detalle.</p>
         <div class="reportes-grid">
           @for (metrica of metricasReportes(); track metrica.etiqueta) {
-            <article class="reporte-card">
+            <article
+              class="reporte-card"
+              [class.reporte-card-activo]="reporteSeleccionado() === metrica.tipoReporte"
+              role="button"
+              tabindex="0"
+              (click)="cargarReporte(metrica.tipoReporte!)"
+              (keydown.enter)="cargarReporte(metrica.tipoReporte!)"
+            >
               <span class="reporte-numero">{{ metrica.valor }}</span>
               <span class="reporte-label">{{ metrica.etiqueta }}</span>
             </article>
           }
         </div>
+
+        @if (reporteSeleccionado(); as tipo) {
+          <div class="reporte-detalle">
+            <h3 class="reporte-detalle-titulo">{{ reporteTitulo() }}</h3>
+
+            @if (reporteCargando()) {
+              <div class="estado-panel">
+                <p>Cargando reporte...</p>
+              </div>
+            } @else if (reporteError(); as err) {
+              <div class="estado-panel estado-error" role="alert">
+                <p>{{ err }}</p>
+              </div>
+            } @else if (reporteVacio()) {
+              <div class="empty-state">
+                <h3>No hay datos disponibles</h3>
+                <p>No se encontraron registros para este reporte.</p>
+              </div>
+            } @else if (reporteDatos(); as datos) {
+              <div class="table-wrapper">
+                @switch (tipo) {
+                  @case ('usuarios') {
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Nombres</th>
+                          <th>Apellidos</th>
+                          <th>Teléfono</th>
+                          <th>Estado</th>
+                          <th>Fecha registro</th>
+                          <th>Rol</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of datos; track $any(item).id_usuario) {
+                          <tr>
+                            <td>#{{ $any(item).id_usuario }}</td>
+                            <td>{{ $any(item).nombres }}</td>
+                            <td>{{ $any(item).apellidos }}</td>
+                            <td>{{ $any(item).telefono || '—' }}</td>
+                            <td>{{ $any(item).estado }}</td>
+                            <td>{{ fechaCorta($any(item).fecha_registro) }}</td>
+                            <td>{{ $any(item).rol }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                  @case ('solicitudes') {
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Título</th>
+                          <th>Categoría</th>
+                          <th>Zona</th>
+                          <th>Cliente</th>
+                          <th>Estado</th>
+                          <th>Fecha publicación</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of datos; track $any(item).id_solicitud) {
+                          <tr>
+                            <td>#{{ $any(item).id_solicitud }}</td>
+                            <td>{{ $any(item).titulo }}</td>
+                            <td>{{ $any(item).categoria }}</td>
+                            <td>{{ $any(item).zona }}</td>
+                            <td>{{ $any(item).cliente }}</td>
+                            <td>{{ $any(item).estado }}</td>
+                            <td>{{ fechaCorta($any(item).fecha_publicacion) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                  @case ('cotizaciones') {
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Solicitud</th>
+                          <th>Técnico</th>
+                          <th>Monto</th>
+                          <th>Estado</th>
+                          <th>Fecha envío</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of datos; track $any(item).id_cotizacion) {
+                          <tr>
+                            <td>#{{ $any(item).id_cotizacion }}</td>
+                            <td>{{ $any(item).solicitud }}</td>
+                            <td>{{ $any(item).tecnico }}</td>
+                            <td>S/ {{ $any(item).monto }}</td>
+                            <td>{{ $any(item).estado }}</td>
+                            <td>{{ fechaCorta($any(item).fecha_envio) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                  @case ('finalizados') {
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Título</th>
+                          <th>Cliente</th>
+                          <th>Técnico</th>
+                          <th>Estado</th>
+                          <th>Fecha publicación</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of datos; track $any(item).id_solicitud) {
+                          <tr>
+                            <td>#{{ $any(item).id_solicitud }}</td>
+                            <td>{{ $any(item).titulo }}</td>
+                            <td>{{ $any(item).cliente }}</td>
+                            <td>{{ $any(item).tecnico }}</td>
+                            <td>{{ $any(item).estado }}</td>
+                            <td>{{ fechaCorta($any(item).fecha_publicacion) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                  @case ('tecnicos-activos') {
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Nombres</th>
+                          <th>Apellidos</th>
+                          <th>Teléfono</th>
+                          <th>Experiencia</th>
+                          <th>Categorías</th>
+                          <th>Zonas</th>
+                          <th>Fecha validación</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of datos; track $any(item).id_tecnico) {
+                          <tr>
+                            <td>#{{ $any(item).id_tecnico }}</td>
+                            <td>{{ $any(item).nombres }}</td>
+                            <td>{{ $any(item).apellidos }}</td>
+                            <td>{{ $any(item).telefono || '—' }}</td>
+                            <td>{{ $any(item).experiencia_anios }} años</td>
+                            <td>{{ textoLista($any(item).categorias) }}</td>
+                            <td>{{ textoLista($any(item).zonas) }}</td>
+                            <td>{{ $any(item).fecha_validacion ? fechaCorta($any(item).fecha_validacion) : '—' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
       </section>
     }
   </main>

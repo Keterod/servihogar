@@ -1,8 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 
-import { AdminResumen, TecnicoPendienteAdmin } from '../../models/administrador';
+import { AdminResumen, TecnicoPendienteAdmin, TipoReporte } from '../../models/administrador';
 import {
   AdministradorService,
   TecnicoValidacionAdminResult,
@@ -14,6 +14,7 @@ type SeccionAdmin = 'titulo-resumen' | 'titulo-tecnicos' | 'titulo-reportes';
 interface MetricaAdmin {
   etiqueta: string;
   valor: number;
+  tipoReporte?: TipoReporte;
 }
 
 @Component({
@@ -36,6 +37,11 @@ export class PanelAdministrador implements OnInit {
   readonly tecnicosPendientes = signal<TecnicoPendienteAdmin[]>([]);
   readonly cargando = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+
+  readonly reporteSeleccionado = signal<TipoReporte | null>(null);
+  readonly reporteDatos = signal<any[] | null>(null);
+  readonly reporteCargando = signal<boolean>(false);
+  readonly reporteError = signal<string | null>(null);
   readonly accionEnCurso = signal<number | null>(null);
   readonly mensajeAccion = signal<string | null>(null);
 
@@ -73,11 +79,11 @@ export class PanelAdministrador implements OnInit {
     }
 
     return [
-      { etiqueta: 'Solicitudes publicadas', valor: resumen.total_solicitudes },
-      { etiqueta: 'Cotizaciones registradas', valor: resumen.total_cotizaciones },
-      { etiqueta: 'Servicios finalizados', valor: resumen.solicitudes_finalizadas },
-      { etiqueta: 'Técnicos activos', valor: resumen.tecnicos_validados },
-      { etiqueta: 'Usuarios registrados', valor: resumen.total_usuarios },
+      { etiqueta: 'Solicitudes publicadas', valor: resumen.total_solicitudes, tipoReporte: 'solicitudes' },
+      { etiqueta: 'Cotizaciones registradas', valor: resumen.total_cotizaciones, tipoReporte: 'cotizaciones' },
+      { etiqueta: 'Servicios finalizados', valor: resumen.solicitudes_finalizadas, tipoReporte: 'finalizados' },
+      { etiqueta: 'Técnicos activos', valor: resumen.tecnicos_validados, tipoReporte: 'tecnicos-activos' },
+      { etiqueta: 'Usuarios registrados', valor: resumen.total_usuarios, tipoReporte: 'usuarios' },
     ];
   });
 
@@ -161,6 +167,63 @@ export class PanelAdministrador implements OnInit {
       year: 'numeric',
     }).format(new Date(fecha));
   }
+
+  cargarReporte(tipoReporte: TipoReporte): void {
+    if (this.reporteCargando()) return;
+
+    this.reporteSeleccionado.set(tipoReporte);
+    this.reporteCargando.set(true);
+    this.reporteError.set(null);
+    this.reporteDatos.set(null);
+
+    const reportes: Record<TipoReporte, Observable<any>> = {
+      usuarios: this.administradorService.obtenerReporteUsuarios(),
+      solicitudes: this.administradorService.obtenerReporteSolicitudes(),
+      cotizaciones: this.administradorService.obtenerReporteCotizaciones(),
+      finalizados: this.administradorService.obtenerReporteFinalizados(),
+      'tecnicos-activos': this.administradorService.obtenerReporteTecnicosActivos(),
+    };
+
+    reportes[tipoReporte].subscribe((resultado) => {
+      this.reporteCargando.set(false);
+
+      if (resultado === 'unauthorized') {
+        void this.router.navigate(['/login'], {
+          queryParams: { returnUrl: this.router.url },
+        });
+        return;
+      }
+
+      if (resultado === 'forbidden') {
+        this.reporteError.set('No tienes permiso para ver este reporte.');
+        return;
+      }
+
+      if (!resultado) {
+        this.reporteError.set('No se pudo cargar el reporte. Inténtalo nuevamente.');
+        return;
+      }
+
+      this.reporteDatos.set(resultado);
+    });
+  }
+
+  readonly reporteTitulo = computed(() => {
+    const map: Record<TipoReporte, string> = {
+      usuarios: 'Usuarios registrados',
+      solicitudes: 'Solicitudes publicadas',
+      cotizaciones: 'Cotizaciones registradas',
+      finalizados: 'Servicios finalizados',
+      'tecnicos-activos': 'Técnicos activos',
+    };
+    const tipo = this.reporteSeleccionado();
+    return tipo ? map[tipo] : '';
+  });
+
+  readonly reporteVacio = computed(() => {
+    const datos = this.reporteDatos();
+    return datos !== null && datos.length === 0;
+  });
 
   private procesarTecnico(idTecnico: number, accion: 'aprobar' | 'rechazar'): void {
     if (this.accionEnCurso() !== null) {
