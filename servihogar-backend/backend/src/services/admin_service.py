@@ -44,13 +44,15 @@ class AdminService:
                 f"El técnico ya está en estado {estado_actual}",
             )
 
-        actualizado = self._repo.update_tecnico_estado(id_tecnico, nuevo_estado)
-        if actualizado is None:
-            raise AdminError("failed", "No se pudo actualizar el técnico")
+        response = self._repo.update_tecnico_estado(id_tecnico, nuevo_estado)
+        if not response.get("ok"):
+            code = response.get("code", "failed")
+            raise AdminError(code, f"No se pudo actualizar el técnico: {code}")
 
+        t = response["tecnico"]
         return TecnicoValidacionResponse(
-            id_tecnico=actualizado["id_tecnico"],
-            estado_validacion=actualizado["estado_validacion"],
+            id_tecnico=t["id_tecnico"],
+            estado_validacion=t["estado_validacion"],
         )
 
     def _map_tecnico_pendiente(self, row: dict) -> TecnicoPendienteAdminResponse:

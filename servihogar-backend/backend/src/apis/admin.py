@@ -16,6 +16,7 @@ _service = AdminService()
 
 _ERROR_STATUS = {
     "not_found": 404,
+    "bad_request": 400,
     "conflict": 409,
     "failed": 503,
 }
