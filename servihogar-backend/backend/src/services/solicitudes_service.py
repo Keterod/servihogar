@@ -244,9 +244,7 @@ class SolicitudesService:
     def obtener_solicitudes_disponibles_para_tecnico(
         self, id_tecnico: int
     ) -> list[SolicitudDisponibleResponse]:
-        categorias = self._tecnicos_repo.get_categorias_for_tecnico(id_tecnico)
-        zonas = self._tecnicos_repo.get_zonas_for_tecnico(id_tecnico)
-        rows = self._repo.get_disponibles_for_tecnico(id_tecnico, categorias, zonas)
+        rows = self._repo.get_disponibles_for_tecnico(id_tecnico)
 
         return [
             SolicitudDisponibleResponse(

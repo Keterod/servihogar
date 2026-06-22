@@ -190,121 +190,20 @@ class SolicitudesRepository:
         nombre = f"{usuario.get('nombres', '')} {usuario.get('apellidos', '')}".strip()
         return nombre or None
 
-    def get_disponibles_for_tecnico(
-        self, id_tecnico: int, categorias: list[int], zonas: list[int]
-    ) -> list[dict]:
-        if not categorias or not zonas:
-            return []
-
+    def get_disponibles_for_tecnico(self, id_tecnico: int) -> list[dict]:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("solicitudes_servicio")
-            .select(
-                "id_solicitud, titulo, descripcion, direccion_referencia, estado, "
-                "fecha_publicacion, "
-                "categorias_servicio!inner(nombre), zonas!inner(nombre), "
-                "clientes!inner(usuarios!inner(nombres, apellidos))"
-            )
-            .eq("estado", "pendiente")
-            .in_("id_categoria", categorias)
-            .in_("id_zona", zonas)
-            .order("fecha_publicacion", desc=True)
+            client.rpc("rpc_solicitudes_disponibles_tecnico", {
+                "p_id_tecnico": id_tecnico,
+            })
         )
-        if not result.data:
-            return []
-
-        solicitud_ids = [s["id_solicitud"] for s in result.data]
-        cotizaciones_result = SupabaseClient.execute(
-            client.table("cotizaciones")
-            .select("id_solicitud, id_tecnico")
-            .in_("id_solicitud", solicitud_ids)
-        )
-        cotizaciones_rows = cotizaciones_result.data or []
-        cotizaciones_count = Counter(c["id_solicitud"] for c in cotizaciones_rows)
-        cotizada_por_tecnico = {
-            c["id_solicitud"]
-            for c in cotizaciones_rows
-            if c["id_tecnico"] == id_tecnico
-        }
-
-        solicitudes = []
-        for row in result.data:
-            sid = row["id_solicitud"]
-            categoria = row.pop("categorias_servicio", None)
-            zona = row.pop("zonas", None)
-            solicitudes.append(
-                {
-                    "id_solicitud": sid,
-                    "titulo": row["titulo"],
-                    "descripcion": row["descripcion"],
-                    "direccion_referencia": row.get("direccion_referencia"),
-                    "estado": row["estado"],
-                    "fecha_publicacion": row["fecha_publicacion"],
-                    "categoria_nombre": self._join_nombre(categoria),
-                    "zona_nombre": self._join_nombre(zona),
-                    "cliente_nombre": self._cliente_nombre_from_row(row),
-                    "cotizaciones_count": cotizaciones_count.get(sid, 0),
-                    "ya_cotizada_por_tecnico": sid in cotizada_por_tecnico,
-                }
-            )
-
-        return solicitudes
-
-    def _map_servicio_aceptado_row(self, row: dict) -> dict | None:
-        solicitud = self._unwrap_embedded(row.get("solicitudes_servicio"))
-        if not isinstance(solicitud, dict):
-            return None
-        if solicitud.get("estado") != "en_proceso":
-            return None
-
-        id_solicitud = solicitud.get("id_solicitud")
-        id_cotizacion = row.get("id_cotizacion")
-        precio = self._safe_float(row.get("monto"))
-        fecha_publicacion = solicitud.get("fecha_publicacion")
-        if id_solicitud is None or id_cotizacion is None or precio is None or not fecha_publicacion:
-            return None
-
-        solicitud_cliente = dict(solicitud)
-        return {
-            "id_solicitud": id_solicitud,
-            "titulo": solicitud.get("titulo") or "",
-            "descripcion": solicitud.get("descripcion") or "",
-            "direccion_referencia": solicitud.get("direccion_referencia"),
-            "estado": solicitud.get("estado") or "",
-            "fecha_publicacion": fecha_publicacion,
-            "categoria_nombre": self._join_nombre(solicitud.get("categorias_servicio")),
-            "zona_nombre": self._join_nombre(solicitud.get("zonas")),
-            "cliente_nombre": self._cliente_nombre_from_row(solicitud_cliente),
-            "id_cotizacion": id_cotizacion,
-            "precio": precio,
-            "tiempo_estimado": row.get("tiempo_estimado"),
-            "estado_cotizacion": row.get("estado") or "",
-        }
+        return result.data or []
 
     def get_servicios_aceptados_for_tecnico(self, id_tecnico: int) -> list[dict]:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("cotizaciones")
-            .select(
-                "id_cotizacion, monto, tiempo_estimado, estado, "
-                "solicitudes_servicio!inner("
-                "id_solicitud, titulo, descripcion, direccion_referencia, estado, "
-                "fecha_publicacion, "
-                "categorias_servicio!inner(nombre), zonas!inner(nombre), "
-                "clientes!inner(usuarios!inner(nombres, apellidos))"
-                ")"
-            )
-            .eq("id_tecnico", id_tecnico)
-            .eq("estado", "aceptada")
-            .order("fecha_envio", desc=True)
+            client.rpc("rpc_servicios_aceptados_tecnico", {
+                "p_id_tecnico": id_tecnico,
+            })
         )
-        if not result.data:
-            return []
-
-        servicios = []
-        for row in result.data:
-            mapped = self._map_servicio_aceptado_row(row)
-            if mapped is not None:
-                servicios.append(mapped)
-
-        return servicios
+        return result.data or []
