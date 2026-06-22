@@ -9,34 +9,28 @@ class ImagenesSolicitudRepository:
         descripcion: str | None = None,
     ) -> dict | None:
         client = SupabaseClient.get()
-        payload: dict = {
-            "id_solicitud": id_solicitud,
-            "imagen_url": imagen_url,
+        params: dict = {
+            "p_id_solicitud": id_solicitud,
+            "p_imagen_url": imagen_url,
         }
         if descripcion is not None:
-            payload["descripcion"] = descripcion
+            params["p_descripcion"] = descripcion
 
         result = SupabaseClient.execute(
-            client.table("imagenes_solicitud").insert(payload).select("*")
+            client.rpc("rpc_insert_imagen_solicitud", params)
         )
-        rows = result.data or []
-        return rows[0] if rows else None
+        return result.data or None
 
     def count_by_solicitud(self, id_solicitud: int) -> int:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("imagenes_solicitud")
-            .select("id_imagen", count="exact")
-            .eq("id_solicitud", id_solicitud)
+            client.rpc("rpc_count_imagenes_solicitud", {"p_id_solicitud": id_solicitud})
         )
-        return result.count or 0
+        return result.data if isinstance(result.data, int) else 0
 
     def list_by_solicitud(self, id_solicitud: int) -> list:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("imagenes_solicitud")
-            .select("id_imagen, imagen_url, descripcion, fecha_subida")
-            .eq("id_solicitud", id_solicitud)
-            .order("fecha_subida")
+            client.rpc("rpc_listar_imagenes_solicitud", {"p_id_solicitud": id_solicitud})
         )
         return result.data or []
