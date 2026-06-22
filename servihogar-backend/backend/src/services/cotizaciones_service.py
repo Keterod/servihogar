@@ -33,30 +33,6 @@ class CotizacionesService:
             solicitud_estado=solicitud_estado,
         )
 
-    def _get_cotizacion_for_cliente(
-        self, id_cotizacion: int, id_cliente: int
-    ) -> tuple[dict, dict]:
-        cotizacion = self._repo.get_by_id(id_cotizacion)
-        if cotizacion is None:
-            raise CotizacionError("not_found", "Cotización no encontrada")
-
-        solicitud = self._solicitudes_repo.get_by_id_for_cliente(
-            cotizacion["id_solicitud"], id_cliente
-        )
-        if solicitud is None:
-            raise CotizacionError(
-                "forbidden",
-                "No tienes permiso para gestionar esta cotización",
-            )
-
-        return cotizacion, solicitud
-
-    def _get_cotizacion_for_demo_client(self, id_cotizacion: int) -> tuple[dict, dict]:
-        id_cliente = self._solicitudes_repo.get_demo_cliente_id()
-        if id_cliente is None:
-            raise CotizacionError("failed", "Cliente demo no disponible")
-        return self._get_cotizacion_for_cliente(id_cotizacion, id_cliente)
-
     def crear_cotizacion_demo(self, data: CotizacionRequest) -> CotizacionResponse:
         id_tecnico = self._tecnicos_repo.get_demo_tecnico_id()
         if id_tecnico is None:
@@ -117,59 +93,37 @@ class CotizacionesService:
     def aceptar_cotizacion_para_cliente(
         self, id_cotizacion: int, id_cliente: int
     ) -> CotizacionActionResponse:
-        cotizacion, solicitud = self._get_cotizacion_for_cliente(id_cotizacion, id_cliente)
+        result = self._repo.aceptar_cotizacion_cliente(id_cotizacion, id_cliente)
+        if not result.get("ok"):
+            code = result.get("code", "failed")
+            messages = {
+                "not_found": "Cotización no encontrada",
+                "forbidden": "No tienes permiso para gestionar esta cotización",
+                "bad_request": "La cotización o solicitud no está en estado válido",
+                "conflict": "Esta solicitud ya tiene una cotización aceptada",
+            }
+            raise CotizacionError(code, messages.get(code, "No se pudo aceptar la cotización"))
 
-        if cotizacion["estado"] != "pendiente":
-            raise CotizacionError(
-                "bad_request",
-                "Solo se pueden aceptar cotizaciones en estado pendiente",
-            )
-
-        if solicitud["estado"] != "pendiente":
-            raise CotizacionError(
-                "bad_request",
-                "Solo se pueden aceptar cotizaciones de solicitudes en estado pendiente",
-            )
-
-        if self._repo.has_accepted_for_solicitud(cotizacion["id_solicitud"]):
-            raise CotizacionError(
-                "conflict",
-                "Esta solicitud ya tiene una cotización aceptada",
-            )
-
-        updated = self._repo.update_estado(id_cotizacion, "aceptada")
-        if updated is None:
-            raise CotizacionError("failed", "No se pudo aceptar la cotización")
-
-        if not self._repo.reject_pending_others(
-            cotizacion["id_solicitud"], id_cotizacion
-        ):
-            raise CotizacionError("failed", "No se pudo actualizar las cotizaciones")
-
-        solicitud_updated = self._solicitudes_repo.update_estado(
-            cotizacion["id_solicitud"], "en_proceso"
+        return self._to_action_response(
+            result["cotizacion"], result["solicitud_estado"]
         )
-        if solicitud_updated is None:
-            raise CotizacionError("failed", "No se pudo actualizar la solicitud")
-
-        return self._to_action_response(updated, solicitud_updated["estado"])
 
     def rechazar_cotizacion_para_cliente(
         self, id_cotizacion: int, id_cliente: int
     ) -> CotizacionActionResponse:
-        cotizacion, solicitud = self._get_cotizacion_for_cliente(id_cotizacion, id_cliente)
+        result = self._repo.rechazar_cotizacion_cliente(id_cotizacion, id_cliente)
+        if not result.get("ok"):
+            code = result.get("code", "failed")
+            messages = {
+                "not_found": "Cotización no encontrada",
+                "forbidden": "No tienes permiso para gestionar esta cotización",
+                "bad_request": "Solo se pueden rechazar cotizaciones en estado pendiente",
+            }
+            raise CotizacionError(code, messages.get(code, "No se pudo rechazar la cotización"))
 
-        if cotizacion["estado"] != "pendiente":
-            raise CotizacionError(
-                "bad_request",
-                "Solo se pueden rechazar cotizaciones en estado pendiente",
-            )
-
-        updated = self._repo.update_estado(id_cotizacion, "rechazada")
-        if updated is None:
-            raise CotizacionError("failed", "No se pudo rechazar la cotización")
-
-        return self._to_action_response(updated, solicitud["estado"])
+        return self._to_action_response(
+            result["cotizacion"], result["solicitud_estado"]
+        )
 
     def aceptar_cotizacion_demo(self, id_cotizacion: int) -> CotizacionActionResponse:
         id_cliente = self._solicitudes_repo.get_demo_cliente_id()

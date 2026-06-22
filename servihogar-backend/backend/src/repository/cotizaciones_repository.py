@@ -34,31 +34,29 @@ class CotizacionesRepository:
         )
         return result.data or None
 
-    def update_estado(self, id_cotizacion: int, estado: str) -> dict | None:
+    def aceptar_cotizacion_cliente(
+        self, id_cotizacion: int, id_cliente: int
+    ) -> dict:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("cotizaciones")
-            .update({"estado": estado})
-            .eq("id_cotizacion", id_cotizacion)
-            .select(
-                "id_cotizacion, id_solicitud, id_tecnico, monto, descripcion, "
-                "tiempo_estimado, estado, fecha_envio"
-            )
+            client.rpc("rpc_aceptar_cotizacion_cliente", {
+                "p_id_cotizacion": id_cotizacion,
+                "p_id_cliente": id_cliente,
+            })
         )
-        if not result.data:
-            return None
-        return result.data[0]
+        return result.data or {}
 
-    def reject_pending_others(self, id_solicitud: int, except_id_cotizacion: int) -> bool:
+    def rechazar_cotizacion_cliente(
+        self, id_cotizacion: int, id_cliente: int
+    ) -> dict:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("cotizaciones")
-            .update({"estado": "rechazada"})
-            .eq("id_solicitud", id_solicitud)
-            .eq("estado", "pendiente")
-            .neq("id_cotizacion", except_id_cotizacion)
+            client.rpc("rpc_rechazar_cotizacion_cliente", {
+                "p_id_cotizacion": id_cotizacion,
+                "p_id_cliente": id_cliente,
+            })
         )
-        return result.data is not None
+        return result.data or {}
 
     def has_accepted_for_solicitud(self, id_solicitud: int) -> bool:
         client = SupabaseClient.get()
