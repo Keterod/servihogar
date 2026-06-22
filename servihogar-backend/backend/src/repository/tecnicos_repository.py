@@ -60,24 +60,16 @@ class TecnicosRepository:
     def list_portafolio_for_tecnico(self, id_tecnico: int):
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("portafolio_tecnico")
-            .select(
-                "id_portafolio, titulo, descripcion, imagen_url, estado, fecha_subida"
-            )
-            .eq("id_tecnico", id_tecnico)
-            .order("fecha_subida", desc=True)
+            client.rpc("rpc_listar_portafolio_tecnico", {"p_id_tecnico": id_tecnico})
         )
         return result.data or []
 
     def count_portafolio_visible(self, id_tecnico: int) -> int:
         client = SupabaseClient.get()
         result = SupabaseClient.execute(
-            client.table("portafolio_tecnico")
-            .select("id_portafolio", count="exact")
-            .eq("id_tecnico", id_tecnico)
-            .eq("estado", "visible")
+            client.rpc("rpc_count_portafolio_visible", {"p_id_tecnico": id_tecnico})
         )
-        return result.count or 0
+        return result.data if isinstance(result.data, int) else 0
 
     def insert_portafolio(
         self,
@@ -87,25 +79,23 @@ class TecnicosRepository:
         descripcion: str | None = None,
     ) -> dict | None:
         client = SupabaseClient.get()
-        payload: dict = {
-            "id_tecnico": id_tecnico,
-            "titulo": titulo,
-            "imagen_url": imagen_url,
-            "estado": "visible",
+        params: dict = {
+            "p_id_tecnico": id_tecnico,
+            "p_titulo": titulo,
+            "p_imagen_url": imagen_url,
         }
         if descripcion is not None:
-            payload["descripcion"] = descripcion
+            params["p_descripcion"] = descripcion
 
         logger.info(
-            "Insert portafolio_tecnico id_tecnico=%s storage_path=%s payload=%s",
+            "Insert portafolio_tecnico id_tecnico=%s storage_path=%s params=%s",
             id_tecnico,
             imagen_url,
-            payload,
+            params,
         )
 
         result = SupabaseClient.execute(
-            client.table("portafolio_tecnico").insert(payload).select("*"),
+            client.rpc("rpc_insert_portafolio_tecnico", params),
             context="insert portafolio_tecnico",
         )
-        rows = result.data or []
-        return rows[0] if rows else None
+        return result.data or None
